@@ -12,7 +12,8 @@ describe('TMDb trending connection spike', () => {
     const request = vi.fn().mockResolvedValue(weeklyTrendingFixture);
     const result = await fetchWeeklyTrending(config, request);
 
-    expect(request).toHaveBeenCalledExactlyOnceWith(
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledWith(
       'https://api.themoviedb.org/3/trending/all/week',
       {
         headers: {

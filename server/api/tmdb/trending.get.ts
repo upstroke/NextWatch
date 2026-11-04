@@ -1,11 +1,12 @@
+import type { TmdbPagedResponse } from '../../../src/lib/schemas/tmdb';
 import { fetchWeeklyTrending, TmdbSpikeError } from '../../utils/tmdb';
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {
   setResponseHeader(event, 'Cache-Control', 'no-store');
   const config = useRuntimeConfig(event);
 
   try {
-    return await fetchWeeklyTrending(config.tmdb, (url, options) =>
+    return await fetchWeeklyTrending(config.tmdb, (url, options): Promise<unknown> =>
       $fetch<unknown>(url, { ...options, redirect: 'error' })
     );
   } catch (error) {
