@@ -12,25 +12,27 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
-    "@nuxt/ui": "^3.0.0",
-    "nuxt": "^4.0.0",
-    "pinia": "^2.2.0",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0",
-    "zod": "^3.24.0"
+    "@nuxt/ui": "4.12.0",
+    "nuxt": "4.6.4",
+    "pinia": "4.1.0",
+    "vue": "3.5.44",
+    "vue-router": "4.6.4",
+    "zod": "4.6.7"
   },
   "devDependencies": {
-    "@nuxt/eslint": "^1.17.0",
-    "@playwright/test": "^1.49.0",
-    "eslint": "^10.14.0",
-    "prettier": "^3.4.0",
-    "typescript": "^5.7.0",
-    "vitest": "^2.1.0",
-    "vue-tsc": "^2.1.0"
+    "@nuxt/eslint": "1.17.0",
+    "@playwright/test": "1.64.1",
+    "eslint": "10.14.0",
+    "prettier": "3.9.10",
+    "typescript": "5.6.3",
+    "vitest": "5.1.0",
+    "@vitest/coverage-v8": "5.1.0",
+    "vue-tsc": "3.3.14"
   }
 }

@@ -12,5 +12,13 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     typeCheck: true
+  },
+  hooks: {
+    'prepare:types'(options) {
+      const compilerOptions = options?.tsConfig?.compilerOptions
+      if (compilerOptions && 'libReplacement' in compilerOptions) {
+        delete compilerOptions.libReplacement
+      }
+    }
   }
 });
