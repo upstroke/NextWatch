@@ -1,0 +1,23 @@
+import { fetchWeeklyTrending, TmdbSpikeError } from '../../utils/tmdb';
+
+export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 'no-store');
+  const config = useRuntimeConfig(event);
+
+  try {
+    return await fetchWeeklyTrending(config.tmdb, (url, options) =>
+      $fetch<unknown>(url, { ...options, redirect: 'error' })
+    );
+  } catch (error) {
+    const configurationError =
+      error instanceof TmdbSpikeError &&
+      (error.code === 'MISSING_TOKEN' || error.code === 'INVALID_BASE_URL');
+
+    throw createError({
+      statusCode: configurationError ? 503 : 502,
+      statusMessage: configurationError
+        ? 'TMDb configuration unavailable'
+        : 'TMDb request or response invalid'
+    });
+  }
+});
