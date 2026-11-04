@@ -1,29 +1,18 @@
 import type { TmdbPagedResponse } from '../../../src/lib/schemas/tmdb';
-import { fetchWeeklyTrending, TmdbSpikeError } from '../../utils/tmdb';
+import { createTmdbHttpClient } from '../../services/tmdb/http';
+import { createTrendingService } from '../../services/tmdb/trending';
+import { toTmdbHttpError } from '../../services/tmdb/errors';
 
 export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {
   setResponseHeader(event, 'Cache-Control', 'no-store');
   const config = useRuntimeConfig(event);
+  const http = createTmdbHttpClient(config.tmdb, (url, options): Promise<unknown> =>
+    $fetch<unknown>(url, { ...options, redirect: 'error' })
+  );
 
   try {
-    return await fetchWeeklyTrending(config.tmdb, (url, options): Promise<unknown> =>
-        $fetch<unknown>(url, { ...options, redirect: 'error' })
-    );
+    return await createTrendingService(http).getWeeklyTrending();
   } catch (error) {
-    console.error(
-        '[TMDb spike]',
-        error instanceof TmdbSpikeError ? error.code : 'UNEXPECTED_ERROR'
-    );
-
-    const configurationError =
-        error instanceof TmdbSpikeError &&
-        (error.code === 'MISSING_TOKEN' || error.code === 'INVALID_BASE_URL');
-
-    throw createError({
-      statusCode: configurationError ? 503 : 502,
-      statusMessage: configurationError
-          ? 'TMDb configuration unavailable'
-          : 'TMDb request or response invalid'
-    });
+    throw createError(toTmdbHttpError(error));
   }
 });
