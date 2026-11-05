@@ -8,6 +8,7 @@ const config = {
 };
 
 describe('TMDb trending connection spike', () => {
+  // Statement coverage: requests weekly trends with server-side authorization and bounded execution
   it('requests weekly trends with server-side authorization and bounded execution', async () => {
     const request = vi.fn().mockResolvedValue(weeklyTrendingFixture);
     const result = await fetchWeeklyTrending(config, request);
@@ -37,6 +38,7 @@ describe('TMDb trending connection spike', () => {
     expect(JSON.stringify(result)).not.toContain(config.apiReadAccessToken);
   });
 
+  // Branch coverage: rejects a missing token without contacting TMDb
   it('rejects a missing token without contacting TMDb', async () => {
     const request = vi.fn();
     await expect(
@@ -45,6 +47,7 @@ describe('TMDb trending connection spike', () => {
     expect(request).not.toHaveBeenCalled();
   });
 
+  // Branch coverage: rejects an unexpected host before sending credentials
   it('rejects an unexpected host before sending credentials', async () => {
     const request = vi.fn();
     await expect(
@@ -53,6 +56,7 @@ describe('TMDb trending connection spike', () => {
     expect(request).not.toHaveBeenCalled();
   });
 
+  // Branch coverage: sanitizes upstream errors without retrying
   it('sanitizes upstream errors without retrying', async () => {
     const request = vi.fn().mockRejectedValue(new Error(config.apiReadAccessToken));
     await expect(fetchWeeklyTrending(config, request)).rejects.toEqual(
@@ -61,6 +65,7 @@ describe('TMDb trending connection spike', () => {
     expect(request).toHaveBeenCalledTimes(1);
   });
 
+  // Branch coverage: rejects invalid response data
   it('rejects invalid response data', async () => {
     const request = vi.fn().mockResolvedValue({ results: [{ id: 'invalid' }] });
     await expect(fetchWeeklyTrending(config, request)).rejects.toMatchObject({
@@ -68,6 +73,7 @@ describe('TMDb trending connection spike', () => {
     });
   });
 
+  // Branch coverage: rejects unsupported media types
   it('rejects unsupported media types', async () => {
     const request = vi.fn().mockResolvedValue({
       ...weeklyTrendingFixture,
@@ -78,6 +84,7 @@ describe('TMDb trending connection spike', () => {
     });
   });
 
+  // Branch coverage: preserves a valid empty response
   it('preserves a valid empty response', async () => {
     const request = vi.fn().mockResolvedValue({
       page: 1,
