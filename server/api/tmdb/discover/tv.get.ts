@@ -1,9 +1,10 @@
-import type { TmdbPagedResponse } from '../../../../src/lib/schemas/tmdb';
-import { DiscoverFiltersSchema } from '../../../../src/lib/schemas/discover';
-import { DiscoverQuerySchema } from '../../../../src/lib/schemas/discover-query';
-import { createTmdbHttpClient } from '../../../services/tmdb/http';
-import { createDiscoverService } from '../../../services/tmdb/discover';
-import { TmdbError, sendTmdbError } from '../../../services/tmdb/errors';
+import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
+import { DiscoverFiltersSchema } from '@lib/schemas/discover';
+import { DiscoverQuerySchema } from '@lib/schemas/discover-query';
+import { createTmdbHttpClient } from '@server/services/tmdb/http';
+import { createDiscoverService } from '@server/services/tmdb/discover';
+import { TmdbError } from '@server/services/tmdb/errors';
+import { sendTmdbError } from '@server/utils/tmdb-errors';
 
 export default defineEventHandler(
   async (event): Promise<TmdbPagedResponse | { statusCode: number; statusMessage: string }> => {
