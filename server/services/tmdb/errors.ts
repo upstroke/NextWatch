@@ -1,9 +1,5 @@
 export type TmdbErrorCode =
-  | 'MISSING_TOKEN'
-  | 'INVALID_BASE_URL'
-  | 'INVALID_FILTER'
-  | 'UPSTREAM_FAILED'
-  | 'INVALID_RESPONSE';
+  'MISSING_TOKEN' | 'INVALID_BASE_URL' | 'INVALID_FILTER' | 'UPSTREAM_FAILED' | 'INVALID_RESPONSE';
 
 export class TmdbError extends Error {
   constructor(public readonly code: TmdbErrorCode) {

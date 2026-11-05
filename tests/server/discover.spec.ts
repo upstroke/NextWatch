@@ -2,11 +2,14 @@ import { describe, expect, it, vi } from 'vitest';
 import { DiscoverFiltersSchema } from '../../src/lib/schemas/discover';
 import {
   TmdbDiscoverMovieResponseSchema,
-  TmdbDiscoverTvResponseSchema
+  TmdbDiscoverTvResponseSchema,
 } from '../../src/lib/schemas/tmdb-discover';
 import { buildDiscoverParams } from '../../server/services/tmdb/discover-params';
 import { createDiscoverService } from '../../server/services/tmdb/discover';
-import { mapMovieDiscoverResponse, mapTvDiscoverResponse } from '../../server/services/tmdb/discover-mappers';
+import {
+  mapMovieDiscoverResponse,
+  mapTvDiscoverResponse,
+} from '../../server/services/tmdb/discover-mappers';
 import { TmdbError } from '../../server/services/tmdb/errors';
 
 const baseFilters = DiscoverFiltersSchema.parse({
@@ -14,7 +17,7 @@ const baseFilters = DiscoverFiltersSchema.parse({
   minRating: 7,
   yearFrom: 2020,
   yearTo: 2024,
-  sortBy: 'vote_average.desc'
+  sortBy: 'vote_average.desc',
 });
 
 const movieRaw = {
@@ -29,9 +32,9 @@ const movieRaw = {
       backdrop_path: '/movie-backdrop.jpg',
       vote_average: 7.5,
       title: 'Synthetic Movie',
-      release_date: '2024-05-01'
-    }
-  ]
+      release_date: '2024-05-01',
+    },
+  ],
 };
 
 const tvRaw = {
@@ -46,9 +49,9 @@ const tvRaw = {
       backdrop_path: null,
       vote_average: 8.1,
       name: 'Synthetic Series',
-      first_air_date: '2024-06-01'
-    }
-  ]
+      first_air_date: '2024-06-01',
+    },
+  ],
 };
 
 describe('Discover filter schema', () => {
@@ -87,7 +90,7 @@ describe('Discover parameter mapping', () => {
       'vote_average.gte': '7',
       'primary_release_date.gte': '2020-01-01',
       'primary_release_date.lte': '2024-12-31',
-      sort_by: 'vote_average.desc'
+      sort_by: 'vote_average.desc',
     });
   });
 
@@ -97,7 +100,7 @@ describe('Discover parameter mapping', () => {
       'vote_average.gte': '7',
       'first_air_date.gte': '2020-01-01',
       'first_air_date.lte': '2024-12-31',
-      sort_by: 'vote_average.desc'
+      sort_by: 'vote_average.desc',
     });
   });
 
@@ -125,9 +128,9 @@ describe('Discover response schemas and mappers', () => {
           backdropPath: '/movie-backdrop.jpg',
           voteAverage: 7.5,
           title: 'Synthetic Movie',
-          releaseDate: '2024-05-01'
-        }
-      ]
+          releaseDate: '2024-05-01',
+        },
+      ],
     });
   });
 
@@ -143,18 +146,18 @@ describe('Discover response schemas and mappers', () => {
       backdropPath: null,
       voteAverage: 8.1,
       name: 'Synthetic Series',
-      firstAirDate: '2024-06-01'
+      firstAirDate: '2024-06-01',
     });
   });
 
   it('accepts missing optional date fields', () => {
     const movie = TmdbDiscoverMovieResponseSchema.parse({
       ...movieRaw,
-      results: [{ ...movieRaw.results[0], release_date: undefined }]
+      results: [{ ...movieRaw.results[0], release_date: undefined }],
     });
     const tv = TmdbDiscoverTvResponseSchema.parse({
       ...tvRaw,
-      results: [{ ...tvRaw.results[0], first_air_date: undefined }]
+      results: [{ ...tvRaw.results[0], first_air_date: undefined }],
     });
 
     expect(movie.results[0].release_date).toBeUndefined();
@@ -169,7 +172,7 @@ describe('Discover response schemas and mappers', () => {
   it('rejects a Movie response with a missing ID', () => {
     const invalid = {
       ...movieRaw,
-      results: [{ ...movieRaw.results[0], id: undefined }]
+      results: [{ ...movieRaw.results[0], id: undefined }],
     };
     expect(() => TmdbDiscoverMovieResponseSchema.parse(invalid)).toThrow();
   });
@@ -185,7 +188,10 @@ describe('Discover service', () => {
     const service = createDiscoverService(http);
     const result = await service.discoverMovies(baseFilters);
 
-    expect(http.get).toHaveBeenCalledWith('/discover/movie', buildDiscoverParams('movie', baseFilters));
+    expect(http.get).toHaveBeenCalledWith(
+      '/discover/movie',
+      buildDiscoverParams('movie', baseFilters),
+    );
     expect(result.results[0]).toMatchObject({ id: 101, mediaType: 'movie' });
   });
 
@@ -201,14 +207,14 @@ describe('Discover service', () => {
   it('rejects malformed Movie data as INVALID_RESPONSE', async () => {
     const http = { get: vi.fn().mockResolvedValue({ results: [] }) };
     await expect(createDiscoverService(http).discoverMovies(baseFilters)).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE'
+      code: 'INVALID_RESPONSE',
     });
   });
 
   it('rejects malformed TV data as INVALID_RESPONSE', async () => {
     const http = { get: vi.fn().mockResolvedValue({ results: [] }) };
     await expect(createDiscoverService(http).discoverTv(baseFilters)).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE'
+      code: 'INVALID_RESPONSE',
     });
   });
 

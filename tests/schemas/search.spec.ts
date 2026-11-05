@@ -9,7 +9,7 @@ describe('SearchFiltersSchema', () => {
       mediaType: 'all',
       keywordIds: [],
       genreIds: [],
-      sortBy: 'popularity.desc'
+      sortBy: 'popularity.desc',
     });
   });
 
@@ -19,7 +19,7 @@ describe('SearchFiltersSchema', () => {
       genreIds: [28],
       minRating: 7,
       minYear: 2000,
-      maxYear: 2026
+      maxYear: 2026,
     });
 
     expect(result.mediaType).toBe('movie');
@@ -33,8 +33,8 @@ describe('SearchFiltersSchema', () => {
   it('rejects too many genres', () => {
     expect(() =>
       SearchFiltersSchema.parse({
-        genreIds: [1, 2, 3, 4]
-      })
+        genreIds: [1, 2, 3, 4],
+      }),
     ).toThrow();
   });
 

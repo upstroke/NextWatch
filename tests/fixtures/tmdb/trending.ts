@@ -11,7 +11,7 @@ export const weeklyTrendingFixture = {
       poster_path: null,
       backdrop_path: '/synthetic-film.jpg',
       vote_average: 7.5,
-      release_date: '2026-01-01'
+      release_date: '2026-01-01',
     },
     {
       id: 202,
@@ -21,7 +21,7 @@ export const weeklyTrendingFixture = {
       poster_path: null,
       backdrop_path: null,
       vote_average: 8,
-      first_air_date: '2026-02-01'
-    }
-  ]
+      first_air_date: '2026-02-01',
+    },
+  ],
 };

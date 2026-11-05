@@ -28,7 +28,7 @@ Set the Vitest coverage threshold:
 
 ```ts
 thresholds: {
-  statements: 80
+  statements: 80;
 }
 ```
 

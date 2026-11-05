@@ -23,10 +23,10 @@ function toYearEnd(year: number) {
 /** Pure mapping from validated application filters to TMDb Discover query parameters. */
 export function buildDiscoverParams(
   mediaType: DiscoverMediaType,
-  filters: DiscoverFilters
+  filters: DiscoverFilters,
 ): DiscoverQueryParams {
   const params: DiscoverQueryParams = {
-    sort_by: filters.sortBy
+    sort_by: filters.sortBy,
   };
 
   if (filters.genreIds.length > 0) {

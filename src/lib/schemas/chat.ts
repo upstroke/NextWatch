@@ -7,7 +7,7 @@ export const FilterOperationSchema = z.enum(['set', 'add', 'remove', 'replace'])
 export const FilterChangeSchema = z.object({
   field: z.string().min(1),
   operation: FilterOperationSchema,
-  value: z.unknown()
+  value: z.unknown(),
 });
 
 export const ChatIntentSchema = z
@@ -18,15 +18,15 @@ export const ChatIntentSchema = z
     clarification: z
       .object({
         questionKey: z.string().min(1),
-        options: z.array(z.string().min(1)).default([])
+        options: z.array(z.string().min(1)).default([]),
       })
       .optional(),
     evidence: z
       .object({
         messageId: z.string().min(1),
-        excerpt: z.string().min(1)
+        excerpt: z.string().min(1),
       })
-      .optional()
+      .optional(),
   })
   .strict();
 

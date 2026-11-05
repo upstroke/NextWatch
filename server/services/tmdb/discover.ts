@@ -2,7 +2,7 @@ import type { DiscoverFilters } from '../../../src/lib/schemas/discover';
 import type { TmdbPagedResponse } from '../../../src/lib/schemas/tmdb';
 import {
   TmdbDiscoverMovieResponseSchema,
-  TmdbDiscoverTvResponseSchema
+  TmdbDiscoverTvResponseSchema,
 } from '../../../src/lib/schemas/tmdb-discover';
 import type { TmdbHttpClient } from './http';
 import { TmdbError } from './errors';
@@ -29,6 +29,6 @@ export function createDiscoverService(http: TmdbHttpClient) {
       } catch {
         throw new TmdbError('INVALID_RESPONSE');
       }
-    }
+    },
   };
 }

@@ -12,7 +12,7 @@ export const SearchFiltersSchema = z
     minRating: z.number().min(0).max(10).optional(),
     minYear: z.number().int().min(1900).max(2100).optional(),
     maxYear: z.number().int().min(1900).max(2100).optional(),
-    sortBy: SearchSortSchema.default('popularity.desc')
+    sortBy: SearchSortSchema.default('popularity.desc'),
   })
   .strict();
 

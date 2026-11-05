@@ -7,7 +7,7 @@ export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {
   setResponseHeader(event, 'Cache-Control', 'no-store');
   const config = useRuntimeConfig(event);
   const http = createTmdbHttpClient(config.tmdb, (url, options): Promise<unknown> =>
-    $fetch<unknown>(url, { ...options, redirect: 'error' })
+    $fetch<unknown>(url, { ...options, redirect: 'error' }),
   );
 
   try {

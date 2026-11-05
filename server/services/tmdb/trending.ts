@@ -13,6 +13,6 @@ export function createTrendingService(http: TmdbHttpClient) {
       } catch {
         throw new TmdbError('INVALID_RESPONSE');
       }
-    }
+    },
   };
 }

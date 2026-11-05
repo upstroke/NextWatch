@@ -6,19 +6,19 @@ export default defineNuxtConfig({
   runtimeConfig: {
     tmdb: {
       apiReadAccessToken: '',
-      baseUrl: 'https://api.themoviedb.org/3'
-    }
+      baseUrl: 'https://api.themoviedb.org/3',
+    },
   },
   typescript: {
     strict: true,
-    typeCheck: true
+    typeCheck: true,
   },
   hooks: {
     'prepare:types'(options) {
-      const compilerOptions = options?.tsConfig?.compilerOptions
+      const compilerOptions = options?.tsConfig?.compilerOptions;
       if (compilerOptions && 'libReplacement' in compilerOptions) {
-        delete compilerOptions.libReplacement
+        delete compilerOptions.libReplacement;
       }
-    }
-  }
+    },
+  },
 });

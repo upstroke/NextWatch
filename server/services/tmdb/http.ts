@@ -7,7 +7,7 @@ export type TmdbRequest = (
     query: Record<string, string>;
     timeout: number;
     retry: false;
-  }
+  },
 ) => Promise<unknown>;
 
 export type TmdbConfig = { apiReadAccessToken: string; baseUrl: string };
@@ -29,7 +29,13 @@ function assertDiscoverPath(path: string) {
     return code <= 0x1f || code === 0x7f;
   });
 
-  if (!path.startsWith('/') || path.includes('?') || path.includes('#') || /\s/.test(path) || hasControlCharacter) {
+  if (
+    !path.startsWith('/') ||
+    path.includes('?') ||
+    path.includes('#') ||
+    /\s/.test(path) ||
+    hasControlCharacter
+  ) {
     throw new TmdbError('INVALID_BASE_URL');
   }
 }
@@ -45,11 +51,11 @@ export function createTmdbHttpClient(config: TmdbConfig, request: TmdbRequest) {
         return await request(`${TMDB_BASE_URL}${path}`, {
           headers: {
             Authorization: `Bearer ${config.apiReadAccessToken.trim()}`,
-            Accept: 'application/json'
+            Accept: 'application/json',
           },
           query,
           timeout: TMDB_TIMEOUT_MS,
-          retry: false
+          retry: false,
         });
       } catch {
         throw new TmdbError('UPSTREAM_FAILED');
@@ -58,7 +64,7 @@ export function createTmdbHttpClient(config: TmdbConfig, request: TmdbRequest) {
 
     async getWeeklyTrending(): Promise<unknown> {
       return this.get('/trending/all/week', { language: 'de-DE' });
-    }
+    },
   };
 }
 

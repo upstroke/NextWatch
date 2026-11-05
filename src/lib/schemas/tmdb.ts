@@ -10,14 +10,14 @@ export const TmdbMediaSchema = z.object({
   backdropPath: z.string().nullable().optional(),
   voteAverage: z.number().optional(),
   releaseDate: z.string().optional(),
-  firstAirDate: z.string().optional()
+  firstAirDate: z.string().optional(),
 });
 
 export const TmdbPagedResponseSchema = z.object({
   page: z.number().int().positive(),
   results: z.array(TmdbMediaSchema),
   totalPages: z.number().int().nonnegative(),
-  totalResults: z.number().int().nonnegative()
+  totalResults: z.number().int().nonnegative(),
 });
 
 export type TmdbMedia = z.infer<typeof TmdbMediaSchema>;

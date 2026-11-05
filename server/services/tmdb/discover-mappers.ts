@@ -1,7 +1,7 @@
 import type { TmdbPagedResponse } from '../../../src/lib/schemas/tmdb';
 import type {
   TmdbDiscoverMovieResponse,
-  TmdbDiscoverTvResponse
+  TmdbDiscoverTvResponse,
 } from '../../../src/lib/schemas/tmdb-discover';
 
 export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPagedResponse {
@@ -17,8 +17,8 @@ export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPa
       backdropPath: item.backdrop_path,
       voteAverage: item.vote_average,
       title: item.title,
-      releaseDate: item.release_date
-    }))
+      releaseDate: item.release_date,
+    })),
   };
 }
 
@@ -35,7 +35,7 @@ export function mapTvDiscoverResponse(raw: TmdbDiscoverTvResponse): TmdbPagedRes
       backdropPath: item.backdrop_path,
       voteAverage: item.vote_average,
       name: item.name,
-      firstAirDate: item.first_air_date
-    }))
+      firstAirDate: item.first_air_date,
+    })),
   };
 }

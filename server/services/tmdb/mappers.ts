@@ -16,7 +16,7 @@ export function mapTrendingResponse(raw: TmdbTrendingResponse) {
       voteAverage: item.vote_average,
       ...(item.media_type === 'movie'
         ? { title: item.title, releaseDate: item.release_date }
-        : { name: item.name, firstAirDate: item.first_air_date })
-    }))
+        : { name: item.name, firstAirDate: item.first_air_date }),
+    })),
   });
 }

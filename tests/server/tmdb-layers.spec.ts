@@ -8,14 +8,16 @@ import { weeklyTrendingFixture } from '../fixtures/tmdb/trending';
 
 const config = {
   apiReadAccessToken: 'synthetic-test-token',
-  baseUrl: 'https://api.themoviedb.org/3'
+  baseUrl: 'https://api.themoviedb.org/3',
 };
 
 describe('TMDb layer boundaries', () => {
   it('leaves schema validation to the service rather than HTTP transport', async () => {
     const malformed = { arbitrary: true };
     const request = vi.fn().mockResolvedValue(malformed);
-    await expect(createTmdbHttpClient(config, request).getWeeklyTrending()).resolves.toBe(malformed);
+    await expect(createTmdbHttpClient(config, request).getWeeklyTrending()).resolves.toBe(
+      malformed,
+    );
   });
 
   it('maps validated movie and TV fields without mutating input', () => {
@@ -39,7 +41,7 @@ describe('TMDb layer boundaries', () => {
   it('rejects malformed data instead of representing it as no results', async () => {
     const http = { getWeeklyTrending: vi.fn().mockResolvedValue({ results: [] }) };
     await expect(createTrendingService(http).getWeeklyTrending()).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE'
+      code: 'INVALID_RESPONSE',
     });
   });
 
@@ -53,22 +55,25 @@ describe('TMDb layer boundaries', () => {
     'maps configuration error %s to 503',
     (code) => {
       expect(toTmdbHttpError(new TmdbError(code))).toEqual({
-        statusCode: 503, statusMessage: 'TMDb configuration unavailable'
+        statusCode: 503,
+        statusMessage: 'TMDb configuration unavailable',
       });
-    }
+    },
   );
 
   it.each(['UPSTREAM_FAILED', 'INVALID_RESPONSE'] as const)(
     'maps service error %s to a sanitized 502',
     (code) => {
       expect(toTmdbHttpError(new TmdbError(code))).toEqual({
-        statusCode: 502, statusMessage: 'TMDb request or response invalid'
+        statusCode: 502,
+        statusMessage: 'TMDb request or response invalid',
       });
-    }
+    },
   );
 
   it('does not expose arbitrary error messages', () => {
-    expect(JSON.stringify(toTmdbHttpError(new Error('synthetic-secret'))))
-      .not.toContain('synthetic-secret');
+    expect(JSON.stringify(toTmdbHttpError(new Error('synthetic-secret')))).not.toContain(
+      'synthetic-secret',
+    );
   });
 });
