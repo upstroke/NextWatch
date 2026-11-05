@@ -12,6 +12,7 @@ const config = {
 };
 
 describe('TMDb layer boundaries', () => {
+  // Branch coverage: leaves schema validation to the service rather than HTTP transport
   it('leaves schema validation to the service rather than HTTP transport', async () => {
     const malformed = { arbitrary: true };
     const request = vi.fn().mockResolvedValue(malformed);
@@ -20,6 +21,7 @@ describe('TMDb layer boundaries', () => {
     );
   });
 
+  // Statement coverage: maps validated movie and TV fields without mutating input
   it('maps validated movie and TV fields without mutating input', () => {
     const raw = TmdbTrendingResponseSchema.parse(weeklyTrendingFixture);
     const before = structuredClone(raw);
@@ -31,6 +33,7 @@ describe('TMDb layer boundaries', () => {
     expect(result.totalPages).toBe(raw.total_pages);
   });
 
+  // Statement coverage: orchestrates validation and mapping with an injected client
   it('orchestrates validation and mapping with an injected client', async () => {
     const http = { getWeeklyTrending: vi.fn().mockResolvedValue(weeklyTrendingFixture) };
     const service = createTrendingService(http);
@@ -38,6 +41,7 @@ describe('TMDb layer boundaries', () => {
     expect(http.getWeeklyTrending).toHaveBeenCalledTimes(1);
   });
 
+  // Branch coverage: rejects malformed data instead of representing it as no results
   it('rejects malformed data instead of representing it as no results', async () => {
     const http = { getWeeklyTrending: vi.fn().mockResolvedValue({ results: [] }) };
     await expect(createTrendingService(http).getWeeklyTrending()).rejects.toMatchObject({
@@ -45,12 +49,14 @@ describe('TMDb layer boundaries', () => {
     });
   });
 
+  // Branch coverage: preserves transport errors rather than reclassifying them as schema failures
   it('preserves transport errors rather than reclassifying them as schema failures', async () => {
     const failure = new TmdbError('UPSTREAM_FAILED');
     const http = { getWeeklyTrending: vi.fn().mockRejectedValue(failure) };
     await expect(createTrendingService(http).getWeeklyTrending()).rejects.toBe(failure);
   });
 
+  // Branch coverage: maps configuration error %s to 503
   it.each(['MISSING_TOKEN', 'INVALID_BASE_URL'] as const)(
     'maps configuration error %s to 503',
     (code) => {
@@ -61,6 +67,7 @@ describe('TMDb layer boundaries', () => {
     },
   );
 
+  // Statement coverage: maps service error %s to a sanitized 502
   it.each(['UPSTREAM_FAILED', 'INVALID_RESPONSE'] as const)(
     'maps service error %s to a sanitized 502',
     (code) => {
@@ -71,6 +78,7 @@ describe('TMDb layer boundaries', () => {
     },
   );
 
+  // Branch coverage: does not expose arbitrary error messages
   it('does not expose arbitrary error messages', () => {
     expect(JSON.stringify(toTmdbHttpError(new Error('synthetic-secret')))).not.toContain(
       'synthetic-secret',
