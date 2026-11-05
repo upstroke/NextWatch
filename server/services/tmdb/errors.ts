@@ -1,5 +1,9 @@
 export type TmdbErrorCode =
-  'MISSING_TOKEN' | 'INVALID_BASE_URL' | 'INVALID_FILTER' | 'UPSTREAM_FAILED' | 'INVALID_RESPONSE';
+  | 'MISSING_TOKEN'
+  | 'INVALID_BASE_URL'
+  | 'INVALID_FILTER'
+  | 'UPSTREAM_FAILED'
+  | 'INVALID_RESPONSE';
 
 export class TmdbError extends Error {
   constructor(public readonly code: TmdbErrorCode) {
@@ -20,4 +24,11 @@ export function toTmdbHttpError(error: unknown) {
   }
 
   return { statusCode: 502, statusMessage: 'TMDb request or response invalid' };
+}
+
+/** Return a controlled JSON error without exposing H3 stack traces or internal details. */
+export function sendTmdbError(event: Parameters<typeof setResponseStatus>[0], error: unknown) {
+  const httpError = toTmdbHttpError(error);
+  setResponseStatus(event, httpError.statusCode);
+  return httpError;
 }
