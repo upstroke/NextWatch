@@ -55,35 +55,42 @@ const tvRaw = {
 };
 
 describe('Discover filter schema', () => {
+  // Branch coverage: accepts a valid filter set and applies defaults
   it('accepts a valid filter set and applies defaults', () => {
     const filters = DiscoverFiltersSchema.parse({ genreIds: [28] });
     expect(filters).toEqual({ genreIds: [28], sortBy: 'popularity.desc' });
   });
 
+  // Branch coverage: rejects more than three genres
   it('rejects more than three genres', () => {
     expect(() => DiscoverFiltersSchema.parse({ genreIds: [1, 2, 3, 4] })).toThrow();
   });
 
+  // Branch coverage: rejects ratings outside the supported range
   it('rejects ratings outside the supported range', () => {
     expect(() => DiscoverFiltersSchema.parse({ minRating: 10.1 })).toThrow();
     expect(() => DiscoverFiltersSchema.parse({ minRating: -0.1 })).toThrow();
   });
 
+  // Branch coverage: rejects a reversed year range
   it('rejects a reversed year range', () => {
     expect(() => DiscoverFiltersSchema.parse({ yearFrom: 2024, yearTo: 2020 })).toThrow();
   });
 
+  // Branch coverage: rejects years outside the supported range
   it('rejects years outside the supported range', () => {
     expect(() => DiscoverFiltersSchema.parse({ yearFrom: 1899 })).toThrow();
     expect(() => DiscoverFiltersSchema.parse({ yearTo: 2101 })).toThrow();
   });
 
+  // Branch coverage: rejects unknown sort options
   it('rejects unknown sort options', () => {
     expect(() => DiscoverFiltersSchema.parse({ sortBy: 'unknown' })).toThrow();
   });
 });
 
 describe('Discover parameter mapping', () => {
+  // Statement coverage: maps Movie filters to primary release date parameters
   it('maps Movie filters to primary release date parameters', () => {
     expect(buildDiscoverParams('movie', baseFilters)).toEqual({
       with_genres: '28,878',
@@ -94,6 +101,7 @@ describe('Discover parameter mapping', () => {
     });
   });
 
+  // Statement coverage: maps TV filters to first air date parameters
   it('maps TV filters to first air date parameters', () => {
     expect(buildDiscoverParams('tv', baseFilters)).toEqual({
       with_genres: '28,878',
@@ -104,6 +112,7 @@ describe('Discover parameter mapping', () => {
     });
   });
 
+  // Branch coverage: omits absent optional filters
   it('omits absent optional filters', () => {
     const filters = DiscoverFiltersSchema.parse({ genreIds: [] });
     expect(buildDiscoverParams('movie', filters)).toEqual({ sort_by: 'popularity.desc' });
@@ -111,6 +120,7 @@ describe('Discover parameter mapping', () => {
 });
 
 describe('Discover response mappers', () => {
+  // Statement coverage: maps a Movie response
   it('maps a Movie response', () => {
     const mapped = mapMovieDiscoverResponse(TmdbDiscoverMovieResponseSchema.parse(movieRaw));
 
@@ -133,6 +143,7 @@ describe('Discover response mappers', () => {
     });
   });
 
+  // Statement coverage: maps a TV response
   it('maps a TV response', () => {
     const mapped = mapTvDiscoverResponse(TmdbDiscoverTvResponseSchema.parse(tvRaw));
 
@@ -148,6 +159,7 @@ describe('Discover response mappers', () => {
     });
   });
 
+  // Branch coverage: treats an empty result page as valid
   it('treats an empty result page as valid', () => {
     const raw = TmdbDiscoverMovieResponseSchema.parse({ ...movieRaw, results: [] });
     expect(mapMovieDiscoverResponse(raw).results).toEqual([]);
@@ -155,6 +167,7 @@ describe('Discover response mappers', () => {
 });
 
 describe('Discover service', () => {
+  // Statement coverage: requests Movie Discover and returns normalized data
   it('requests Movie Discover and returns normalized data', async () => {
     const http = { get: vi.fn().mockResolvedValue(movieRaw) };
     const result = await createDiscoverService(http).discoverMovies(baseFilters);
@@ -163,6 +176,7 @@ describe('Discover service', () => {
     expect(result.results[0]).toMatchObject({ id: 101, mediaType: 'movie' });
   });
 
+  // Statement coverage: requests TV Discover and returns normalized data
   it('requests TV Discover and returns normalized data', async () => {
     const http = { get: vi.fn().mockResolvedValue(tvRaw) };
     const result = await createDiscoverService(http).discoverTv(baseFilters);
@@ -171,6 +185,7 @@ describe('Discover service', () => {
     expect(result.results[0]).toMatchObject({ id: 201, mediaType: 'tv' });
   });
 
+  // Branch coverage: rejects malformed Movie data as INVALID_RESPONSE
   it('rejects malformed Movie data as INVALID_RESPONSE', async () => {
     const http = { get: vi.fn().mockResolvedValue({ results: [] }) };
     await expect(createDiscoverService(http).discoverMovies(baseFilters)).rejects.toMatchObject({
@@ -178,6 +193,7 @@ describe('Discover service', () => {
     });
   });
 
+  // Branch coverage: rejects malformed TV data as INVALID_RESPONSE
   it('rejects malformed TV data as INVALID_RESPONSE', async () => {
     const http = { get: vi.fn().mockResolvedValue({ results: [] }) };
     await expect(createDiscoverService(http).discoverTv(baseFilters)).rejects.toMatchObject({
@@ -185,6 +201,7 @@ describe('Discover service', () => {
     });
   });
 
+  // Branch coverage: preserves transport errors instead of reclassifying them
   it('preserves transport errors instead of reclassifying them', async () => {
     const failure = new TmdbError('UPSTREAM_FAILED');
     const http = { get: vi.fn().mockRejectedValue(failure) };
