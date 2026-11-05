@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { TmdbRuntimeConfig } from '@lib/schemas/runtime-config';
+import { TmdbError } from './errors';
 
 export type TmdbRequest = (
   url: string,
