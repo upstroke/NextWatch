@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SearchFiltersSchema } from '../../src/lib/schemas/search';
+import { SearchFiltersSchema } from '../../../src/lib/schemas/search';
 
 describe('SearchFiltersSchema', () => {
   // Branch coverage: applies documented defaults

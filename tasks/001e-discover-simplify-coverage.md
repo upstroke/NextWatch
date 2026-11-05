@@ -41,7 +41,7 @@ Coverage is a quality signal, not a target for writing implementation-detail tes
 - Update `server/api/tmdb/discover/movie.get.ts` and `server/api/tmdb/discover/tv.get.ts`: validate HTTP query input, then map it clearly to `DiscoverFilters`.
 - Simplify `server/services/tmdb/discover-params.ts`, `discover.ts` and `discover-mappers.ts` only where readability improves; preserve behavior.
 - Update `vitest.config.ts` with focused coverage includes/excludes and the 80 percent statement threshold.
-- Streamline `tests/server/discover.spec.ts`: retain behavior-focused tests and remove duplicated implementation-detail assertions.
+- Streamline `../tests/unit/services/discover.spec.ts`: retain behavior-focused tests and remove duplicated implementation-detail assertions.
 - Keep `tests/http/discover.api.ts` unchanged unless behavior changes.
 
 ## Acceptance criteria
