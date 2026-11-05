@@ -24,7 +24,12 @@ function assertConfiguration(config: TmdbConfig) {
 }
 
 function assertDiscoverPath(path: string) {
-  if (!path.startsWith('/') || /[?#\s\u0000-\u001f]/.test(path)) {
+  const hasControlCharacter = [...path].some((character) => {
+    const code = character.charCodeAt(0);
+    return code <= 0x1f || code === 0x7f;
+  });
+
+  if (!path.startsWith('/') || path.includes('?') || path.includes('#') || /\s/.test(path) || hasControlCharacter) {
     throw new TmdbError('INVALID_BASE_URL');
   }
 }
