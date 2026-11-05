@@ -4,12 +4,28 @@ import type {
   TmdbDiscoverTvResponse,
 } from '../../../src/lib/schemas/tmdb-discover';
 
-export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPagedResponse {
+type PagedFields = Pick<TmdbPagedResponse, 'page' | 'totalPages' | 'totalResults'>;
+
+function toPagedResponse(
+  raw: PagedFields,
+  results: TmdbPagedResponse['results'],
+): TmdbPagedResponse {
   return {
     page: raw.page,
-    totalPages: raw.total_pages,
-    totalResults: raw.total_results,
-    results: raw.results.map((item) => ({
+    totalPages: raw.totalPages,
+    totalResults: raw.totalResults,
+    results,
+  };
+}
+
+export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPagedResponse {
+  return toPagedResponse(
+    {
+      page: raw.page,
+      totalPages: raw.total_pages,
+      totalResults: raw.total_results,
+    },
+    raw.results.map((item) => ({
       id: item.id,
       mediaType: 'movie' as const,
       overview: item.overview,
@@ -19,15 +35,17 @@ export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPa
       title: item.title,
       releaseDate: item.release_date,
     })),
-  };
+  );
 }
 
 export function mapTvDiscoverResponse(raw: TmdbDiscoverTvResponse): TmdbPagedResponse {
-  return {
-    page: raw.page,
-    totalPages: raw.total_pages,
-    totalResults: raw.total_results,
-    results: raw.results.map((item) => ({
+  return toPagedResponse(
+    {
+      page: raw.page,
+      totalPages: raw.total_pages,
+      totalResults: raw.total_results,
+    },
+    raw.results.map((item) => ({
       id: item.id,
       mediaType: 'tv' as const,
       overview: item.overview,
@@ -37,5 +55,5 @@ export function mapTvDiscoverResponse(raw: TmdbDiscoverTvResponse): TmdbPagedRes
       name: item.name,
       firstAirDate: item.first_air_date,
     })),
-  };
+  );
 }
