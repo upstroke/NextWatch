@@ -14,6 +14,12 @@ describe('Discover query schema', () => {
     expect(query.genreIds).toEqual([28]);
   });
 
+  it('accepts genre IDs that are already an array', () => {
+    const query = DiscoverQuerySchema.parse({ genreIds: [28, 878] });
+
+    expect(query.genreIds).toEqual([28, 878]);
+  });
+
   it('converts numeric query strings into numbers', () => {
     const query = DiscoverQuerySchema.parse({
       genreIds: '28,878',
