@@ -1,7 +1,7 @@
-import type { TmdbPagedResponse } from '../../../src/lib/schemas/tmdb';
-import { createTmdbHttpClient } from '../../services/tmdb/http';
-import { createTrendingService } from '../../services/tmdb/trending';
-import { toTmdbHttpError } from '../../services/tmdb/errors';
+import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
+import { createTmdbHttpClient } from '@server/services/tmdb/http';
+import { createTrendingService } from '@server/services/tmdb/trending';
+import { toTmdbHttpError } from '@server/services/tmdb/errors';
 
 export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {
   setResponseHeader(event, 'Cache-Control', 'no-store');
