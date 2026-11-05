@@ -3,6 +3,10 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/eslint'],
   css: ['~/assets/css/main.css'],
+  alias: {
+    '@lib': resolve(__dirname, 'src/lib'),
+    '@server': resolve(__dirname, 'server'),
+  },
   runtimeConfig: {
     tmdb: {
       apiReadAccessToken: '',
