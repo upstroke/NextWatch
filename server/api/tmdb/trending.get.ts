@@ -2,11 +2,12 @@ import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTrendingService } from '@server/services/tmdb/trending';
 import { toTmdbHttpError } from '@server/services/tmdb/errors';
+import { getTmdbConfig } from '@server/utils/tmdb';
 
 export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {
   setResponseHeader(event, 'Cache-Control', 'no-store');
-  const config = useRuntimeConfig(event);
-  const http = createTmdbHttpClient(config.tmdb, (url, options): Promise<unknown> =>
+  const config = getTmdbConfig(event);
+  const http = createTmdbHttpClient(config, (url, options): Promise<unknown> =>
     $fetch<unknown>(url, { ...options, redirect: 'error' }),
   );
 

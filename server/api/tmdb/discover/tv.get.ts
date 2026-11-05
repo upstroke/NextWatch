@@ -5,6 +5,7 @@ import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createDiscoverService } from '@server/services/tmdb/discover';
 import { TmdbError } from '@server/services/tmdb/errors';
 import { sendTmdbError } from '@server/utils/tmdb-errors';
+import { getTmdbConfig } from '@server/utils/tmdb';
 
 export default defineEventHandler(
   async (event): Promise<TmdbPagedResponse | { statusCode: number; statusMessage: string }> => {
@@ -20,8 +21,8 @@ export default defineEventHandler(
       return sendTmdbError(event, new TmdbError('INVALID_FILTER'));
     }
 
-    const config = useRuntimeConfig(event);
-    const http = createTmdbHttpClient(config.tmdb, (url, options): Promise<unknown> =>
+    const config = getTmdbConfig(event);
+    const http = createTmdbHttpClient(config, (url, options): Promise<unknown> =>
       $fetch<unknown>(url, { ...options, redirect: 'error' }),
     );
 
