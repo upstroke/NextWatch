@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { fileURLToPath, URL } from 'node:url';
 
 export default defineNuxtConfig({
