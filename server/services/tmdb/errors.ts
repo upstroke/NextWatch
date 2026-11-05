@@ -1,5 +1,3 @@
-import type { H3Event, EventHandlerRequest } from 'h3';
-
 export type TmdbErrorCode =
   | 'MISSING_TOKEN'
   | 'INVALID_BASE_URL'
@@ -31,11 +29,4 @@ export function toTmdbHttpError(error: unknown) {
   }
 
   return { statusCode: 502, statusMessage: 'TMDb request or response invalid' };
-}
-
-/** Return a controlled JSON error without exposing H3 stack traces or internal details. */
-export function sendTmdbError(event: H3Event<EventHandlerRequest>, error: unknown) {
-  const httpError = toTmdbHttpError(error);
-  event.node.res.statusCode = httpError.statusCode;
-  return httpError;
 }

@@ -1,9 +1,9 @@
-import type { DiscoverFilters } from '../../../src/lib/schemas/discover';
-import type { TmdbPagedResponse } from '../../../src/lib/schemas/tmdb';
+import type { DiscoverFilters } from '@lib/schemas/discover';
+import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
 import {
   TmdbDiscoverMovieResponseSchema,
   TmdbDiscoverTvResponseSchema,
-} from '../../../src/lib/schemas/tmdb-discover';
+} from '@lib/schemas/tmdb-discover';
 import type { TmdbHttpClient } from './http';
 import { TmdbError } from './errors';
 import { buildDiscoverParams, type DiscoverMediaType } from './discover-params';

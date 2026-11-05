@@ -76,7 +76,7 @@ Movie and TV use different date parameters. Do not create one generic media Disc
 - `server/services/tmdb/discover.ts`
 - `server/api/tmdb/discover/movie.get.ts`
 - `server/api/tmdb/discover/tv.get.ts`
-- `tests/server/discover.spec.ts`
+- `../tests/unit/services/discover.spec.ts`
 - `tests/http/discover.api.ts`
 - `specs/architecture/002-tmdb-discover.md`
 - `tasks/001d-tmdb-discover-spike.md`

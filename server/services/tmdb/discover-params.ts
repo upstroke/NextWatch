@@ -1,4 +1,4 @@
-import type { DiscoverFilters } from '../../../src/lib/schemas/discover';
+import type { DiscoverFilters } from '@lib/schemas/discover';
 
 export type DiscoverMediaType = 'movie' | 'tv';
 

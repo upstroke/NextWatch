@@ -1,16 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DiscoverFiltersSchema } from '../../src/lib/schemas/discover';
+import { DiscoverFiltersSchema } from '@lib/schemas/discover';
 import {
   TmdbDiscoverMovieResponseSchema,
   TmdbDiscoverTvResponseSchema,
-} from '../../src/lib/schemas/tmdb-discover';
-import { buildDiscoverParams } from '../../server/services/tmdb/discover-params';
-import { createDiscoverService } from '../../server/services/tmdb/discover';
+} from '@lib/schemas/tmdb-discover';
+import { buildDiscoverParams } from '@server/services/tmdb/discover-params';
+import { createDiscoverService } from '@server/services/tmdb/discover';
 import {
   mapMovieDiscoverResponse,
   mapTvDiscoverResponse,
-} from '../../server/services/tmdb/discover-mappers';
-import { TmdbError } from '../../server/services/tmdb/errors';
+} from '@server/services/tmdb/discover-mappers';
+import { TmdbError } from '@server/services/tmdb/errors';
 
 const baseFilters = DiscoverFiltersSchema.parse({
   genreIds: [28, 878],
