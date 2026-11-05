@@ -18,12 +18,7 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
       include: ['src/lib/**', 'server/**'],
-      exclude: [
-        'server/tsconfig.json',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/node_modules/**',
-      ],
+      exclude: ['server/tsconfig.json', '**/*.d.ts', '**/*.config.*', '**/node_modules/**'],
       thresholds: {
         global: {
           statements: 80,

@@ -33,12 +33,12 @@ Follow these boundaries when adding code:
 
 This separation determines where tests belong:
 
-| Code under test | Test location | Typical test focus |
-|---|---|---|
-| `src/lib/schemas` | `tests/unit/schemas` | Parsing, defaults, coercion, and validation errors |
-| `server/services` | `tests/unit/services` | Service orchestration, mapping, parameters, and errors |
-| `server/utils` | `tests/unit/utils` | Framework-specific helpers and response behavior |
-| `server/api` routes | `tests/integration/tmdb` | Route-to-response flow with a mocked TMDb transport |
+| Code under test     | Test location            | Typical test focus                                     |
+| ------------------- | ------------------------ | ------------------------------------------------------ |
+| `src/lib/schemas`   | `tests/unit/schemas`     | Parsing, defaults, coercion, and validation errors     |
+| `server/services`   | `tests/unit/services`    | Service orchestration, mapping, parameters, and errors |
+| `server/utils`      | `tests/unit/utils`       | Framework-specific helpers and response behavior       |
+| `server/api` routes | `tests/integration/tmdb` | Route-to-response flow with a mocked TMDb transport    |
 
 ## Folder structure
 
