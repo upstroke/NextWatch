@@ -15,7 +15,7 @@ export default defineConfig({
       NUXT_IGNORE_LOCK: '1',
       NUXT_TMDB_API_READ_ACCESS_TOKEN: ' ',
       NUXT_TMDB_BASE_URL: 'https://api.themoviedb.org/3',
-      NUXT_TELEMETRY_DISABLED: '1'
-    }
-  }
+      NUXT_TELEMETRY_DISABLED: '1',
+    },
+  },
 });
