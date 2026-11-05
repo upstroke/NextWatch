@@ -105,7 +105,7 @@ describe('Discover parameter mapping', () => {
   });
 
   it('omits absent optional filters', () => {
-    const filters = DiscoverFiltersSchema.parse({});
+    const filters = DiscoverFiltersSchema.parse({ genreIds: [] });
     expect(buildDiscoverParams('movie', filters)).toEqual({ sort_by: 'popularity.desc' });
   });
 });
