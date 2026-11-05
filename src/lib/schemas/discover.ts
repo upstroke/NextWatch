@@ -2,33 +2,34 @@ import { z } from 'zod';
 
 export const DiscoverSortBySchema = z.enum(['popularity.desc', 'vote_average.desc']);
 
-const genreIdsSchema = z
-  .union([z.array(z.coerce.number().int().positive()), z.coerce.number().int().positive(), z.string()])
-  .transform((value) => {
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'number') return [value];
-    return value
-      .split(',')
-      .map((item) => item.trim())
-      .filter((item) => item.length > 0)
-      .map((item) => Number(item));
-  })
-  .pipe(z.array(z.number().int().positive()).max(3));
+const toUndefinedIfEmpty = (value: unknown) =>
+  value === undefined || value === '' ? undefined : value;
 
-const optionalIntSchema = z
-  .union([z.coerce.number().int(), z.literal('')])
-  .transform((value) => (value === '' ? undefined : value))
-  .pipe(z.number().int().min(1900).max(2100).optional());
+const genreIdsSchema = z.preprocess(
+  (value) => {
+    if (value === undefined || value === '') return [];
+    if (Array.isArray(value)) return value;
+    return String(value).split(',');
+  },
+  z.array(z.coerce.number().int().positive()).max(3)
+);
+
+const optionalRatingSchema = z.preprocess(
+  toUndefinedIfEmpty,
+  z.coerce.number().min(0).max(10).optional()
+);
+
+const optionalYearSchema = z.preprocess(
+  toUndefinedIfEmpty,
+  z.coerce.number().int().min(1900).max(2100).optional()
+);
 
 export const DiscoverFiltersSchema = z
   .object({
-    genreIds: genreIdsSchema.default([]),
-    minRating: z
-      .union([z.coerce.number(), z.literal('')])
-      .transform((value) => (value === '' ? undefined : value))
-      .pipe(z.number().min(0).max(10).optional()),
-    yearFrom: optionalIntSchema,
-    yearTo: optionalIntSchema,
+    genreIds: genreIdsSchema,
+    minRating: optionalRatingSchema,
+    yearFrom: optionalYearSchema,
+    yearTo: optionalYearSchema,
     sortBy: DiscoverSortBySchema.default('popularity.desc')
   })
   .refine(
