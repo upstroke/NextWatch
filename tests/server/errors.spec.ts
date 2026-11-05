@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  TmdbError,
-  sendTmdbError,
-  toTmdbHttpError,
-} from '../../server/services/tmdb/errors';
+import { TmdbError, sendTmdbError, toTmdbHttpError } from '../../server/services/tmdb/errors';
 
 type TmdbErrorEvent = {
   node: {
@@ -74,9 +70,7 @@ describe('TMDb error mapping', () => {
     const event = createEvent();
     const error = new TmdbError('INVALID_QUERY');
 
-    expect(
-      sendTmdbError(event as unknown as Parameters<typeof sendTmdbError>[0], error),
-    ).toEqual({
+    expect(sendTmdbError(event as unknown as Parameters<typeof sendTmdbError>[0], error)).toEqual({
       statusCode: 400,
       statusMessage: 'Invalid Discover query',
     });

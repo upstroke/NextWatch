@@ -88,8 +88,6 @@ describe('Discover query schema', () => {
 
   // Branch coverage: rejects an unknown sort option
   it('rejects an unknown sort option', () => {
-    expect(() =>
-      DiscoverQuerySchema.parse({ genreIds: '28', sortBy: 'unknown' }),
-    ).toThrow();
+    expect(() => DiscoverQuerySchema.parse({ genreIds: '28', sortBy: 'unknown' })).toThrow();
   });
 });

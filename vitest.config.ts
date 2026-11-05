@@ -10,13 +10,13 @@ export default defineConfig({
         'src/lib/schemas/**/*.ts',
         'src/lib/domain/**/*.ts',
         'server/services/**/*.ts',
-        'server/utils/**/*.ts'
+        'server/utils/**/*.ts',
       ],
       exclude: ['src/lib/schemas/index.ts', '**/*.d.ts'],
       thresholds: {
-        statements: 80
+        statements: 80,
       },
-      reporter: ['text', 'html', 'lcov']
-    }
-  }
+      reporter: ['text', 'html', 'lcov'],
+    },
+  },
 });
