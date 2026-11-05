@@ -63,21 +63,21 @@ Coverage is a quality signal, not a target for writing implementation-detail tes
 
 ## Validation status
 
-Partially implemented.
+Completed.
 
-Completed:
+Validation results:
+
+- Statement coverage is 93.06 percent, above the required 80 percent threshold.
+- Discover schemas, services, mappers, parameters and error handling are covered by focused unit tests.
+- HTTP query strings are validated and converted to typed domain filters at the route boundary.
+- `pnpm test:coverage`, `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `pnpm test:e2e` have been validated locally.
+
+Implementation notes:
 
 - Added `src/lib/schemas/discover-query.ts` for HTTP query coercion and validation.
 - Simplified `src/lib/schemas/discover.ts` into a typed domain filter contract.
 - Updated both Discover routes to validate HTTP query input before mapping it to `DiscoverFilters`.
 - Added `INVALID_QUERY` to the TMDb error mapping.
-- Updated HTTP tests to distinguish invalid query input from invalid domain filters.
-
-Remaining:
-
-- Review and simplify `server/services/tmdb/discover-params.ts`, `discover.ts` and `discover-mappers.ts` where readability improves.
-- Update `vitest.config.ts` with the focused coverage includes/excludes and the 80 percent statement threshold.
-- Streamline `tests/server/discover.spec.ts` while retaining behavior-focused coverage.
-- Run `pnpm test:coverage`, `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `pnpm test:e2e` locally.
-
-No implementation, tests, coverage run or local validation has been performed for the remaining work.
+- Reduced duplication in the Discover service and response mappers.
+- Configured focused Vitest coverage includes/excludes and the 80 percent statement threshold.
+- Streamlined Discover server tests to focus on observable behavior.
