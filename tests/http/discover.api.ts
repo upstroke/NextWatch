@@ -9,7 +9,7 @@ test('GET movie discover returns a sanitized 400 for an invalid rating', async (
 
   const body = await response.json();
   expect(body.statusCode).toBe(400);
-  expect(body.statusMessage).toBe('Invalid Discover filters');
+  expect(body.statusMessage).toBe('Invalid Discover query');
 
   const serialized = JSON.stringify(body);
   expect(serialized).not.toContain('Authorization');

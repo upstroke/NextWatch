@@ -1,7 +1,12 @@
 import type { H3Event, EventHandlerRequest } from 'h3';
 
 export type TmdbErrorCode =
-  'MISSING_TOKEN' | 'INVALID_BASE_URL' | 'INVALID_FILTER' | 'UPSTREAM_FAILED' | 'INVALID_RESPONSE';
+  | 'MISSING_TOKEN'
+  | 'INVALID_BASE_URL'
+  | 'INVALID_QUERY'
+  | 'INVALID_FILTER'
+  | 'UPSTREAM_FAILED'
+  | 'INVALID_RESPONSE';
 
 export class TmdbError extends Error {
   constructor(public readonly code: TmdbErrorCode) {
@@ -12,6 +17,10 @@ export class TmdbError extends Error {
 
 export function toTmdbHttpError(error: unknown) {
   const code = error instanceof TmdbError ? error.code : undefined;
+
+  if (code === 'INVALID_QUERY') {
+    return { statusCode: 400, statusMessage: 'Invalid Discover query' };
+  }
 
   if (code === 'INVALID_FILTER') {
     return { statusCode: 400, statusMessage: 'Invalid Discover filters' };
