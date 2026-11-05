@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fetchWeeklyTrending, TmdbSpikeError } from '../../../server/utils/tmdb';
+import { fetchWeeklyTrending, TmdbSpikeError } from '@server/utils/tmdb';
 import { weeklyTrendingFixture } from '../../fixtures/tmdb/trending';
 
 const config = {

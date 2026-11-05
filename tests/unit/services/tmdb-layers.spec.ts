@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createTmdbHttpClient } from '../../../server/services/tmdb/http';
-import { createTrendingService } from '../../../server/services/tmdb/trending';
-import { mapTrendingResponse } from '../../../server/services/tmdb/mappers';
-import { TmdbError, toTmdbHttpError } from '../../../server/services/tmdb/errors';
-import { TmdbTrendingResponseSchema } from '../../../src/lib/schemas/tmdb-trending';
+import { createTmdbHttpClient } from '@server/services/tmdb/http';
+import { createTrendingService } from '@server/services/tmdb/trending';
+import { mapTrendingResponse } from '@server/services/tmdb/mappers';
+import { TmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
+import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
 import { weeklyTrendingFixture } from '../../fixtures/tmdb/trending';
 
 const config = {

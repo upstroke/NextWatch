@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DiscoverQuerySchema } from '../../../src/lib/schemas/discover-query';
+import { DiscoverQuerySchema } from '@lib/schemas/discover-query';
 
 describe('Discover query schema', () => {
   // Statement coverage: converts comma-separated genre IDs into a numeric array

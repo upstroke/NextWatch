@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TmdbError, sendTmdbError, toTmdbHttpError } from '../../../server/services/tmdb/errors';
+import { TmdbError, sendTmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
 
 type TmdbErrorEvent = {
   node: {
