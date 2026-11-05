@@ -1,11 +1,13 @@
+import { fileURLToPath, URL } from 'node:url';
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-11-04',
   devtools: { enabled: true },
   modules: ['@nuxt/ui', '@nuxt/eslint'],
   css: ['~/assets/css/main.css'],
   alias: {
-    '@lib': resolve(__dirname, 'src/lib'),
-    '@server': resolve(__dirname, 'server'),
+    '@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
+    '@server': fileURLToPath(new URL('./server', import.meta.url)),
   },
   runtimeConfig: {
     tmdb: {
