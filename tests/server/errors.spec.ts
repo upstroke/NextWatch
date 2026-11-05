@@ -1,19 +1,26 @@
-import { describe, expect, it, vi } from 'vitest';
-import type { H3Event, EventHandlerRequest } from 'h3';
+import { describe, expect, it } from 'vitest';
 import {
   TmdbError,
   sendTmdbError,
   toTmdbHttpError,
 } from '../../server/services/tmdb/errors';
 
-function createEvent() {
+type TmdbErrorEvent = {
+  node: {
+    res: {
+      statusCode: number;
+    };
+  };
+};
+
+function createEvent(): TmdbErrorEvent {
   return {
     node: {
       res: {
         statusCode: 200,
       },
     },
-  } as unknown as H3Event<EventHandlerRequest>;
+  };
 }
 
 describe('TMDb error mapping', () => {
@@ -61,7 +68,9 @@ describe('TMDb error mapping', () => {
     const event = createEvent();
     const error = new TmdbError('INVALID_QUERY');
 
-    expect(sendTmdbError(event, error)).toEqual({
+    expect(
+      sendTmdbError(event as unknown as Parameters<typeof sendTmdbError>[0], error),
+    ).toEqual({
       statusCode: 400,
       statusMessage: 'Invalid Discover query',
     });
