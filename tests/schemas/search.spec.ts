@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { SearchFiltersSchema } from '../../src/lib/schemas/search';
 
 describe('SearchFiltersSchema', () => {
+  // Branch coverage: applies documented defaults
   it('applies documented defaults', () => {
     const result = SearchFiltersSchema.parse({});
 
@@ -13,6 +14,7 @@ describe('SearchFiltersSchema', () => {
     });
   });
 
+  // Statement coverage: accepts a valid filter state
   it('accepts a valid filter state', () => {
     const result = SearchFiltersSchema.parse({
       mediaType: 'movie',
@@ -26,10 +28,12 @@ describe('SearchFiltersSchema', () => {
     expect(result.genreIds).toEqual([28]);
   });
 
+  // Branch coverage: rejects an unsupported media type
   it('rejects an unsupported media type', () => {
     expect(() => SearchFiltersSchema.parse({ mediaType: 'documentary' })).toThrow();
   });
 
+  // Branch coverage: rejects too many genres
   it('rejects too many genres', () => {
     expect(() =>
       SearchFiltersSchema.parse({
@@ -38,6 +42,7 @@ describe('SearchFiltersSchema', () => {
     ).toThrow();
   });
 
+  // Branch coverage: rejects unknown properties
   it('rejects unknown properties', () => {
     expect(() => SearchFiltersSchema.parse({ mood: 'cozy' })).toThrow();
   });

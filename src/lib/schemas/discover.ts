@@ -8,11 +8,14 @@ export const DiscoverFiltersSchema = z
     minRating: z.number().min(0).max(10).optional(),
     yearFrom: z.number().int().min(1900).max(2100).optional(),
     yearTo: z.number().int().min(1900).max(2100).optional(),
-    sortBy: DiscoverSortBySchema.default('popularity.desc')
+    sortBy: DiscoverSortBySchema.default('popularity.desc'),
   })
   .refine(
-    (filters) => filters.yearFrom === undefined || filters.yearTo === undefined || filters.yearFrom <= filters.yearTo,
-    { message: 'yearFrom must be less than or equal to yearTo' }
+    (filters) =>
+      filters.yearFrom === undefined ||
+      filters.yearTo === undefined ||
+      filters.yearFrom <= filters.yearTo,
+    { message: 'yearFrom must be less than or equal to yearTo' },
   );
 
 export type DiscoverSortBy = z.infer<typeof DiscoverSortBySchema>;
