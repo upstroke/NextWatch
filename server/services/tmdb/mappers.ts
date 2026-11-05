@@ -1,5 +1,5 @@
-import { TmdbPagedResponseSchema } from '../../../src/lib/schemas/tmdb';
-import type { TmdbTrendingResponse } from '../../../src/lib/schemas/tmdb-trending';
+import { TmdbPagedResponseSchema } from '@lib/schemas/tmdb';
+import type { TmdbTrendingResponse } from '@lib/schemas/tmdb-trending';
 
 /** Pure mapping of already validated upstream data to our public model. */
 export function mapTrendingResponse(raw: TmdbTrendingResponse) {
