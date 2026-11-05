@@ -1,11 +1,12 @@
 {
   "extends": "./.nuxt/tsconfig.json",
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@lib/*": ["./src/lib/*"],
-      "@server/*": ["./server/*"],
-      "@tests/*": ["./tests/*"],
-      "@test-mocks/*": ["./tests/mocks/*"]
+      "@lib/*": ["src/lib/*"],
+      "@server/*": ["server/*"],
+      "@tests/*": ["tests/*"],
+      "@test-mocks/*": ["tests/mocks/*"]
     }
   }
 }
