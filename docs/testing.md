@@ -12,6 +12,34 @@ npm run test:watch      # Run tests in watch mode
 npm run test:coverage   # Run tests with V8 coverage
 ```
 
+## Architecture and testing boundaries
+
+The server code is layered so that business logic remains independent from HTTP and framework details.
+
+```text
+src/lib/                 Framework-free schemas, types, and shared domain logic
+server/services/         Framework-free TMDb services, mappers, parameters, and errors
+server/utils/            Framework-specific server helpers, such as H3 response handling
+server/api/              Nitro route handlers and HTTP boundary
+```
+
+Follow these boundaries when adding code:
+
+- Keep `src/lib` and `server/services` free from H3, Nitro, and HTTP-framework imports.
+- Put H3-specific helpers, such as functions that receive an `H3Event`, in `server/utils`.
+- Keep Nitro route handlers thin: validate input, call a service, map errors, and return a response.
+- Inject external transports into services. This makes services testable without real network access.
+- Do not mock the module under test. Mock only external boundaries, especially the TMDb HTTP transport.
+
+This separation determines where tests belong:
+
+| Code under test | Test location | Typical test focus |
+|---|---|---|
+| `src/lib/schemas` | `tests/unit/schemas` | Parsing, defaults, coercion, and validation errors |
+| `server/services` | `tests/unit/services` | Service orchestration, mapping, parameters, and errors |
+| `server/utils` | `tests/unit/utils` | Framework-specific helpers and response behavior |
+| `server/api` routes | `tests/integration/tmdb` | Route-to-response flow with a mocked TMDb transport |
+
 ## Folder structure
 
 ```text
@@ -19,7 +47,7 @@ tests/
 ├── unit/
 │   ├── schemas/       # Zod and domain schema tests
 │   ├── services/      # Service, mapper, parameter, and error tests
-│   └── utils/         # Utility tests
+│   └── utils/         # Framework-specific utility tests
 ├── integration/
 │   └── tmdb/          # TMDb-backed Nitro route tests
 ├── fixtures/          # Shared deterministic test data
@@ -83,6 +111,7 @@ Application imports use two project aliases:
 ```ts
 import { DiscoverQuerySchema } from '@lib/schemas/discover-query';
 import { TmdbError } from '@server/services/tmdb/errors';
+import { sendTmdbError } from '@server/utils/tmdb-errors';
 ```
 
 - `@lib` resolves to `src/lib`.
@@ -94,6 +123,7 @@ Do not use Nuxt’s default `@` or `~` aliases for shared application code; they
 
 - Test observable behavior, not implementation details.
 - Mock external network boundaries; do not mock the module under test.
+- Keep framework-specific code out of services and shared domain logic.
 - Keep fixtures deterministic and reusable.
 - Prefer focused tests over broad end-to-end assertions.
 - Do not expand Playwright E2E coverage for now; Vitest unit and integration tests are the active testing focus.
