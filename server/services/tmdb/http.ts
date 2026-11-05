@@ -1,4 +1,5 @@
-import { TmdbError } from './errors';
+import { z } from 'zod';
+import type { TmdbRuntimeConfig } from '@lib/schemas/runtime-config';
 
 export type TmdbRequest = (
   url: string,
@@ -10,7 +11,7 @@ export type TmdbRequest = (
   },
 ) => Promise<unknown>;
 
-export type TmdbConfig = { apiReadAccessToken: string; baseUrl: string };
+export type TmdbConfig = TmdbRuntimeConfig;
 
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 const TMDB_TIMEOUT_MS = 10000;
