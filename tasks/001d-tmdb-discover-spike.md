@@ -14,8 +14,22 @@ This is a spike. It does not implement filter pills, search state, URL state, Pi
 - Both responses map to the existing normalized `TmdbPagedResponse` contract.
 - Empty results, invalid input and technical failures remain distinguishable.
 - Unit tests cover schemas, parameter mapping, service orchestration and error isolation.
-- One real HTTP contract test covers invalid Discover input.
+- Real HTTP contract tests cover invalid Discover input for Movie and TV.
 - `pnpm test`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `pnpm test:e2e` pass locally.
+
+## Implementation status
+
+Implemented through the architecture documentation step:
+
+1. Discover filter and raw response Zod contracts.
+2. Pure Movie/TV parameter mapping.
+3. Generic TMDb GET transport.
+4. Discover service, response mappers and Nitro routes.
+5. Unit tests for schemas, mapping, orchestration and error isolation.
+6. HTTP contract tests for invalid Movie and TV Discover input.
+7. Architecture decision record and task status.
+
+Local automated validation and manual TMDb verification remain outstanding. No test, coverage, lint, typecheck, build or live Discover result is claimed as successful.
 
 ## Data contracts
 
@@ -51,25 +65,21 @@ Rules:
 
 Movie and TV use different date parameters. Do not create one generic media Discover function that forwards all filters blindly to both endpoints.
 
-## Files to create
+## Files created or changed
 
-- `src/lib/schemas/discover.ts` — Discover filter schema and derived TypeScript type.
-- `src/lib/schemas/tmdb-discover.ts` — narrow Zod schemas for Movie and TV Discover raw responses.
-- `server/services/tmdb/discover.ts` — request, validation and mapping orchestration.
-- `server/services/tmdb/discover-params.ts` — pure mapping from application filters to Movie or TV query parameters.
-- `server/api/tmdb/discover/movie.get.ts` — HTTP adapter for Movie Discover.
-- `server/api/tmdb/discover/tv.get.ts` — HTTP adapter for TV Discover.
-- `tests/server/discover.spec.ts` — unit tests.
-- `tests/http/discover.api.ts` — real HTTP contract test for invalid Discover input.
-- `specs/architecture/002-tmdb-discover.md` — architecture decision record.
-- `tasks/001d-tmdb-discover-spike.md` — this task.
-
-## Files to change
-
-- `server/services/tmdb/http.ts` — add a tested generic GET method for Discover without changing Trending behavior.
-- `server/services/tmdb/errors.ts` — add an error code for invalid Discover filters.
-- `vitest.config.ts` — include new schema and service files in coverage.
-- `AGENTS.md` — document that Discover parameters are media-type-specific.
+- `src/lib/schemas/discover.ts`
+- `src/lib/schemas/tmdb-discover.ts`
+- `server/services/tmdb/discover-params.ts`
+- `server/services/tmdb/http.ts`
+- `server/services/tmdb/errors.ts`
+- `server/services/tmdb/discover-mappers.ts`
+- `server/services/tmdb/discover.ts`
+- `server/api/tmdb/discover/movie.get.ts`
+- `server/api/tmdb/discover/tv.get.ts`
+- `tests/server/discover.spec.ts`
+- `tests/http/discover.api.ts`
+- `specs/architecture/002-tmdb-discover.md`
+- `tasks/001d-tmdb-discover-spike.md`
 
 ## Test cases
 
@@ -85,15 +95,17 @@ Movie and TV use different date parameters. Do not create one generic media Disc
 8. Invalid raw responses, including missing IDs or pagination fields, produce `INVALID_RESPONSE`.
 9. Transport errors are not reclassified as schema errors or empty results.
 
-### HTTP contract test
+### HTTP contract tests
 
-A real local Nuxt HTTP test verifies that invalid Discover input returns a defined 400 response without exposing internal details, stack traces or credentials.
+- Invalid Movie rating returns a sanitized 400 response.
+- Reversed TV year range returns a sanitized 400 response.
+- Both responses use `Cache-Control: no-store` and do not expose credentials or internal error details.
 
 Successful live Discover calls remain a separate manual local verification task so automated tests do not depend on TMDb availability or user credentials.
 
 ## Manual verification
 
-After implementation, run:
+After pulling the latest `main`, run:
 
 - `pnpm test`
 - `pnpm test:coverage`
@@ -118,18 +130,3 @@ Record only a summary: status code, result count, presence of poster/backdrop an
 - Mixed movie/TV result lists and merge ordering.
 - Filter pills, Pinia, URL state, infinite scroll, backdrops and detail pages.
 - Automatic activation of additional TMDb capabilities without separate verification.
-
-## Implementation order
-
-1. Define Zod schemas and derived types.
-2. Implement pure Movie and TV parameter mapping.
-3. Extend HTTP transport with Discover GET support.
-4. Implement Discover service and Nitro routes.
-5. Add and run unit tests.
-6. Add HTTP contract test.
-7. Write architecture ADR and task documentation.
-8. Obtain local validation results from the user.
-
-## Validation status
-
-Planned only. No implementation, tests, build or manual TMDb verification has been performed for this task.
