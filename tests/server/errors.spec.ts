@@ -24,6 +24,7 @@ function createEvent(): TmdbErrorEvent {
 }
 
 describe('TMDb error mapping', () => {
+  // Branch coverage: maps an invalid Discover query to a sanitized 400 response
   it('maps an invalid Discover query to a sanitized 400 response', () => {
     expect(toTmdbHttpError(new TmdbError('INVALID_QUERY'))).toEqual({
       statusCode: 400,
@@ -31,6 +32,7 @@ describe('TMDb error mapping', () => {
     });
   });
 
+  // Branch coverage: maps invalid Discover filters to a sanitized 400 response
   it('maps invalid Discover filters to a sanitized 400 response', () => {
     expect(toTmdbHttpError(new TmdbError('INVALID_FILTER'))).toEqual({
       statusCode: 400,
@@ -38,6 +40,7 @@ describe('TMDb error mapping', () => {
     });
   });
 
+  // Statement coverage: maps TMDb configuration errors to a 503 response
   it('maps TMDb configuration errors to a 503 response', () => {
     expect(toTmdbHttpError(new TmdbError('MISSING_TOKEN'))).toEqual({
       statusCode: 503,
@@ -50,6 +53,7 @@ describe('TMDb error mapping', () => {
     });
   });
 
+  // Statement coverage: maps remaining TMDb errors to a 502 response
   it('maps remaining TMDb errors to a 502 response', () => {
     expect(toTmdbHttpError(new TmdbError('UPSTREAM_FAILED'))).toEqual({
       statusCode: 502,
@@ -57,6 +61,7 @@ describe('TMDb error mapping', () => {
     });
   });
 
+  // Branch coverage: maps unknown errors to a 502 response
   it('maps unknown errors to a 502 response', () => {
     expect(toTmdbHttpError(new Error('Unexpected failure'))).toEqual({
       statusCode: 502,
@@ -64,6 +69,7 @@ describe('TMDb error mapping', () => {
     });
   });
 
+  // Statement coverage: writes the mapped status code to the response and returns the HTTP error
   it('writes the mapped status code to the response and returns the HTTP error', () => {
     const event = createEvent();
     const error = new TmdbError('INVALID_QUERY');
