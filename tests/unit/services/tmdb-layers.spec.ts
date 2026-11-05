@@ -4,7 +4,7 @@ import { createTrendingService } from '@server/services/tmdb/trending';
 import { mapTrendingResponse } from '@server/services/tmdb/mappers';
 import { TmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
 import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
-import { weeklyTrendingFixture } from '../../fixtures/tmdb/trending';
+import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending';
 
 const config = {
   apiReadAccessToken: 'synthetic-test-token',

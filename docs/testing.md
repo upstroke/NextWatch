@@ -106,16 +106,20 @@ Use:
 
 ## Import aliases
 
-Application imports use two project aliases:
+Application and test imports use these project aliases:
 
 ```ts
 import { DiscoverQuerySchema } from '@lib/schemas/discover-query';
 import { TmdbError } from '@server/services/tmdb/errors';
 import { sendTmdbError } from '@server/utils/tmdb-errors';
+import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending';
+import { tmdbTransportMock } from '@test-mocks/tmdb';
 ```
 
 - `@lib` resolves to `src/lib`.
 - `@server` resolves to `server`.
+- `@tests` resolves to `tests`.
+- `@test-mocks` resolves to `tests/mocks`.
 
 Do not use Nuxt’s default `@` or `~` aliases for shared application code; they resolve to Nuxt’s application source directory rather than `src/lib` or `server`.
 

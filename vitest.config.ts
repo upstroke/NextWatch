@@ -6,6 +6,8 @@ export default defineConfig({
     alias: {
       '@lib': fileURLToPath(new URL('./src/lib', import.meta.url)),
       '@server': fileURLToPath(new URL('./server', import.meta.url)),
+      '@tests': fileURLToPath(new URL('./tests', import.meta.url)),
+      '@test-mocks': fileURLToPath(new URL('./tests/mocks', import.meta.url)),
     },
   },
   test: {
