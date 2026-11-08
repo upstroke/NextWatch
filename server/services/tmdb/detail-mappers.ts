@@ -8,13 +8,11 @@ import type {
 
 function toDetailBase(
   raw: TmdbMovieDetailRaw | TmdbTvDetailRaw,
-  mediaType: 'movie' | 'tv',
   title: string,
   originalTitle: string,
 ): TmdbDetailBase {
   return {
     id: raw.id,
-    mediaType,
     title,
     originalTitle,
     overview: raw.overview,
@@ -39,7 +37,7 @@ function toDetailBase(
  */
 export function mapMovieDetailResponse(raw: TmdbMovieDetailRaw): TmdbMovieDetail {
   return {
-    ...toDetailBase(raw, 'movie', raw.title, raw.original_title),
+    ...toDetailBase(raw, raw.title, raw.original_title),
     mediaType: 'movie',
     releaseDate: raw.release_date,
     runtime: raw.runtime,
@@ -54,7 +52,7 @@ export function mapMovieDetailResponse(raw: TmdbMovieDetailRaw): TmdbMovieDetail
  */
 export function mapTvDetailResponse(raw: TmdbTvDetailRaw): TmdbTvDetail {
   return {
-    ...toDetailBase(raw, 'tv', raw.name, raw.original_name),
+    ...toDetailBase(raw, raw.name, raw.original_name),
     mediaType: 'tv',
     firstAirDate: raw.first_air_date,
     lastAirDate: raw.last_air_date,
