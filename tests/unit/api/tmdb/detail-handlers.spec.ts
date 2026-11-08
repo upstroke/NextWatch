@@ -11,6 +11,12 @@ import {
 
 const mocks = createNuxtHandlerMocks();
 
+vi.mock('h3', () => ({
+  defineEventHandler: (handler: unknown) => handler,
+  getRouterParam: vi.fn(),
+  setResponseHeader: vi.fn(),
+}));
+
 beforeEach(() => {
   vi.unstubAllGlobals();
   mocks.install();
