@@ -65,6 +65,8 @@ Unit tests exercise one cohesive unit in isolation: schemas, services, mappers, 
 
 They must not perform real network requests. External boundaries, especially TMDb HTTP calls, are mocked.
 
+Begin every `it` block with an explicit coverage-intent comment: `// Statement coverage:` or `// Branch coverage:`. Use `// Statement coverage:` for a verified execution path and `// Branch coverage:` for a conditional path, error branch, fallback, or boundary.
+
 ### Integration tests
 
 Integration tests exercise a Nitro route handler together with its schema, service, mapper, and controlled external boundary.
@@ -95,7 +97,7 @@ The global thresholds are:
 
 ## Coverage comments
 
-Each test begins with an explicit coverage intent:
+Each `it` block begins with an explicit coverage intent:
 
 ```ts
 // Statement coverage: validates a valid discover query.
