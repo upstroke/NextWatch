@@ -4,25 +4,25 @@
 
 Apply the agreed code, typing, documentation and testing conventions to the existing implementation without adding features, UI, Ollama integration or new tests.
 
-This specification consolidates the findings from the five-part review of `../../../src/lib/schemas`, `../docs/work/server`, `../docs/work/server`, `../docs/work/server`, `tests` and project configuration.
+This specification consolidates the findings from the five-part review of `src/lib/schemas`, `server/services`, `server/api`, `server/utils`, `tests` and project configuration.
 
 ## Scope
 
 ### In scope
 
-- `../../../server`
-- `../../../server`
-- `../../../server`
-- `../../../server`
-- `../../../server`
-- `../../../server`
-- `../../../server`
-- `../../../server`
-- `../../../server`
+- `server/services/tmdb/errors.ts`
+- `server/services/tmdb/http.ts`
+- `server/services/tmdb/discover.ts`
+- `server/services/tmdb/discover-mappers.ts`
+- `server/services/tmdb/trending.ts`
+- `server/api/tmdb/trending.get.ts`
+- `server/api/tmdb/discover/movie.get.ts`
+- `server/api/tmdb/discover/tv.get.ts`
+- `server/utils/tmdb.ts`
 - `tests/http/discover.api.ts`
 - `tests/http/trending.api.ts`
-- `../../../tests/integration/README.md`
-- `../../testing.md`
+- `tests/integration/README.md`
+- `docs/testing.md`
 
 ### Out of scope
 
@@ -53,7 +53,7 @@ No changes are required for these aspects.
 
 ### Type assertion in `discover.ts`
 
-`../../../server` contains:
+`server/services/tmdb/discover.ts` contains:
 
 ```ts
 mapResponse(parseResponse(raw) as never);
@@ -76,28 +76,28 @@ The resulting code must preserve the current behavior:
 
 Add concise TSDoc/JSDoc comments to the following exported functions and public methods:
 
-| File              | Element                    |
-| ----------------- | -------------------------- |
-| `../../../server` | `createTmdbError`          |
-| `../../../server` | `toTmdbHttpError`          |
-| `../../../server` | `mapMovieDiscoverResponse` |
-| `../../../server` | `mapTvDiscoverResponse`    |
-| `../../../server` | `createDiscoverService`    |
-| `../../../server` | `discoverMovies`           |
-| `../../../server` | `discoverTv`               |
-| `../../../server` | `createTrendingService`    |
-| `../../../server` | `getWeeklyTrending`        |
-| `../../../server` | Default event handler      |
-| `../../../server` | Default event handler      |
-| `../../../server` | Default event handler      |
-| `../../../server` | `fetchWeeklyTrending`      |
+| File                                       | Element                    |
+| ------------------------------------------ | -------------------------- |
+| `server/services/tmdb/errors.ts`           | `createTmdbError`          |
+| `server/services/tmdb/errors.ts`           | `toTmdbHttpError`          |
+| `server/services/tmdb/discover-mappers.ts` | `mapMovieDiscoverResponse` |
+| `server/services/tmdb/discover-mappers.ts` | `mapTvDiscoverResponse`    |
+| `server/services/tmdb/discover.ts`         | `createDiscoverService`    |
+| `server/services/tmdb/discover.ts`         | `discoverMovies`           |
+| `server/services/tmdb/discover.ts`         | `discoverTv`               |
+| `server/services/tmdb/trending.ts`         | `createTrendingService`    |
+| `server/services/tmdb/trending.ts`         | `getWeeklyTrending`        |
+| `server/api/tmdb/trending.get.ts`          | Default event handler      |
+| `server/api/tmdb/discover/movie.get.ts`    | Default event handler      |
+| `server/api/tmdb/discover/tv.get.ts`       | Default event handler      |
+| `server/utils/tmdb.ts`                     | `fetchWeeklyTrending`      |
 
 Add concise TSDoc/JSDoc comments to the public methods of the HTTP client returned by `createTmdbHttpClient`:
 
-| File              | Method              |
-| ----------------- | ------------------- |
-| `../../../server` | `get`               |
-| `../../../server` | `getWeeklyTrending` |
+| File                           | Method              |
+| ------------------------------ | ------------------- |
+| `server/services/tmdb/http.ts` | `get`               |
+| `server/services/tmdb/http.ts` | `getWeeklyTrending` |
 
 Do not restate obvious implementation details. Describe the contract, parameters and return value only where useful.
 
@@ -123,14 +123,14 @@ Do not reuse an identifier after removing or replacing a test.
 
 ### Documentation updates
 
-Update `../../testing.md`:
+Update `docs/testing.md`:
 
 - Classify `tests/http` as HTTP integration tests.
 - State that these tests use Playwright and execute real HTTP requests against the running Nuxt server.
 - State that they require stable `TMDB-INT-…` identifiers.
 - State that coverage-intent comments are required for unit tests, not HTTP integration tests.
 
-Update `../../../tests/integration/README.md`:
+Update `tests/integration/README.md`:
 
 - Add the `TMDB-INT-…` identifier convention.
 - State that identifiers must not be reused after removal or replacement.
@@ -139,20 +139,20 @@ Update `../../../tests/integration/README.md`:
 
 The following findings are intentional or acceptable and must not be changed by this task:
 
-- `as const` in `../../../server`.
-- `'movie' as const` and `'tv' as const` in `../../../server`.
-- The incomplete `../../../src/lib/schemas/index.ts` export list.
+- `as const` in `server/services/tmdb/errors.ts`.
+- `'movie' as const` and `'tv' as const` in `server/services/tmdb/discover-mappers.ts`.
+- The incomplete `src/lib/schemas/index.ts` export list.
 - The different error-response mechanism between Discover routes (`sendTmdbError`) and the Trending route (`createError`).
 - The current broad optionality of `TmdbMediaSchema`; future UI fallback behavior will be addressed separately.
 
 ## Acceptance criteria
 
-- `as never` is removed from `../../../server`.
+- `as never` is removed from `server/services/tmdb/discover.ts`.
 - The Discover service preserves valid Movie and TV responses, rejects invalid responses and preserves transport errors.
 - All functions and public methods listed above have concise TSDoc/JSDoc comments.
 - The three existing HTTP tests use `TMDB-INT-001`, `TMDB-INT-002` and `TMDB-INT-003`.
-- `../../testing.md` classifies `tests/http` as HTTP integration tests and explains their identifier convention.
-- `../../../tests/integration/README.md` documents the `TMDB-INT-…` convention.
+- `docs/testing.md` classifies `tests/http` as HTTP integration tests and explains their identifier convention.
+- `tests/integration/README.md` documents the `TMDB-INT-…` convention.
 - Unit tests remain unchanged and do not receive test identifiers.
 - No new tests, features, UI, Ollama integration or CI configuration are introduced.
 

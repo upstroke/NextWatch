@@ -250,9 +250,9 @@ export type TmdbTvDetailRaw = z.infer<typeof TmdbTvDetailRawSchema>;
 Follow the established boundaries:
 
 - `../../../src/lib/schemas` contains the Zod contracts for raw TMDb responses and normalized detail data.
-- `../../../server` contains framework-free detail services, mappers and errors.
-- `../../../server` contains thin Nitro route handlers.
-- `../../../server` contains H3-specific helpers.
+- `../../../server/services/tmdb` contains framework-free detail services, mappers and errors.
+- `../../../server/api/tmdb` contains thin Nitro route handlers.
+- `../../../server/utils` contains H3-specific helpers.
 - External TMDb HTTP transports are injected into services.
 - Do not mock the module under test; mock only external boundaries.
 

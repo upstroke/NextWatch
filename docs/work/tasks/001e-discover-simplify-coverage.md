@@ -12,12 +12,12 @@ Measure statement coverage only for deliberately selected, testable application 
 
 - `src/lib/schemas/**/*.ts`
 - `src/lib/domain/**/*.ts`
-- `../../../server`
-- `../../../server`
+- `server/services/**/*.ts`
+- `server/utils/**/*.ts`
 
 Exclude from coverage:
 
-- `../../../server`
+- `server/api/**`
 - `app/**`
 - `components/**`
 - `pages/**`
@@ -38,8 +38,8 @@ Coverage is a quality signal, not a target for writing implementation-detail tes
 
 - Add `../../../src/lib/schemas/discover-query.ts`: a small HTTP query schema that coerces URL query strings.
 - Simplify `../../../src/lib/schemas/discover.ts`: keep a clear domain `DiscoverFilters` contract using numbers and arrays.
-- Update `../../../server` and `../../../server`: validate HTTP query input, then map it clearly to `DiscoverFilters`.
-- Simplify `../../../server`, `discover.ts` and `discover-mappers.ts` only where readability improves; preserve behavior.
+- Update `../../../server/api/tmdb/discover/movie.get.ts` and `server/api/tmdb/discover/tv.get.ts`: validate HTTP query input, then map it clearly to `DiscoverFilters`.
+- Simplify `../../../server/services/tmdb/discover-params.ts`, `discover.ts` and `discover-mappers.ts` only where readability improves; preserve behavior.
 - Update `../../../vitest.config.ts` with focused coverage includes/excludes and the 80 percent statement threshold.
 - Streamline `../../../tests/unit/services/discover.spec.ts`: retain behavior-focused tests and remove duplicated implementation-detail assertions.
 - Keep `tests/http/discover.api.ts` unchanged unless behavior changes.

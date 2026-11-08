@@ -1,5 +1,5 @@
-import type { TmdbMovieDetail, TmdbTvDetail } from 'src/lib/schemas/tmdb-detail';
-import { TmdbMovieDetailRawSchema, TmdbTvDetailRawSchema } from 'src/lib/schemas/tmdb-detail';
+import type { TmdbMovieDetail, TmdbTvDetail } from '@lib/schemas/tmdb-detail';
+import { TmdbMovieDetailRawSchema, TmdbTvDetailRawSchema } from '@lib/schemas/tmdb-detail';
 import type { TmdbHttpClient } from './http';
 import { createTmdbError } from './errors';
 import { mapMovieDetailResponse, mapTvDetailResponse } from './detail-mappers';
