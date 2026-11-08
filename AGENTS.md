@@ -23,7 +23,7 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 ## Architecture and testability
 
-Read specs/architecture/001-service-boundaries.md before changing API or state code.
+Read docs/work/specs/architecture/001-service-boundaries.md before changing API or state code.
 
 - Keep code simple, readable and easy to follow. Prefer direct, explicit solutions over clever, dense or hard-to-understand abstractions.
 - Structure code for straightforward testing: separate decisions from side effects and keep dependencies explicit.
@@ -76,5 +76,7 @@ Read specs/architecture/001-service-boundaries.md before changing API or state c
 - Keep normal replies concise. Do not show code blocks or full file contents unless requested; required write-approval previews are an exception.
 - Report what changed, what was checked, which commands actually ran and what remains unverified. Do not present plans as completed work.
 - Keep the README as an evolving entry point with current setup and implemented scope. Keep shared development rules in one authoritative document and link to it rather than duplicating rules.
+- Work packages live in `docs/work/`. Each work-package file contains a stable `## Specification` section and a current `## Execution status` section. Update the execution status as implementation progresses.
+- Architecture decision records remain in `docs/work/specs/architecture/`.
 - Link to the authoritative documentation rather than duplicating rules. Add specialized coding-agent configuration only for an agreed need, referencing these shared rules.
 - Obtain explicit approval for each GitHub write action with its exact target and content. Approval to create a branch is not approval to commit, open a pull request or merge.

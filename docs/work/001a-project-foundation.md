@@ -1,10 +1,12 @@
-# 000a — Foundation
+# 001a — Project foundation
 
-## Goal
+## Specification
+
+### Goal
 
 Establish the controlled project foundation for NextWatch Studio.
 
-## Scope
+### Scope
 
 - Nuxt 4, Vue 3, TypeScript and Nitro
 - Nuxt UI application shell
@@ -13,7 +15,7 @@ Establish the controlled project foundation for NextWatch Studio.
 - Initial Vitest coverage for the search-filter contract
 - Studio documentation and task structure
 
-## Out of scope
+### Out of scope
 
 - TMDb service implementation
 - Ollama or Qwen integration
@@ -22,7 +24,7 @@ Establish the controlled project foundation for NextWatch Studio.
 - Detail pages
 - Review summarization and similar titles
 
-## Acceptance criteria
+### Acceptance criteria
 
 - `pnpm install` succeeds.
 - `pnpm dev` starts the Nuxt application.
@@ -30,3 +32,26 @@ Establish the controlled project foundation for NextWatch Studio.
 - `pnpm lint` and `pnpm typecheck` are configured.
 - TypeScript types are derived from Zod schemas with `z.infer`.
 - No TMDb credentials are committed.
+
+## Execution status
+
+### Status
+
+Completed.
+
+### Implemented
+
+- Initial NextWatch Studio repository foundation.
+- Project configuration and Nuxt application shell.
+- Zod contract layer with TypeScript types derived through `z.infer`.
+- Initial schema tests.
+- Linting, formatting and type checking configuration.
+- Studio documentation and task structure.
+
+### Constraints
+
+- Use pnpm.
+- Use strict TypeScript.
+- Use Zod as the single source of truth for runtime contracts.
+- Keep TMDb credentials server-side only.
+- Do not implement TMDb or LLM behavior in this work package.

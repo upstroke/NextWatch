@@ -8,13 +8,13 @@ NextWatch needs to verify that TMDb Discover provides the filters and response d
 
 ## Boundaries
 
-- `server/api/tmdb/discover/movie.get.ts` and `server/api/tmdb/discover/tv.get.ts` are HTTP adapters. They validate query input, set `Cache-Control: no-store`, compose dependencies and translate controlled errors to HTTP responses.
-- `server/services/tmdb/discover.ts` orchestrates each request: parameter construction, upstream request, raw response validation and normalization.
-- `server/services/tmdb/discover-params.ts` is a pure mapping layer from validated application filters to TMDb query parameters.
-- `server/services/tmdb/discover-mappers.ts` contains pure response mappers and assigns `mediaType` as `movie` or `tv`.
-- `server/services/tmdb/http.ts` owns transport concerns: fixed base URL, Bearer authentication, JSON acceptance, timeout, no retries and path validation.
-- `src/lib/schemas/discover.ts` defines the application filter contract and derives its TypeScript type with `z.infer`.
-- `src/lib/schemas/tmdb-discover.ts` defines narrow Zod contracts for Movie and TV Discover raw responses.
+- `../../../../server/api/tmdb/discover/movie.get.ts` and `server/api/tmdb/discover/tv.get.ts` are HTTP adapters. They validate query input, set `Cache-Control: no-store`, compose dependencies and translate controlled errors to HTTP responses.
+- `../../../../server/services/tmdb/discover.ts` orchestrates each request: parameter construction, upstream request, raw response validation and normalization.
+- `../../../../server/services/tmdb/discover-params.ts` is a pure mapping layer from validated application filters to TMDb query parameters.
+- `../../../../server/services/tmdb/discover-mappers.ts` contains pure response mappers and assigns `mediaType` as `movie` or `tv`.
+- `../../../../server/services/tmdb/http.ts` owns transport concerns: fixed base URL, Bearer authentication, JSON acceptance, timeout, no retries and path validation.
+- `../../../../src/lib/schemas/discover.ts` defines the application filter contract and derives its TypeScript type with `z.infer`.
+- `../../../../src/lib/schemas/tmdb-discover.ts` defines narrow Zod contracts for Movie and TV Discover raw responses.
 
 Runtime configuration is read only in the Nitro composition root. Browser code must not import server modules or access TMDb credentials.
 

@@ -67,4 +67,4 @@ Prefer `type` for reusable TypeScript types. Use `interface` only when declarati
 ## Related documentation
 
 - [Testing](testing.md): test boundaries, fixtures, mocks and test locations.
-- [Service boundaries and ADR 001](../specs/architecture/001-service-boundaries.md): architecture decisions for API and state code.
+- [Service boundaries and ADR 001](work/specs/architecture/001-service-boundaries.md): architecture decisions for API and state code.

@@ -26,8 +26,8 @@ server/api/              Nitro route handlers and HTTP boundary
 
 Follow these boundaries when adding code:
 
-- Keep `src/lib` and `server/services` free from H3, Nitro, and HTTP-framework imports.
-- Put H3-specific helpers, such as functions that receive an `H3Event`, in `server/utils`.
+- Keep `src/lib` and `../server` free from H3, Nitro, and HTTP-framework imports.
+- Put H3-specific helpers, such as functions that receive an `H3Event`, in `../server`.
 - Keep Nitro route handlers thin: validate input, call a service, map errors, and return a response.
 - Inject external transports into services. This makes services testable without real network access.
 - Do not mock the module under test. Mock only external boundaries, especially the TMDb HTTP transport.
@@ -56,12 +56,12 @@ tests/
 
 ## Test boundaries
 
-| Boundary | Location | Runner | Typical test focus |
-| --- | --- | --- | --- |
-| Unit | `tests/unit` | Vitest | One cohesive unit in isolation: schema, service, mapper, parameter, error, or utility. |
-| Integration: controlled transport | `tests/integration/tmdb` | Vitest | Route-to-response flow with a mocked TMDb transport. |
-| Integration: HTTP boundary | `tests/integration/http` | Playwright | Real HTTP requests against the running Nuxt server. |
-| End-to-end | `tests/e2e` | Playwright | Browser-based user journeys and acceptance criteria. |
+| Boundary                          | Location                 | Runner     | Typical test focus                                                                     |
+| --------------------------------- | ------------------------ | ---------- | -------------------------------------------------------------------------------------- |
+| Unit                              | `tests/unit`             | Vitest     | One cohesive unit in isolation: schema, service, mapper, parameter, error, or utility. |
+| Integration: controlled transport | `tests/integration/tmdb` | Vitest     | Route-to-response flow with a mocked TMDb transport.                                   |
+| Integration: HTTP boundary        | `tests/integration/http` | Playwright | Real HTTP requests against the running Nuxt server.                                    |
+| End-to-end                        | `tests/e2e`              | Playwright | Browser-based user journeys and acceptance criteria.                                   |
 
 ## Unit tests
 
@@ -101,11 +101,11 @@ Use `tests/mocks` for shared HTTP-client, TMDb-transport, and Nitro-event double
 
 Give integration and E2E tests stable identifiers that support traceability.
 
-| Test type | Identifier | Purpose |
-| --- | --- | --- |
-| Unit test | None | The coverage-intent comment documents the test's purpose |
-| Integration test | `TMDB-INT-001`, `TMDB-INT-002`, … | Stable technical traceability and selective execution |
-| E2E test | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user journey and acceptance criterion |
+| Test type        | Identifier                            | Purpose                                                  |
+| ---------------- | ------------------------------------- | -------------------------------------------------------- |
+| Unit test        | None                                  | The coverage-intent comment documents the test's purpose |
+| Integration test | `TMDB-INT-001`, `TMDB-INT-002`, …     | Stable technical traceability and selective execution    |
+| E2E test         | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user journey and acceptance criterion  |
 
 Do not reuse an identifier after removing or replacing a test. Maintain the link between the user journey, acceptance criterion and E2E test.
 

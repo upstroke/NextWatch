@@ -1,12 +1,14 @@
 # 001e — Discover simplification and statement coverage
 
-## Goal
+## Specification
 
-Simplify the Discover implementation for readability and introduce a minimum **statement coverage** threshold of 80 percent.
+### Goal
 
-This task does not add features. It improves the HTTP boundary, reduces unnecessary schema complexity and aligns tests with observable behavior.
+Simplify the Discover implementation for readability and introduce a minimum statement coverage threshold of 80 percent.
 
-## Coverage policy
+This work package does not add features. It improves the HTTP boundary, reduces unnecessary schema complexity and aligns tests with observable behavior.
+
+### Coverage policy
 
 Measure statement coverage only for deliberately selected, testable application logic:
 
@@ -34,17 +36,17 @@ thresholds: {
 
 Coverage is a quality signal, not a target for writing implementation-detail tests. Tests should verify acceptance-relevant behavior.
 
-## Planned changes
+### Planned changes
 
 - Add `src/lib/schemas/discover-query.ts`: a small HTTP query schema that coerces URL query strings.
 - Simplify `src/lib/schemas/discover.ts`: keep a clear domain `DiscoverFilters` contract using numbers and arrays.
-- Update `server/api/tmdb/discover/movie.get.ts` and `server/api/tmdb/discover/tv.get.ts`: validate HTTP query input, then map it clearly to `DiscoverFilters`.
+- Update both Discover routes: validate HTTP query input, then map it clearly to `DiscoverFilters`.
 - Simplify `server/services/tmdb/discover-params.ts`, `discover.ts` and `discover-mappers.ts` only where readability improves; preserve behavior.
 - Update `vitest.config.ts` with focused coverage includes/excludes and the 80 percent statement threshold.
-- Streamline `../tests/unit/services/discover.spec.ts`: retain behavior-focused tests and remove duplicated implementation-detail assertions.
+- Streamline Discover server tests: retain behavior-focused tests and remove duplicated implementation-detail assertions.
 - Keep `tests/http/discover.api.ts` unchanged unless behavior changes.
 
-## Acceptance criteria
+### Acceptance criteria
 
 - `pnpm test:coverage` reports at least 80 percent statement coverage for the defined scope.
 - `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `pnpm test:e2e` pass locally.
@@ -53,26 +55,28 @@ Coverage is a quality signal, not a target for writing implementation-detail tes
 - UI, Nitro routes and generated files are not included in the coverage metric.
 - The Discover schema code is easier to read than the current union/transform/pipe implementation.
 
-## Out of scope
+### Out of scope
 
-- New Discover filters or TMDb capabilities.
-- Filter pills, Pinia, URL state, infinite scroll, backdrops or detail pages.
-- LLM integration.
-- Changing the Trending behavior.
-- Adding coverage thresholds for lines, branches or functions.
+- New Discover filters or TMDb capabilities
+- Filter pills, Pinia, URL state, infinite scroll, backdrops or detail pages
+- LLM integration
+- Changing the Trending behavior
+- Adding coverage thresholds for lines, branches or functions
 
-## Validation status
+## Execution status
+
+### Status
 
 Completed.
 
-Validation results:
+### Validation results
 
 - Statement coverage is 93.06 percent, above the required 80 percent threshold.
 - Discover schemas, services, mappers, parameters and error handling are covered by focused unit tests.
 - HTTP query strings are validated and converted to typed domain filters at the route boundary.
 - `pnpm test:coverage`, `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `pnpm test:e2e` have been validated locally.
 
-Implementation notes:
+### Implementation notes
 
 - Added `src/lib/schemas/discover-query.ts` for HTTP query coercion and validation.
 - Simplified `src/lib/schemas/discover.ts` into a typed domain filter contract.

@@ -1,14 +1,14 @@
-# Spec: TMDb detail data contract
+# 001f — TMDb detail data contract
 
-## Goal
+## Specification
+
+### Goal
 
 Verify that TMDb provides the minimal detail data required for Movie and TV entries. Define stable Zod contracts for raw TMDb responses, normalize Movie and TV details into distinct but related server contracts, and expose them through Nitro routes.
 
 This is a data-contract spike. It does not implement a detail page, routing, state management or LLM integration.
 
-## Scope
-
-### In scope
+### Scope
 
 - TMDb Movie detail endpoint: `GET /movie/{movie_id}`
 - TMDb TV detail endpoint: `GET /tv/{series_id}`
@@ -23,28 +23,17 @@ This is a data-contract spike. It does not implement a detail page, routing, sta
 - HTTP contract tests for invalid IDs and sanitized error responses
 - Manual live verification for one Movie and one TV detail request
 
-### Out of scope
-
-- Detail page UI
-- Routing or navigation
-- Pinia or URL state
-- `append_to_response`
-- Credits, cast, crew, videos, images, recommendations, similar titles, reviews, keywords, translations, alternative titles, release dates, watch providers, regions or certification
-- LLM or Ollama integration
-- Mixed Movie/TV result lists
-- Infinite scroll
-- Automatic activation of additional TMDb capabilities without separate verification
-
-## Contract decision
+### Contract decision
 
 Start with a minimal shared base contract. Movie and TV retain their distinct concepts instead of forcing every field into one generic shape.
+
+`mediaType` is not part of the shared base contract. It is set as a literal value by the Movie and TV mappers.
 
 ### Shared base contract
 
 ```ts
 export const TmdbDetailBaseSchema = z.object({
   id: z.number(),
-  mediaType: z.enum(['movie', 'tv']),
   title: z.string(),
   originalTitle: z.string(),
   overview: z.string().nullable(),
@@ -70,27 +59,26 @@ export type TmdbDetailBase = z.infer<typeof TmdbDetailBaseSchema>;
 
 ### Field mapping
 
-| Normalized field | Movie source | TV source | Notes |
-| --- | --- | --- | --- |
-| `id` | `id` | `id` | Stable TMDb identifier |
-| `mediaType` | Fixed value | Fixed value | Set by the mapper |
-| `title` | `title` | `name` | Display title |
-| `originalTitle` | `original_title` | `original_name` | Original-language title |
-| `overview` | `overview` | `overview` | Optional description |
-| `tagline` | `tagline` | `tagline` | Optional marketing tagline |
-| `posterPath` | `poster_path` | `poster_path` | Optional image path |
-| `backdropPath` | `backdrop_path` | `backdrop_path` | Optional image path |
-| `voteAverage` | `vote_average` | `vote_average` | TMDb rating |
-| `voteCount` | `vote_count` | `vote_count` | Number of votes |
-| `genres` | `genres` | `genres` | Genre ID and name |
-| `originalLanguage` | `original_language` | `original_language` | ISO 639-1 language code |
-| `status` | `status` | `status` | Production or release status |
-| `homepage` | `homepage` | `homepage` | Optional official website |
-| `popularity` | `popularity` | `popularity` | TMDb popularity metric |
+| Normalized field   | Movie source        | TV source           | Notes                        |
+| ------------------ | ------------------- | ------------------- | ---------------------------- |
+| `id`               | `id`                | `id`                | Stable TMDb identifier       |
+| `title`            | `title`             | `name`              | Display title                |
+| `originalTitle`    | `original_title`    | `original_name`     | Original-language title      |
+| `overview`         | `overview`          | `overview`          | Optional description         |
+| `tagline`          | `tagline`           | `tagline`           | Optional marketing tagline   |
+| `posterPath`       | `poster_path`       | `poster_path`       | Optional image path          |
+| `backdropPath`     | `backdrop_path`     | `backdrop_path`     | Optional image path          |
+| `voteAverage`      | `vote_average`      | `vote_average`      | TMDb rating                  |
+| `voteCount`        | `vote_count`        | `vote_count`        | Number of votes              |
+| `genres`           | `genres`            | `genres`            | Genre ID and name            |
+| `originalLanguage` | `original_language` | `original_language` | ISO 639-1 language code      |
+| `status`           | `status`            | `status`            | Production or release status |
+| `homepage`         | `homepage`          | `homepage`          | Optional official website    |
+| `popularity`       | `popularity`        | `popularity`        | TMDb popularity metric       |
 
 `spokenLanguages` is intentionally excluded from the first contract. `originalLanguage` provides the essential language information without introducing redundant metadata.
 
-## Movie extension
+### Movie extension
 
 ```ts
 export const TmdbMovieDetailSchema = TmdbDetailBaseSchema.extend({
@@ -102,10 +90,11 @@ export const TmdbMovieDetailSchema = TmdbDetailBaseSchema.extend({
 export type TmdbMovieDetail = z.infer<typeof TmdbMovieDetailSchema>;
 ```
 
-| Normalized field | Movie source | Notes |
-| --- | --- | --- |
-| `releaseDate` | `release_date` | Optional theatrical release date |
-| `runtime` | `runtime` | Optional runtime in minutes |
+| Normalized field | Movie source   | Notes                            |
+| ---------------- | -------------- | -------------------------------- |
+| `mediaType`      | Fixed value    | Set by the mapper                |
+| `releaseDate`    | `release_date` | Optional theatrical release date |
+| `runtime`        | `runtime`      | Optional runtime in minutes      |
 
 The following Movie fields are intentionally excluded:
 
@@ -117,7 +106,7 @@ The following Movie fields are intentionally excluded:
 - `video`
 - `adult`
 
-## TV extension
+### TV extension
 
 ```ts
 export const TmdbTvDetailSchema = TmdbDetailBaseSchema.extend({
@@ -144,15 +133,16 @@ export const TmdbTvDetailSchema = TmdbDetailBaseSchema.extend({
 export type TmdbTvDetail = z.infer<typeof TmdbTvDetailSchema>;
 ```
 
-| Normalized field | TV source | Notes |
-| --- | --- | --- |
-| `firstAirDate` | `first_air_date` | Optional first air date |
-| `lastAirDate` | `last_air_date` | Optional most recent air date |
-| `numberOfSeasons` | `number_of_seasons` | Optional season count |
-| `numberOfEpisodes` | `number_of_episodes` | Optional episode count |
-| `networks` | `networks` | Broadcasting networks or platforms |
-| `createdBy` | `created_by` | Series creators |
-| `originCountries` | `origin_country` | Countries of origin |
+| Normalized field   | TV source            | Notes                              |
+| ------------------ | -------------------- | ---------------------------------- |
+| `mediaType`        | Fixed value          | Set by the mapper                  |
+| `firstAirDate`     | `first_air_date`     | Optional first air date            |
+| `lastAirDate`      | `last_air_date`      | Optional most recent air date      |
+| `numberOfSeasons`  | `number_of_seasons`  | Optional season count              |
+| `numberOfEpisodes` | `number_of_episodes` | Optional episode count             |
+| `networks`         | `networks`           | Broadcasting networks or platforms |
+| `createdBy`        | `created_by`         | Series creators                    |
+| `originCountries`  | `origin_country`     | Countries of origin                |
 
 The following TV fields are intentionally excluded:
 
@@ -166,88 +156,13 @@ The following TV fields are intentionally excluded:
 
 `episode_run_time` is excluded because it is an array of generic episode durations without a reliable association to a specific season or episode. Season and episode details require a separate later spike.
 
-## Raw TMDb contracts
+### Raw TMDb contracts
 
 Define one Zod schema per TMDb detail response. These schemas preserve the original TMDb field names and validate the external boundary.
 
-### Movie raw contract
+Raw Movie and TV contracts validate the TMDb field names, including nullable `status`, nonnegative nullable Movie `runtime`, and optional detail metadata where appropriate.
 
-```ts
-export const TmdbMovieDetailRawSchema = z.object({
-  id: z.number(),
-  title: z.string(),
-  original_title: z.string(),
-  overview: z.string().nullable(),
-  tagline: z.string().nullable(),
-  poster_path: z.string().nullable(),
-  backdrop_path: z.string().nullable(),
-  vote_average: z.number(),
-  vote_count: z.number(),
-  genres: z.array(
-    z.object({
-      id: z.number(),
-      name: z.string(),
-    }),
-  ),
-  original_language: z.string(),
-  status: z.string(),
-  homepage: z.string().nullable(),
-  popularity: z.number(),
-  release_date: z.string().nullable(),
-  runtime: z.number().nullable(),
-});
-
-export type TmdbMovieDetailRaw = z.infer<typeof TmdbMovieDetailRawSchema>;
-```
-
-### TV raw contract
-
-```ts
-export const TmdbTvDetailRawSchema = z.object({
-  id: z.number(),
-  name: z.string(),
-  original_name: z.string(),
-  overview: z.string().nullable(),
-  tagline: z.string().nullable(),
-  poster_path: z.string().nullable(),
-  backdrop_path: z.string().nullable(),
-  vote_average: z.number(),
-  vote_count: z.number(),
-  genres: z.array(
-    z.object({
-      id: z.number(),
-      name: z.string(),
-    }),
-  ),
-  original_language: z.string(),
-  status: z.string(),
-  homepage: z.string().nullable(),
-  popularity: z.number(),
-  first_air_date: z.string().nullable(),
-  last_air_date: z.string().nullable(),
-  number_of_seasons: z.number().nullable(),
-  number_of_episodes: z.number().nullable(),
-  networks: z.array(
-    z.object({
-      id: z.number(),
-      name: z.string(),
-    }),
-  ),
-  created_by: z.array(
-    z.object({
-      id: z.number(),
-      name: z.string(),
-    }),
-  ),
-  origin_country: z.array(z.string()),
-});
-
-export type TmdbTvDetailRaw = z.infer<typeof TmdbTvDetailRawSchema>;
-```
-
-## Architecture
-
-Follow the established boundaries:
+### Architecture
 
 - `src/lib/schemas` contains the Zod contracts for raw TMDb responses and normalized detail data.
 - `server/services/tmdb` contains framework-free detail services, mappers and errors.
@@ -256,11 +171,7 @@ Follow the established boundaries:
 - External TMDb HTTP transports are injected into services.
 - Do not mock the module under test; mock only external boundaries.
 
-## Tests
-
-Tests are part of this spike, not a separate later work package.
-
-### Unit tests
+### Tests
 
 Add unit tests for:
 
@@ -279,8 +190,6 @@ Use the established coverage-intent comments:
 - `// Statement coverage: ...`
 - `// Branch coverage: ...`
 
-### HTTP contract tests
-
 Add HTTP contract tests for:
 
 - Invalid Movie IDs.
@@ -291,18 +200,7 @@ Add HTTP contract tests for:
 
 Use stable `TMDB-INT-…` identifiers in HTTP integration test titles.
 
-## Manual verification
-
-After implementation, use the local dev server to check:
-
-- One valid Movie detail request.
-- One valid TV detail request.
-- One invalid Movie ID.
-- One invalid TV ID.
-
-Record only a summary: status code, presence of title, overview, poster/backdrop, genres and TV season/episode counts. Do not paste complete API responses or credentials.
-
-## Acceptance criteria
+### Acceptance criteria
 
 - Movie details are retrieved through `GET /api/tmdb/movie/[id]`.
 - TV details are retrieved through `GET /api/tmdb/tv/[id]`.
@@ -316,6 +214,68 @@ Record only a summary: status code, presence of title, overview, poster/backdrop
 - `pnpm test`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck`, `pnpm build` and `pnpm test:e2e` pass locally.
 - Manual live verification confirms successful Movie and TV detail requests.
 
-## Status
+### Out of scope
 
-Planned. No implementation or validation has been performed.
+- Detail page UI
+- Routing or navigation
+- Pinia or URL state
+- `append_to_response`
+- Credits, cast, crew, videos, images, recommendations, similar titles, reviews, keywords, translations, alternative titles, release dates, watch providers, regions or certification
+- LLM or Ollama integration
+- Mixed Movie/TV result lists
+- Infinite scroll
+- Automatic activation of additional TMDb capabilities without separate verification
+
+## Execution status
+
+### Status
+
+Completed.
+
+### Implemented
+
+1. Raw Movie and TV detail Zod contracts.
+2. Normalized `TmdbDetailBase`, `TmdbMovieDetail` and `TmdbTvDetail` contracts.
+3. Movie and TV detail mappers.
+4. Detail service with injected HTTP transport.
+5. Nitro routes for Movie and TV details.
+6. Unit tests for schemas, mapping, orchestration and error isolation.
+7. HTTP contract tests for invalid Movie and TV IDs.
+8. Optional TMDb metadata is tolerated by the raw detail contracts.
+9. `INVALID_RESPONSE` errors preserve the original validation or mapping error as their `cause`.
+
+### Files created or changed
+
+- `src/lib/schemas/tmdb-detail.ts`
+- `server/services/tmdb/detail-mappers.ts`
+- `server/services/tmdb/detail.ts`
+- `server/services/tmdb/errors.ts`
+- `server/api/tmdb/movie/[id].get.ts`
+- `server/api/tmdb/tv/[id].get.ts`
+- `tests/fixtures/tmdb/detail-movie.raw.ts`
+- `tests/fixtures/tmdb/detail-tv.raw.ts`
+- `tests/unit/services/detail.spec.ts`
+- `tests/unit/api/tmdb/detail-handlers.spec.ts`
+- `tests/integration/http/detail.api.ts`
+
+### Validation
+
+Local automated test and coverage validation completed successfully. Manual TMDb verification for Movie and TV details completed successfully.
+
+After pulling the latest branch, run:
+
+- `pnpm test`
+- `pnpm test:coverage`
+- `pnpm lint`
+- `pnpm typecheck`
+- `pnpm build`
+- `pnpm test:e2e`
+
+Then use the local dev server to check:
+
+- One valid Movie detail request.
+- One valid TV detail request.
+- One invalid Movie ID.
+- One invalid TV ID.
+
+Record only a summary: status code, presence of title, overview, poster/backdrop, genres and TV season/episode counts. Do not paste complete API responses or credentials.

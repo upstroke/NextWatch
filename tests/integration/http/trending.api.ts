@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('TMDB-INT-003: GET trending returns a sanitized 503 when credentials are absent', async ({ request }) => {
+test('TMDB-INT-003: GET trending returns a sanitized 503 when credentials are absent', async ({
+  request,
+}) => {
   const response = await request.get('/api/tmdb/trending');
   expect(response.status()).toBe(503);
   expect(response.headers()['cache-control']).toBe('no-store');

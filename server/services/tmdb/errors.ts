@@ -12,10 +12,14 @@ const tmdbErrors = new WeakSet<Error>();
  * Creates a TMDb error marked as originating from this module.
  *
  * @param code - The TMDb error code describing the failure category.
+ * @param options - Optional error context, including the underlying cause.
  * @returns The marked error instance.
  */
-export function createTmdbError(code: TmdbErrorCode) {
-  const error = Object.assign(new Error(code), { name: 'TmdbError', code } as const);
+export function createTmdbError(code: TmdbErrorCode, options?: { cause?: unknown }) {
+  const error = Object.assign(new Error(code, { cause: options?.cause }), {
+    name: 'TmdbError',
+    code,
+  } as const);
   tmdbErrors.add(error);
   return error;
 }
