@@ -1,8 +1,5 @@
 import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
-import type {
-  TmdbDiscoverMovieResponse,
-  TmdbDiscoverTvResponse,
-} from '@lib/schemas/tmdb-discover';
+import type { TmdbDiscoverMovieResponse, TmdbDiscoverTvResponse } from '@lib/schemas/tmdb-discover';
 
 type PagedFields = Pick<TmdbPagedResponse, 'page' | 'totalPages' | 'totalResults'>;
 

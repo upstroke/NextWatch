@@ -1,4 +1,4 @@
-import type { TmdbPagedResponse } from 'src/lib/schemas/tmdb';
+import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTrendingService } from '@server/services/tmdb/trending';
 import { toTmdbHttpError } from '@server/services/tmdb/errors';
