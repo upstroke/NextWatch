@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TmdbError } from '@server/services/tmdb/errors';
+import { createTmdbError } from '@server/services/tmdb/errors';
 import { sendTmdbError } from '@server/utils/tmdb-errors';
 
 type TmdbErrorEvent = {
@@ -24,7 +24,7 @@ describe('TMDb H3 error response', () => {
   // Statement coverage: writes the mapped status code to the response and returns the HTTP error
   it('writes the mapped status code to the response and returns the HTTP error', () => {
     const event = createEvent();
-    const error = new TmdbError('INVALID_QUERY');
+    const error = createTmdbError('INVALID_QUERY');
 
     expect(sendTmdbError(event as unknown as Parameters<typeof sendTmdbError>[0], error)).toEqual({
       statusCode: 400,

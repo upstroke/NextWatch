@@ -10,7 +10,7 @@ import {
   mapMovieDiscoverResponse,
   mapTvDiscoverResponse,
 } from '@server/services/tmdb/discover-mappers';
-import { TmdbError } from '@server/services/tmdb/errors';
+import { createTmdbError } from '@server/services/tmdb/errors';
 
 const baseFilters = DiscoverFiltersSchema.parse({
   genreIds: [28, 878],
@@ -203,7 +203,7 @@ describe('Discover service', () => {
 
   // Branch coverage: preserves transport errors instead of reclassifying them
   it('preserves transport errors instead of reclassifying them', async () => {
-    const failure = new TmdbError('UPSTREAM_FAILED');
+    const failure = createTmdbError('UPSTREAM_FAILED');
     const http = { get: vi.fn().mockRejectedValue(failure) };
 
     await expect(createDiscoverService(http).discoverMovies(baseFilters)).rejects.toBe(failure);

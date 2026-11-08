@@ -5,7 +5,7 @@ import type { TmdbConfig, TmdbRequest } from '@server/services/tmdb/http';
 import { createTrendingService } from '@server/services/tmdb/trending';
 
 export type { TmdbRequest } from '@server/services/tmdb/http';
-export { TmdbError as TmdbSpikeError } from '@server/services/tmdb/errors';
+export { createTmdbError as createTmdbSpikeError } from '@server/services/tmdb/errors';
 
 /** Validate Nuxt runtime configuration and adapt it to the typed TMDb service configuration. */
 export function getTmdbConfig(event: H3Event): TmdbConfig {

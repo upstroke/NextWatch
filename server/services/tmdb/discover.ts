@@ -5,7 +5,7 @@ import {
   TmdbDiscoverTvResponseSchema,
 } from '@lib/schemas/tmdb-discover';
 import type { TmdbHttpClient } from './http';
-import { TmdbError } from './errors';
+import { createTmdbError } from './errors';
 import { buildDiscoverParams, type DiscoverMediaType } from './discover-params';
 import { mapMovieDiscoverResponse, mapTvDiscoverResponse } from './discover-mappers';
 
@@ -22,7 +22,7 @@ async function discover(
   try {
     return mapResponse(parseResponse(raw) as never);
   } catch {
-    throw new TmdbError('INVALID_RESPONSE');
+    throw createTmdbError('INVALID_RESPONSE');
   }
 }
 

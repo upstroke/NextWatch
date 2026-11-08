@@ -6,15 +6,23 @@ export type TmdbErrorCode =
   | 'UPSTREAM_FAILED'
   | 'INVALID_RESPONSE';
 
-export class TmdbError extends Error {
-  constructor(public readonly code: TmdbErrorCode) {
-    super(code);
-    this.name = 'TmdbError';
-  }
+const tmdbErrors = new WeakSet<Error>();
+
+export function createTmdbError(code: TmdbErrorCode) {
+  const error = Object.assign(new Error(code), { name: 'TmdbError', code } as const);
+  tmdbErrors.add(error);
+  return error;
+}
+
+export type TmdbError = ReturnType<typeof createTmdbError>;
+
+/** Recognize only errors created by this module, not lookalike external values. */
+export function isTmdbError(error: unknown): error is TmdbError {
+  return error instanceof Error && tmdbErrors.has(error);
 }
 
 export function toTmdbHttpError(error: unknown) {
-  const code = error instanceof TmdbError ? error.code : undefined;
+  const code = isTmdbError(error) ? error.code : undefined;
 
   if (code === 'INVALID_QUERY') {
     return { statusCode: 400, statusMessage: 'Invalid Discover query' };
