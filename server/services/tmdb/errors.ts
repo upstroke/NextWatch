@@ -8,6 +8,12 @@ export type TmdbErrorCode =
 
 const tmdbErrors = new WeakSet<Error>();
 
+/**
+ * Creates a TMDb error marked as originating from this module.
+ *
+ * @param code - The TMDb error code describing the failure category.
+ * @returns The marked error instance.
+ */
 export function createTmdbError(code: TmdbErrorCode) {
   const error = Object.assign(new Error(code), { name: 'TmdbError', code } as const);
   tmdbErrors.add(error);
@@ -21,6 +27,14 @@ export function isTmdbError(error: unknown): error is TmdbError {
   return error instanceof Error && tmdbErrors.has(error);
 }
 
+/**
+ * Maps a TMDb error to a safe HTTP error response.
+ *
+ * Unknown errors are treated as an upstream request or response failure.
+ *
+ * @param error - The caught error to classify.
+ * @returns The HTTP status code and sanitized status message.
+ */
 export function toTmdbHttpError(error: unknown) {
   const code = isTmdbError(error) ? error.code : undefined;
 
