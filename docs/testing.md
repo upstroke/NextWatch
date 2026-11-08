@@ -42,37 +42,7 @@ This separation determines where tests belong:
 
 ## Single source of truth for types
 
-Zod schemas are the single source of truth for external data structures.
-
-For every external structure, define exactly one schema in `src/lib/schemas` and derive its TypeScript type from that schema:
-
-```ts
-export const TmdbRuntimeConfigSchema = z.object({
-  apiReadAccessToken: z.string(),
-  baseUrl: z.string(),
-});
-
-export type TmdbRuntimeConfig = z.infer<typeof TmdbRuntimeConfigSchema>;
-```
-
-Follow these rules:
-
-- Do not create a separate manual `interface` or `type` for a structure that already has a Zod schema.
-- Derive public domain types with `z.infer<typeof Schema>`.
-- Services and UI code import the derived type, not the schema.
-- Only boundaries call `.parse()` or `.safeParse()`: TMDb responses, query parameters, runtime configuration, and other external input.
-- A semantic type alias may reference a derived type, for example `type TmdbConfig = TmdbRuntimeConfig`, but must not redefine its fields.
-
-Examples:
-
-| Schema                            | Derived type                       | Boundary                     |
-| --------------------------------- | ---------------------------------- | ---------------------------- |
-| `TmdbRuntimeConfigSchema`         | `TmdbRuntimeConfig` / `TmdbConfig` | Nuxt runtime configuration   |
-| `DiscoverQuerySchema`             | `DiscoverQuery`                    | Discover query parameters    |
-| `DiscoverFiltersSchema`           | `DiscoverFilters`                  | Validated discover filters   |
-| `TmdbDiscoverMovieResponseSchema` | `TmdbDiscoverMovieResponse`        | TMDb Discover Movie response |
-| `TmdbTrendingResponseSchema`      | `TmdbTrendingResponse`             | TMDb Trending response       |
-| `TmdbPagedResponseSchema`         | `TmdbPagedResponse`                | Public paged response model  |
+Follow [Typing](typing.md) for all TypeScript and Zod typing conventions.
 
 ## Folder structure
 
@@ -95,6 +65,8 @@ Unit tests exercise one cohesive unit in isolation: schemas, services, mappers, 
 
 They must not perform real network requests. External boundaries, especially TMDb HTTP calls, are mocked.
 
+Begin every `it` block with an explicit coverage-intent comment: `// Statement coverage:` or `// Branch coverage:`. Use `// Statement coverage:` for a verified execution path and `// Branch coverage:` for a conditional path, error branch, fallback, or boundary.
+
 ### Integration tests
 
 Integration tests exercise a Nitro route handler together with its schema, service, mapper, and controlled external boundary.
@@ -106,6 +78,20 @@ For TMDb routes, mock the outbound TMDb transport rather than internal applicati
 Use `tests/fixtures` for representative, reusable API payloads and domain data.
 
 Use `tests/mocks` for shared HTTP-client, TMDb-transport, and Nitro-event doubles. Prefer a small explicit mock over mocking the module under test.
+
+## Test identifiers
+
+Give integration and E2E tests stable identifiers that support traceability.
+
+| Test type | Identifier | Purpose |
+| --- | --- | --- |
+| Unit test | None | The coverage-intent comment documents the test's purpose |
+| Integration test | `TMDB-INT-001`, `TMDB-INT-002`, … | Stable technical traceability and selective execution |
+| E2E test | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user story and its acceptance criterion |
+
+E2E tests are derived from user stories and their acceptance criteria. Each E2E test receives a stable identifier that references its user story and acceptance criterion, for example `SEARCH-001-AC1`. Multiple tests may verify different aspects of the same acceptance criterion, but each test receives a unique identifier.
+
+Do not reuse an identifier after removing or replacing a test. Maintain the link between the user story, acceptance criterion and E2E test.
 
 ## Coverage
 
@@ -125,7 +111,7 @@ The global thresholds are:
 
 ## Coverage comments
 
-Each test begins with an explicit coverage intent:
+Each `it` block begins with an explicit coverage intent:
 
 ```ts
 // Statement coverage: validates a valid discover query.
@@ -164,4 +150,5 @@ Do not use Nuxt’s default `@` or `~` aliases for shared application code; they
 - Keep framework-specific code out of services and shared domain logic.
 - Keep fixtures deterministic and reusable.
 - Prefer focused tests over broad end-to-end assertions.
+- Give integration and E2E tests stable identifiers that support traceability. Do not reuse an identifier after removing or replacing a test.
 - Do not expand Playwright E2E coverage for now; Vitest unit and integration tests are the active testing focus.

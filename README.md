@@ -36,6 +36,24 @@ pnpm format
 pnpm typecheck
 ```
 
-## Scope
+## Current scope
 
-The initial foundation contains project configuration, Zod contracts and tests only. TMDb integration, Ollama integration, filter pills, search results and the detail page are implemented in later, separately reviewed tasks.
+The foundation includes project configuration, Zod contracts and server-side TMDb support for Trending, Discover Movie and Discover TV. TMDb transport, response validation, mapping and error handling are separated. Errors are created through `createTmdbError`, with a derived error type and a private WeakSet-based guard.
+
+Unit tests and direct handler tests use shared handler mocks and synthetic raw TMDb fixtures. Direct handler tests do not start a Nuxt/Nitro server and are not HTTP integration tests.
+
+The application UI has not yet been built. UI fallback behavior for missing content is being discussed, not implemented. Further UI, Ollama and HTTP integration-test work require separately agreed tasks.
+
+## Contracts and typing
+
+Zod schemas are the source of truth for validated external data contracts and runtime validation. For all typing conventions, including internal functions, shared type locations and type assertions, see [Typing](docs/typing.md).
+
+## Documentation and collaboration
+
+This README is a concise, evolving entry point, not a complete project specification. Update it when the implemented scope or setup changes.
+
+- [Typing](docs/typing.md): authoritative TypeScript and Zod typing conventions.
+- [AI development rules and working agreement](AGENTS.md): shared architecture, contract, testing and approval rules.
+- [Service boundaries and ADR 001](specs/architecture/001-service-boundaries.md): architecture decisions for API and state code.
+
+Keep shared rules in one place and link to them rather than duplicating them. Decide on additional documentation structure or coding-agent-specific configuration when a concrete need arises.
