@@ -8,13 +8,13 @@ NextWatch needs to verify that TMDb Discover provides the filters and response d
 
 ## Boundaries
 
-- `../../docs/work/server` and `../../docs/work/server` are HTTP adapters. They validate query input, set `Cache-Control: no-store`, compose dependencies and translate controlled errors to HTTP responses.
-- `../../docs/work/server` orchestrates each request: parameter construction, upstream request, raw response validation and normalization.
-- `../../docs/work/server` is a pure mapping layer from validated application filters to TMDb query parameters.
-- `../../docs/work/server` contains pure response mappers and assigns `mediaType` as `movie` or `tv`.
-- `../../docs/work/server` owns transport concerns: fixed base URL, Bearer authentication, JSON acceptance, timeout, no retries and path validation.
-- `src/lib/schemas/discover.ts` defines the application filter contract and derives its TypeScript type with `z.infer`.
-- `src/lib/schemas/tmdb-discover.ts` defines narrow Zod contracts for Movie and TV Discover raw responses.
+- `../../../../server` and `../../docs/work/server` are HTTP adapters. They validate query input, set `Cache-Control: no-store`, compose dependencies and translate controlled errors to HTTP responses.
+- `../../../../server` orchestrates each request: parameter construction, upstream request, raw response validation and normalization.
+- `../../../../server` is a pure mapping layer from validated application filters to TMDb query parameters.
+- `../../../../server` contains pure response mappers and assigns `mediaType` as `movie` or `tv`.
+- `../../../../server` owns transport concerns: fixed base URL, Bearer authentication, JSON acceptance, timeout, no retries and path validation.
+- `../../../../src/lib/schemas/discover.ts` defines the application filter contract and derives its TypeScript type with `z.infer`.
+- `../../../../src/lib/schemas/tmdb-discover.ts` defines narrow Zod contracts for Movie and TV Discover raw responses.
 
 Runtime configuration is read only in the Nitro composition root. Browser code must not import server modules or access TMDb credentials.
 

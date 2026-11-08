@@ -26,8 +26,8 @@ server/api/              Nitro route handlers and HTTP boundary
 
 Follow these boundaries when adding code:
 
-- Keep `src/lib` and `work/server` free from H3, Nitro, and HTTP-framework imports.
-- Put H3-specific helpers, such as functions that receive an `H3Event`, in `work/server`.
+- Keep `src/lib` and `../server` free from H3, Nitro, and HTTP-framework imports.
+- Put H3-specific helpers, such as functions that receive an `H3Event`, in `../server`.
 - Keep Nitro route handlers thin: validate input, call a service, map errors, and return a response.
 - Inject external transports into services. This makes services testable without real network access.
 - Do not mock the module under test. Mock only external boundaries, especially the TMDb HTTP transport.
