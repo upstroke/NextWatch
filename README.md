@@ -54,6 +54,7 @@ This README is a concise, evolving entry point, not a complete project specifica
 
 - [Typing](docs/typing.md): authoritative TypeScript and Zod typing conventions.
 - [AI development rules and working agreement](AGENTS.md): shared architecture, contract, testing and approval rules.
+- [Work packages](docs/work/): one file per work package, containing its stable specification and current execution status.
 - [Service boundaries and ADR 001](docs/work/specs/architecture/001-service-boundaries.md): architecture decisions for API and state code.
 
 Keep shared rules in one place and link to them rather than duplicating them. Decide on additional documentation structure or coding-agent-specific configuration when a concrete need arises.
