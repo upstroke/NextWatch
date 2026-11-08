@@ -1,8 +1,8 @@
 import type { TmdbPagedResponse } from 'src/lib/schemas/tmdb';
-import { createTmdbHttpClient } from 'docs/work/server/services/tmdb/http';
-import { createTrendingService } from 'docs/work/server/services/tmdb/trending';
-import { toTmdbHttpError } from 'docs/work/server/services/tmdb/errors';
-import { getTmdbConfig } from 'docs/work/server/utils/tmdb';
+import { createTmdbHttpClient } from 'server/services/tmdb/http';
+import { createTrendingService } from 'server/services/tmdb/trending';
+import { toTmdbHttpError } from 'server/services/tmdb/errors';
+import { getTmdbConfig } from 'server/utils/tmdb';
 
 /** Handles a request for weekly trending media. */
 export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {

@@ -1,11 +1,11 @@
 import type { TmdbPagedResponse } from 'src/lib/schemas/tmdb';
 import { DiscoverFiltersSchema } from 'src/lib/schemas/discover';
 import { DiscoverQuerySchema } from 'src/lib/schemas/discover-query';
-import { createTmdbHttpClient } from 'docs/work/server/services/tmdb/http';
-import { createDiscoverService } from 'docs/work/server/services/tmdb/discover';
-import { createTmdbError } from 'docs/work/server/services/tmdb/errors';
-import { sendTmdbError } from 'docs/work/server/utils/tmdb-errors';
-import { getTmdbConfig } from 'docs/work/server/utils/tmdb';
+import { createTmdbHttpClient } from 'server/services/tmdb/http';
+import { createDiscoverService } from 'server/services/tmdb/discover';
+import { createTmdbError } from 'server/services/tmdb/errors';
+import { sendTmdbError } from 'server/utils/tmdb-errors';
+import { getTmdbConfig } from 'server/utils/tmdb';
 
 /** Handles a request for TV Discover results. */
 export default defineEventHandler(

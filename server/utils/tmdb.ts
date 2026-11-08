@@ -1,11 +1,11 @@
 import type { H3Event } from 'h3';
 import { TmdbRuntimeConfigSchema } from 'src/lib/schemas/runtime-config';
-import { createTmdbHttpClient } from 'docs/work/server/services/tmdb/http';
-import type { TmdbConfig, TmdbRequest } from 'docs/work/server/services/tmdb/http';
-import { createTrendingService } from 'docs/work/server/services/tmdb/trending';
+import { createTmdbHttpClient } from 'server/services/tmdb/http';
+import type { TmdbConfig, TmdbRequest } from 'server/services/tmdb/http';
+import { createTrendingService } from 'server/services/tmdb/trending';
 
-export type { TmdbRequest } from 'docs/work/server/services/tmdb/http';
-export { createTmdbError as createTmdbSpikeError } from 'docs/work/server/services/tmdb/errors';
+export type { TmdbRequest } from 'server/services/tmdb/http';
+export { createTmdbError as createTmdbSpikeError } from 'server/services/tmdb/errors';
 
 /** Validate Nuxt runtime configuration and adapt it to the typed TMDb service configuration. */
 export function getTmdbConfig(event: H3Event): TmdbConfig {
