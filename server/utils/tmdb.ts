@@ -14,6 +14,13 @@ export function getTmdbConfig(event: H3Event): TmdbConfig {
   return TmdbRuntimeConfigSchema.parse(config.tmdb);
 }
 
+/**
+ * Retrieves the weekly trending media using the supplied TMDb configuration.
+ *
+ * @param config - The validated TMDb runtime configuration.
+ * @param request - The HTTP request adapter used for upstream requests.
+ * @returns The mapped weekly trending media response.
+ */
 export async function fetchWeeklyTrending(config: TmdbConfig, request: TmdbRequest) {
   return createTrendingService(createTmdbHttpClient(config, request)).getWeeklyTrending();
 }

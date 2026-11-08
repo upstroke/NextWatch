@@ -6,48 +6,79 @@ import {
 } from '@lib/schemas/tmdb-discover';
 import type { TmdbHttpClient } from './http';
 import { createTmdbError } from './errors';
-import { buildDiscoverParams, type DiscoverMediaType } from './discover-params';
+import { buildDiscoverParams } from './discover-params';
 import { mapMovieDiscoverResponse, mapTvDiscoverResponse } from './discover-mappers';
 
-async function discover(
+/**
+ * Retrieves, validates and maps Movie Discover results.
+ *
+ * @param http - The TMDb HTTP client used for the upstream request.
+ * @param filters - The Discover filters to apply.
+ * @returns The mapped paged response containing movie media items.
+ * @throws A TMDb error with code `INVALID_RESPONSE` when the response
+ * cannot be validated or mapped.
+ */
+async function discoverMovies(
   http: TmdbHttpClient,
-  endpoint: string,
-  mediaType: DiscoverMediaType,
   filters: DiscoverFilters,
-  parseResponse: (raw: unknown) => unknown,
-  mapResponse: (response: never) => TmdbPagedResponse,
 ): Promise<TmdbPagedResponse> {
-  const raw = await http.get(endpoint, buildDiscoverParams(mediaType, filters));
+  const raw = await http.get('/discover/movie', buildDiscoverParams('movie', filters));
 
   try {
-    return mapResponse(parseResponse(raw) as never);
+    return mapMovieDiscoverResponse(TmdbDiscoverMovieResponseSchema.parse(raw));
   } catch {
     throw createTmdbError('INVALID_RESPONSE');
   }
 }
 
+/**
+ * Retrieves, validates and maps TV Discover results.
+ *
+ * @param http - The TMDb HTTP client used for the upstream request.
+ * @param filters - The Discover filters to apply.
+ * @returns The mapped paged response containing TV media items.
+ * @throws A TMDb error with code `INVALID_RESPONSE` when the response
+ * cannot be validated or mapped.
+ */
+async function discoverTv(
+  http: TmdbHttpClient,
+  filters: DiscoverFilters,
+): Promise<TmdbPagedResponse> {
+  const raw = await http.get('/discover/tv', buildDiscoverParams('tv', filters));
+
+  try {
+    return mapTvDiscoverResponse(TmdbDiscoverTvResponseSchema.parse(raw));
+  } catch {
+    throw createTmdbError('INVALID_RESPONSE');
+  }
+}
+
+/**
+ * Creates a Discover service backed by the supplied TMDb HTTP client.
+ *
+ * @param http - The TMDb HTTP client used for upstream requests.
+ * @returns The Discover service.
+ */
 export function createDiscoverService(http: TmdbHttpClient) {
   return {
+    /**
+     * Retrieves and maps Movie Discover results for the supplied filters.
+     *
+     * @param filters - The Discover filters to apply.
+     * @returns The mapped paged response containing movie media items.
+     */
     discoverMovies(filters: DiscoverFilters): Promise<TmdbPagedResponse> {
-      return discover(
-        http,
-        '/discover/movie',
-        'movie',
-        filters,
-        TmdbDiscoverMovieResponseSchema.parse,
-        mapMovieDiscoverResponse,
-      );
+      return discoverMovies(http, filters);
     },
 
+    /**
+     * Retrieves and maps TV Discover results for the supplied filters.
+     *
+     * @param filters - The Discover filters to apply.
+     * @returns The mapped paged response containing TV media items.
+     */
     discoverTv(filters: DiscoverFilters): Promise<TmdbPagedResponse> {
-      return discover(
-        http,
-        '/discover/tv',
-        'tv',
-        filters,
-        TmdbDiscoverTvResponseSchema.parse,
-        mapTvDiscoverResponse,
-      );
+      return discoverTv(http, filters);
     },
   };
 }

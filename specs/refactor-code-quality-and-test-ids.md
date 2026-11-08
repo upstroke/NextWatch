@@ -56,7 +56,7 @@ No changes are required for these aspects.
 `server/services/tmdb/discover.ts` contains:
 
 ```ts
-mapResponse(parseResponse(raw) as never)
+mapResponse(parseResponse(raw) as never);
 ```
 
 This type assertion suppresses the type relationship between the parsed raw response and the mapper. It conflicts with the agreed rule that `as` must not be used to suppress type errors or as a substitute for validation.
@@ -76,27 +76,27 @@ The resulting code must preserve the current behavior:
 
 Add concise TSDoc/JSDoc comments to the following exported functions and public methods:
 
-| File | Element |
-| --- | --- |
-| `server/services/tmdb/errors.ts` | `createTmdbError` |
-| `server/services/tmdb/errors.ts` | `toTmdbHttpError` |
+| File                                       | Element                    |
+| ------------------------------------------ | -------------------------- |
+| `server/services/tmdb/errors.ts`           | `createTmdbError`          |
+| `server/services/tmdb/errors.ts`           | `toTmdbHttpError`          |
 | `server/services/tmdb/discover-mappers.ts` | `mapMovieDiscoverResponse` |
-| `server/services/tmdb/discover-mappers.ts` | `mapTvDiscoverResponse` |
-| `server/services/tmdb/discover.ts` | `createDiscoverService` |
-| `server/services/tmdb/discover.ts` | `discoverMovies` |
-| `server/services/tmdb/discover.ts` | `discoverTv` |
-| `server/services/tmdb/trending.ts` | `createTrendingService` |
-| `server/services/tmdb/trending.ts` | `getWeeklyTrending` |
-| `server/api/tmdb/trending.get.ts` | Default event handler |
-| `server/api/tmdb/discover/movie.get.ts` | Default event handler |
-| `server/api/tmdb/discover/tv.get.ts` | Default event handler |
-| `server/utils/tmdb.ts` | `fetchWeeklyTrending` |
+| `server/services/tmdb/discover-mappers.ts` | `mapTvDiscoverResponse`    |
+| `server/services/tmdb/discover.ts`         | `createDiscoverService`    |
+| `server/services/tmdb/discover.ts`         | `discoverMovies`           |
+| `server/services/tmdb/discover.ts`         | `discoverTv`               |
+| `server/services/tmdb/trending.ts`         | `createTrendingService`    |
+| `server/services/tmdb/trending.ts`         | `getWeeklyTrending`        |
+| `server/api/tmdb/trending.get.ts`          | Default event handler      |
+| `server/api/tmdb/discover/movie.get.ts`    | Default event handler      |
+| `server/api/tmdb/discover/tv.get.ts`       | Default event handler      |
+| `server/utils/tmdb.ts`                     | `fetchWeeklyTrending`      |
 
 Add concise TSDoc/JSDoc comments to the public methods of the HTTP client returned by `createTmdbHttpClient`:
 
-| File | Method |
-| --- | --- |
-| `server/services/tmdb/http.ts` | `get` |
+| File                           | Method              |
+| ------------------------------ | ------------------- |
+| `server/services/tmdb/http.ts` | `get`               |
 | `server/services/tmdb/http.ts` | `getWeeklyTrending` |
 
 Do not restate obvious implementation details. Describe the contract, parameters and return value only where useful.
@@ -107,11 +107,11 @@ The existing Playwright HTTP tests are HTTP integration tests because they execu
 
 Add stable integration identifiers to the existing tests:
 
-| File | Test | Identifier |
-| --- | --- | --- |
-| `tests/http/discover.api.ts` | Movie Discover invalid rating | `TMDB-INT-001` |
+| File                         | Test                            | Identifier     |
+| ---------------------------- | ------------------------------- | -------------- |
+| `tests/http/discover.api.ts` | Movie Discover invalid rating   | `TMDB-INT-001` |
 | `tests/http/discover.api.ts` | TV Discover reversed year range | `TMDB-INT-002` |
-| `tests/http/trending.api.ts` | Trending missing credentials | `TMDB-INT-003` |
+| `tests/http/trending.api.ts` | Trending missing credentials    | `TMDB-INT-003` |
 
 Use the identifier as a prefix in the test title, for example:
 

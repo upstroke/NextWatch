@@ -1,6 +1,6 @@
 # Testing
 
-This project uses [Vitest](https://vitest.dev/) for unit and integration tests.
+This project uses [Vitest](https://vitest.dev/) for unit and integration tests. It uses [Playwright](https://playwright.dev/) for HTTP integration tests and future browser-based end-to-end tests.
 
 The test suite currently focuses on the TMDb integration: request validation, service orchestration, error handling, response mapping, and Nitro route behavior.
 
@@ -10,6 +10,7 @@ The test suite currently focuses on the TMDb integration: request validation, se
 npm run test            # Run all tests once
 npm run test:watch      # Run tests in watch mode
 npm run test:coverage   # Run tests with V8 coverage
+npm run test:e2e        # Run Playwright tests
 ```
 
 ## Architecture and testing boundaries
@@ -31,20 +32,13 @@ Follow these boundaries when adding code:
 - Inject external transports into services. This makes services testable without real network access.
 - Do not mock the module under test. Mock only external boundaries, especially the TMDb HTTP transport.
 
-This separation determines where tests belong:
-
-| Code under test     | Test location            | Typical test focus                                     |
-| ------------------- | ------------------------ | ------------------------------------------------------ |
-| `src/lib/schemas`   | `tests/unit/schemas`     | Parsing, defaults, coercion, and validation errors     |
-| `server/services`   | `tests/unit/services`    | Service orchestration, mapping, parameters, and errors |
-| `server/utils`      | `tests/unit/utils`       | Framework-specific helpers and response behavior       |
-| `server/api` routes | `tests/integration/tmdb` | Route-to-response flow with a mocked TMDb transport    |
-
 ## Single source of truth for types
 
 Follow [Typing](typing.md) for all TypeScript and Zod typing conventions.
 
 ## Folder structure
+
+Tests are organized by the boundary they verify, not primarily by the test runner.
 
 ```text
 tests/
@@ -53,13 +47,23 @@ tests/
 │   ├── services/      # Service, mapper, parameter, and error tests
 │   └── utils/         # Framework-specific utility tests
 ├── integration/
-│   └── tmdb/          # TMDb-backed Nitro route tests
+│   ├── http/          # HTTP integration tests using a running Nuxt server
+│   └── tmdb/          # TMDb-backed Nitro route tests with a controlled transport
+├── e2e/               # Browser-based user journeys
 ├── fixtures/          # Shared deterministic test data
-├── mocks/             # Shared test doubles and helpers
-└── http/              # Existing HTTP-level tests
+└── mocks/             # Shared test doubles and helpers
 ```
 
-### Unit tests
+## Test boundaries
+
+| Boundary | Location | Runner | Typical test focus |
+| --- | --- | --- | --- |
+| Unit | `tests/unit` | Vitest | One cohesive unit in isolation: schema, service, mapper, parameter, error, or utility. |
+| Integration: controlled transport | `tests/integration/tmdb` | Vitest | Route-to-response flow with a mocked TMDb transport. |
+| Integration: HTTP boundary | `tests/integration/http` | Playwright | Real HTTP requests against the running Nuxt server. |
+| End-to-end | `tests/e2e` | Playwright | Browser-based user journeys and acceptance criteria. |
+
+## Unit tests
 
 Unit tests exercise one cohesive unit in isolation: schemas, services, mappers, parameters, errors, and utilities.
 
@@ -67,13 +71,27 @@ They must not perform real network requests. External boundaries, especially TMD
 
 Begin every `it` block with an explicit coverage-intent comment: `// Statement coverage:` or `// Branch coverage:`. Use `// Statement coverage:` for a verified execution path and `// Branch coverage:` for a conditional path, error branch, fallback, or boundary.
 
-### Integration tests
+## Integration tests
 
 Integration tests exercise a Nitro route handler together with its schema, service, mapper, and controlled external boundary.
 
 For TMDb routes, mock the outbound TMDb transport rather than internal application modules. This validates the route-to-response flow while keeping tests deterministic.
 
-### Fixtures and mocks
+### HTTP integration tests
+
+`tests/integration/http` contains HTTP integration tests. These tests use Playwright and execute real HTTP requests against the running Nuxt server.
+
+HTTP integration tests require a stable `TMDB-INT-…` identifier in the test title. They do not use coverage-intent comments; those comments are required for unit tests only.
+
+## End-to-end tests
+
+End-to-end tests verify user journeys through the browser-based application.
+
+A user journey describes a recognizable product goal, such as “A visitor searches for a movie”. Each journey receives a stable identifier, for example `SEARCH-001`. Each acceptance criterion receives its own test identifier, for example `SEARCH-001-AC1`.
+
+Multiple tests may verify different aspects of the same acceptance criterion, but each test receives a unique identifier. Do not reuse an identifier after removing or replacing a test.
+
+## Fixtures and mocks
 
 Use `tests/fixtures` for representative, reusable API payloads and domain data.
 
@@ -87,11 +105,9 @@ Give integration and E2E tests stable identifiers that support traceability.
 | --- | --- | --- |
 | Unit test | None | The coverage-intent comment documents the test's purpose |
 | Integration test | `TMDB-INT-001`, `TMDB-INT-002`, … | Stable technical traceability and selective execution |
-| E2E test | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user story and its acceptance criterion |
+| E2E test | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user journey and acceptance criterion |
 
-E2E tests are derived from user stories and their acceptance criteria. Each E2E test receives a stable identifier that references its user story and acceptance criterion, for example `SEARCH-001-AC1`. Multiple tests may verify different aspects of the same acceptance criterion, but each test receives a unique identifier.
-
-Do not reuse an identifier after removing or replacing a test. Maintain the link between the user story, acceptance criterion and E2E test.
+Do not reuse an identifier after removing or replacing a test. Maintain the link between the user journey, acceptance criterion and E2E test.
 
 ## Coverage
 

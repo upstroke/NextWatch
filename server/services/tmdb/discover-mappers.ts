@@ -15,6 +15,12 @@ function toPagedResponse(
   };
 }
 
+/**
+ * Maps a validated Movie Discover response to the internal paged response format.
+ *
+ * @param raw - The validated Movie Discover response.
+ * @returns The mapped paged response containing movie media items.
+ */
 export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPagedResponse {
   return toPagedResponse(
     {
@@ -35,6 +41,12 @@ export function mapMovieDiscoverResponse(raw: TmdbDiscoverMovieResponse): TmdbPa
   );
 }
 
+/**
+ * Maps a validated TV Discover response to the internal paged response format.
+ *
+ * @param raw - The validated TV Discover response.
+ * @returns The mapped paged response containing TV media items.
+ */
 export function mapTvDiscoverResponse(raw: TmdbDiscoverTvResponse): TmdbPagedResponse {
   return toPagedResponse(
     {

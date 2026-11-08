@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('GET movie discover returns a sanitized 400 for an invalid rating', async ({ request }) => {
+test('TMDB-INT-001: GET movie discover returns a sanitized 400 for an invalid rating', async ({ request }) => {
   const response = await request.get('/api/tmdb/discover/movie?minRating=11');
 
   expect(response.status()).toBe(400);
@@ -17,7 +17,7 @@ test('GET movie discover returns a sanitized 400 for an invalid rating', async (
   expect(serialized).not.toContain('stack');
 });
 
-test('GET TV discover returns a sanitized 400 for a reversed year range', async ({ request }) => {
+test('TMDB-INT-002: GET TV discover returns a sanitized 400 for a reversed year range', async ({ request }) => {
   const response = await request.get('/api/tmdb/discover/tv?yearFrom=2024&yearTo=2020');
 
   expect(response.status()).toBe(400);

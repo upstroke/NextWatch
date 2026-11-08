@@ -44,6 +44,16 @@ function assertDiscoverPath(path: string) {
 /** Request adapter must reject redirects; credentials must never follow them. */
 export function createTmdbHttpClient(config: TmdbConfig, request: TmdbRequest) {
   return {
+    /**
+     * Performs an authenticated GET request against the configured TMDb API.
+     *
+     * Validates the runtime configuration and request path before dispatching
+     * the request. Transport failures are classified as `UPSTREAM_FAILED`.
+     *
+     * @param path - The TMDb API path, beginning with a slash.
+     * @param query - Optional query parameters to append to the request.
+     * @returns The unvalidated raw response body.
+     */
     async get(path: string, query: Record<string, string> = {}): Promise<unknown> {
       assertConfiguration(config);
       assertDiscoverPath(path);
@@ -63,6 +73,11 @@ export function createTmdbHttpClient(config: TmdbConfig, request: TmdbRequest) {
       }
     },
 
+    /**
+     * Retrieves the weekly trending media from TMDb.
+     *
+     * @returns The unvalidated raw trending response body.
+     */
     async getWeeklyTrending(): Promise<unknown> {
       return this.get('/trending/all/week', { language: 'de-DE' });
     },
