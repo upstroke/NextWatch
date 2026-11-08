@@ -56,7 +56,7 @@ tests/
 │   └── tmdb/          # TMDb-backed Nitro route tests
 ├── fixtures/          # Shared deterministic test data
 ├── mocks/             # Shared test doubles and helpers
-└── http/              # Existing HTTP-level tests
+└── http/              # HTTP integration tests
 ```
 
 ### Unit tests
@@ -72,6 +72,12 @@ Begin every `it` block with an explicit coverage-intent comment: `// Statement c
 Integration tests exercise a Nitro route handler together with its schema, service, mapper, and controlled external boundary.
 
 For TMDb routes, mock the outbound TMDb transport rather than internal application modules. This validates the route-to-response flow while keeping tests deterministic.
+
+### HTTP integration tests
+
+`tests/http` contains HTTP integration tests. These tests use [Playwright](https://playwright.dev/) and execute real HTTP requests against the running Nuxt server.
+
+HTTP integration tests require a stable `TMDB-INT-…` identifier in the test title. They do not use coverage-intent comments; those comments are required for unit tests only.
 
 ### Fixtures and mocks
 
