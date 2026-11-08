@@ -318,4 +318,4 @@ Record only a summary: status code, presence of title, overview, poster/backdrop
 
 ## Status
 
-Planned. No implementation or validation has been performed.
+Implemented. Local validation and manual TMDb verification remain outstanding.
