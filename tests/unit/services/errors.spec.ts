@@ -1,6 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { TmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
 
+describe('TMDb error creation', () => {
+  // Statement coverage: preserves the native Error contract and TMDb metadata
+  it('creates a native Error with a name, message and code', () => {
+    const error = new TmdbError('INVALID_RESPONSE');
+
+    expect(error).toBeInstanceOf(Error);
+    expect(error.name).toBe('TmdbError');
+    expect(error.message).toBe('INVALID_RESPONSE');
+    expect(error.code).toBe('INVALID_RESPONSE');
+    expect(error.stack).toEqual(expect.any(String));
+  });
+
+  // Statement coverage: creates independent error objects
+  it('creates a fresh error for each call', () => {
+    const first = new TmdbError('INVALID_RESPONSE');
+    const second = new TmdbError('INVALID_RESPONSE');
+
+    expect(first).not.toBe(second);
+  });
+});
+
 describe('TMDb error mapping', () => {
   // Branch coverage: maps an invalid Discover query to a sanitized 400 response
   it('maps an invalid Discover query to a sanitized 400 response', () => {
@@ -31,17 +52,28 @@ describe('TMDb error mapping', () => {
     });
   });
 
-  // Statement coverage: maps remaining TMDb errors to a 502 response
-  it('maps remaining TMDb errors to a 502 response', () => {
-    expect(toTmdbHttpError(new TmdbError('UPSTREAM_FAILED'))).toEqual({
-      statusCode: 502,
-      statusMessage: 'TMDb request or response invalid',
-    });
-  });
+  // Statement coverage: maps remaining TMDb errors to a sanitized 502 response
+  it.each(['UPSTREAM_FAILED', 'INVALID_RESPONSE'] as const)(
+    'maps %s to a sanitized 502 response',
+    (code) => {
+      expect(toTmdbHttpError(new TmdbError(code))).toEqual({
+        statusCode: 502,
+        statusMessage: 'TMDb request or response invalid',
+      });
+    },
+  );
 
-  // Branch coverage: maps unknown errors to a 502 response
-  it('maps unknown errors to a 502 response', () => {
-    expect(toTmdbHttpError(new Error('Unexpected failure'))).toEqual({
+  // Branch coverage: handles arbitrary thrown values without exposing details
+  it.each([
+    new Error('Unexpected failure'),
+    null,
+    undefined,
+    'Unexpected failure',
+    42,
+    { name: 'TmdbError', code: 'MISSING_TOKEN' },
+    Object.assign(new Error('Unexpected failure'), { code: 'MISSING_TOKEN' }),
+  ])('maps an unknown error to a sanitized 502 response: %s', (error) => {
+    expect(toTmdbHttpError(error)).toEqual({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
