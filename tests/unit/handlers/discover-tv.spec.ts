@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { H3Event } from 'h3';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
+import {
+  discoverTvRawFixture,
+  emptyDiscoverTvRawFixture,
+} from '@tests/fixtures/tmdb/discover-tv.raw';
 
 let mocks: ReturnType<typeof createNuxtHandlerMocks>;
 let handler: typeof import('@server/api/tmdb/discover/tv.get').default;
@@ -33,22 +37,7 @@ describe('TV Discover route handler', () => {
       yearTo: '2024',
       sortBy: 'vote_average.desc',
     });
-    mocks.fetchMock.mockResolvedValue({
-      page: 1,
-      total_pages: 3,
-      total_results: 30,
-      results: [
-        {
-          id: 201,
-          overview: 'Synthetic series overview',
-          poster_path: null,
-          backdrop_path: null,
-          vote_average: 8.1,
-          name: 'Synthetic Series',
-          first_air_date: '2024-06-01',
-        },
-      ],
-    });
+    mocks.fetchMock.mockResolvedValue(discoverTvRawFixture);
 
     const { event, result } = await invokeHandler();
 
@@ -61,11 +50,21 @@ describe('TV Discover route handler', () => {
           id: 201,
           mediaType: 'tv',
           overview: 'Synthetic series overview',
-          posterPath: null,
-          backdropPath: null,
+          posterPath: '/series.jpg',
+          backdropPath: '/series-backdrop.jpg',
           voteAverage: 8.1,
           name: 'Synthetic Series',
           firstAirDate: '2024-06-01',
+        },
+        {
+          id: 202,
+          mediaType: 'tv',
+          overview: 'Synthetic series without optional data',
+          posterPath: null,
+          backdropPath: null,
+          voteAverage: 7,
+          name: 'Synthetic Undated Series',
+          firstAirDate: undefined,
         },
       ],
     });
@@ -94,12 +93,7 @@ describe('TV Discover route handler', () => {
 
   // Statement coverage: accepts default filters and preserves valid empty results
   it('accepts an empty query and preserves a valid empty page', async () => {
-    mocks.fetchMock.mockResolvedValue({
-      page: 1,
-      total_pages: 0,
-      total_results: 0,
-      results: [],
-    });
+    mocks.fetchMock.mockResolvedValue(emptyDiscoverTvRawFixture);
 
     const { event, result } = await invokeHandler();
 

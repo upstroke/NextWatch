@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { H3Event } from 'h3';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
+import {
+  discoverMovieRawFixture,
+  emptyDiscoverMovieRawFixture,
+} from '@tests/fixtures/tmdb/discover-movie.raw';
 
 let mocks: ReturnType<typeof createNuxtHandlerMocks>;
 let handler: typeof import('@server/api/tmdb/discover/movie.get').default;
@@ -33,22 +37,7 @@ describe('Movie Discover route handler', () => {
       yearTo: '2024',
       sortBy: 'vote_average.desc',
     });
-    mocks.fetchMock.mockResolvedValue({
-      page: 1,
-      total_pages: 2,
-      total_results: 25,
-      results: [
-        {
-          id: 101,
-          overview: 'Synthetic movie overview',
-          poster_path: '/movie.jpg',
-          backdrop_path: '/movie-backdrop.jpg',
-          vote_average: 7.5,
-          title: 'Synthetic Movie',
-          release_date: '2024-05-01',
-        },
-      ],
-    });
+    mocks.fetchMock.mockResolvedValue(discoverMovieRawFixture);
 
     const { event, result } = await invokeHandler();
 
@@ -66,6 +55,16 @@ describe('Movie Discover route handler', () => {
           voteAverage: 7.5,
           title: 'Synthetic Movie',
           releaseDate: '2024-05-01',
+        },
+        {
+          id: 102,
+          mediaType: 'movie',
+          overview: 'Synthetic movie without optional data',
+          posterPath: null,
+          backdropPath: null,
+          voteAverage: 7,
+          title: 'Synthetic Undated Movie',
+          releaseDate: undefined,
         },
       ],
     });
@@ -94,12 +93,7 @@ describe('Movie Discover route handler', () => {
 
   // Statement coverage: accepts default filters and preserves valid empty results
   it('accepts an empty query and preserves a valid empty page', async () => {
-    mocks.fetchMock.mockResolvedValue({
-      page: 1,
-      total_pages: 0,
-      total_results: 0,
-      results: [],
-    });
+    mocks.fetchMock.mockResolvedValue(emptyDiscoverMovieRawFixture);
 
     const { event, result } = await invokeHandler();
 

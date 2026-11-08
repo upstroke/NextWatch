@@ -11,6 +11,14 @@ import {
   mapTvDiscoverResponse,
 } from '@server/services/tmdb/discover-mappers';
 import { createTmdbError } from '@server/services/tmdb/errors';
+import {
+  discoverMovieRawFixture as movieRaw,
+  emptyDiscoverMovieRawFixture,
+} from '@tests/fixtures/tmdb/discover-movie.raw';
+import {
+  discoverTvRawFixture as tvRaw,
+  emptyDiscoverTvRawFixture,
+} from '@tests/fixtures/tmdb/discover-tv.raw';
 
 const baseFilters = DiscoverFiltersSchema.parse({
   genreIds: [28, 878],
@@ -19,40 +27,6 @@ const baseFilters = DiscoverFiltersSchema.parse({
   yearTo: 2024,
   sortBy: 'vote_average.desc',
 });
-
-const movieRaw = {
-  page: 1,
-  total_pages: 2,
-  total_results: 25,
-  results: [
-    {
-      id: 101,
-      overview: 'Synthetic movie overview',
-      poster_path: '/movie.jpg',
-      backdrop_path: '/movie-backdrop.jpg',
-      vote_average: 7.5,
-      title: 'Synthetic Movie',
-      release_date: '2024-05-01',
-    },
-  ],
-};
-
-const tvRaw = {
-  page: 1,
-  total_pages: 3,
-  total_results: 30,
-  results: [
-    {
-      id: 201,
-      overview: 'Synthetic series overview',
-      poster_path: null,
-      backdrop_path: null,
-      vote_average: 8.1,
-      name: 'Synthetic Series',
-      first_air_date: '2024-06-01',
-    },
-  ],
-};
 
 describe('Discover filter schema', () => {
   // Branch coverage: accepts a valid filter set and applies defaults
@@ -120,10 +94,12 @@ describe('Discover parameter mapping', () => {
 });
 
 describe('Discover response mappers', () => {
-  // Statement coverage: maps a Movie response
+  // Statement coverage: maps Movie fields including missing optional data without mutating fixtures
   it('maps a Movie response', () => {
+    const before = structuredClone(movieRaw);
     const mapped = mapMovieDiscoverResponse(TmdbDiscoverMovieResponseSchema.parse(movieRaw));
 
+    expect(movieRaw).toEqual(before);
     expect(mapped).toEqual({
       page: 1,
       totalPages: 2,
@@ -139,30 +115,65 @@ describe('Discover response mappers', () => {
           title: 'Synthetic Movie',
           releaseDate: '2024-05-01',
         },
+        {
+          id: 102,
+          mediaType: 'movie',
+          overview: 'Synthetic movie without optional data',
+          posterPath: null,
+          backdropPath: null,
+          voteAverage: 7,
+          title: 'Synthetic Undated Movie',
+          releaseDate: undefined,
+        },
       ],
     });
   });
 
-  // Statement coverage: maps a TV response
+  // Statement coverage: maps TV fields including missing optional data without mutating fixtures
   it('maps a TV response', () => {
+    const before = structuredClone(tvRaw);
     const mapped = mapTvDiscoverResponse(TmdbDiscoverTvResponseSchema.parse(tvRaw));
 
-    expect(mapped.results[0]).toEqual({
-      id: 201,
-      mediaType: 'tv',
-      overview: 'Synthetic series overview',
-      posterPath: null,
-      backdropPath: null,
-      voteAverage: 8.1,
-      name: 'Synthetic Series',
-      firstAirDate: '2024-06-01',
+    expect(tvRaw).toEqual(before);
+    expect(mapped).toEqual({
+      page: 1,
+      totalPages: 3,
+      totalResults: 30,
+      results: [
+        {
+          id: 201,
+          mediaType: 'tv',
+          overview: 'Synthetic series overview',
+          posterPath: '/series.jpg',
+          backdropPath: '/series-backdrop.jpg',
+          voteAverage: 8.1,
+          name: 'Synthetic Series',
+          firstAirDate: '2024-06-01',
+        },
+        {
+          id: 202,
+          mediaType: 'tv',
+          overview: 'Synthetic series without optional data',
+          posterPath: null,
+          backdropPath: null,
+          voteAverage: 7,
+          name: 'Synthetic Undated Series',
+          firstAirDate: undefined,
+        },
+      ],
     });
   });
 
-  // Branch coverage: treats an empty result page as valid
+  // Branch coverage: treats an empty Movie result page as valid
   it('treats an empty result page as valid', () => {
-    const raw = TmdbDiscoverMovieResponseSchema.parse({ ...movieRaw, results: [] });
+    const raw = TmdbDiscoverMovieResponseSchema.parse(emptyDiscoverMovieRawFixture);
     expect(mapMovieDiscoverResponse(raw).results).toEqual([]);
+  });
+
+  // Branch coverage: treats an empty TV result page as valid
+  it('treats an empty TV result page as valid', () => {
+    const raw = TmdbDiscoverTvResponseSchema.parse(emptyDiscoverTvRawFixture);
+    expect(mapTvDiscoverResponse(raw).results).toEqual([]);
   });
 });
 
@@ -174,6 +185,7 @@ describe('Discover service', () => {
 
     expect(http.get).toHaveBeenCalledWith('/discover/movie', expect.any(Object));
     expect(result.results[0]).toMatchObject({ id: 101, mediaType: 'movie' });
+    expect(result.results).toHaveLength(2);
   });
 
   // Statement coverage: requests TV Discover and returns normalized data
@@ -183,6 +195,7 @@ describe('Discover service', () => {
 
     expect(http.get).toHaveBeenCalledWith('/discover/tv', expect.any(Object));
     expect(result.results[0]).toMatchObject({ id: 201, mediaType: 'tv' });
+    expect(result.results).toHaveLength(2);
   });
 
   // Branch coverage: rejects malformed Movie data as INVALID_RESPONSE
