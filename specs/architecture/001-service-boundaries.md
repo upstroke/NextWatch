@@ -22,7 +22,7 @@ Runtime configuration is read only in the server composition root. No browser im
 
 ## Compatibility
 
-server/utils/tmdb.ts remains a temporary forwarding facade for the existing seven regression tests. TmdbSpikeError aliases TmdbError. No duplicate transport implementation. normalizeTrendingResponse is replaced by the server mapper; its only repository caller was the former utility. No new UI or Discover implementation.
+server/utils/tmdb.ts remains a temporary forwarding facade for the existing seven regression tests. createTmdbSpikeError aliases the createTmdbError factory; TmdbError is a type derived from the factory return value, not a class. No duplicate transport implementation. normalizeTrendingResponse is replaced by the server mapper; its only repository caller was the former utility. No new UI or Discover implementation.
 
 ## Testing
 
