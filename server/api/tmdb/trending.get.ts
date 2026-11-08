@@ -4,6 +4,7 @@ import { createTrendingService } from '@server/services/tmdb/trending';
 import { toTmdbHttpError } from '@server/services/tmdb/errors';
 import { getTmdbConfig } from '@server/utils/tmdb';
 
+/** Handles a request for weekly trending media. */
 export default defineEventHandler(async (event): Promise<TmdbPagedResponse> => {
   setResponseHeader(event, 'Cache-Control', 'no-store');
   const config = getTmdbConfig(event);
