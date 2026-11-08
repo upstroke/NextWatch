@@ -18,6 +18,8 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 - Zod schemas are the source of truth for runtime validation.
 - TypeScript data-contract types are derived with `z.infer`.
+- Derive related field keys and dependent types from existing contracts; do not maintain parallel lists or duplicate data-contract definitions.
+- This does not require a Zod schema for every internal function or implementation detail. Derive implementation-specific types from their existing source where appropriate, for example with `ReturnType`.
 - Validate LLM output before changing state.
 - Validate TMDb responses at the server boundary.
 - Search state changes only through validated, domain-approved changes.
@@ -37,8 +39,11 @@ Read specs/architecture/001-service-boundaries.md before changing API or state c
 - Reject unexpected credential destinations and redirects in transport adapters.
 - Do not log raw error objects, request headers, tokens or user conversations.
 - Use synthetic fixtures; mock external boundaries, not every internal collaborator.
+- Reuse existing mocks and fixtures before introducing new ones.
 - Test schema/mapping/domain behavior in units, orchestration with injected transport, and real HTTP status/response contracts in integration tests.
 - A service test is not an HTTP integration test.
+- Direct handler tests that do not start a Nuxt/Nitro server are not HTTP integration tests.
+- Test-layer guidance does not authorize new work: do not start or prepare integration tests unless the current task explicitly includes them.
 - Include unimported application modules in coverage; do not hide files merely to improve percentages.
 - No speculative framework layers or unused files.
 - Preserve existing callers during refactoring or update every caller and its tests together.
@@ -53,3 +58,20 @@ Read specs/architecture/001-service-boundaries.md before changing API or state c
 6. Run automated validation; report commands not run honestly.
 7. Review against specifications and guardrails.
 8. Obtain user approval before committing or opening a pull request.
+
+## Repository evidence and scope
+
+- Establish the target branch and commit before reviewing repository code. Use an explicit ref or commit when reading files; do not silently inspect the default branch instead.
+- Read relevant files directly on that target. An incomplete search or an index returning no matches is not proof that references or TODOs are absent.
+- Distinguish verified findings from assumptions and unknown local state. Remote repository access does not establish local working-tree cleanliness or whether local commits are unpushed.
+- When local validation matters, ask for the user's current results before proposing changes. Do not claim to have run tests based on the user's report.
+- Make corrective changes only for a concrete finding within the approved task. Otherwise report the review outcome without speculative cleanup.
+- Starting another work package, creating agent configurations or adding framework layers requires separate agreement.
+
+## Communication and documentation
+
+- Keep normal replies concise. Do not show code blocks or full file contents unless requested; required write-approval previews are an exception.
+- Report what changed, what was checked, which commands actually ran and what remains unverified. Do not present plans as completed work.
+- Keep the README as an evolving entry point with current setup and implemented scope. Keep shared development rules in this file and architecture decisions in the relevant specifications.
+- Link to the authoritative documentation rather than duplicating rules. Add specialized coding-agent configuration only for an agreed need, referencing these shared rules.
+- Obtain explicit approval for each GitHub write action with its exact target and content. Approval to create a branch is not approval to commit, open a pull request or merge.
