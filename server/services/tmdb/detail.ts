@@ -24,6 +24,10 @@ export function createTmdbDetailService(http: TmdbHttpClient) {
     /**
      * Retrieves, validates and maps the details of a Movie.
      *
+     * Transport failures are propagated unchanged. Validation or mapping
+     * failures are normalized as an `INVALID_RESPONSE` error with the
+     * original error preserved as its cause.
+     *
      * @param id - The TMDb Movie identifier.
      * @returns The normalized Movie detail.
      * @throws A TMDb error with code `INVALID_RESPONSE` when the response
@@ -34,13 +38,17 @@ export function createTmdbDetailService(http: TmdbHttpClient) {
 
       try {
         return mapMovieDetailResponse(TmdbMovieDetailRawSchema.parse(raw));
-      } catch {
-        throw createTmdbError('INVALID_RESPONSE');
+      } catch (error) {
+        throw createTmdbError('INVALID_RESPONSE', { cause: error });
       }
     },
 
     /**
      * Retrieves, validates and maps the details of a TV series.
+     *
+     * Transport failures are propagated unchanged. Validation or mapping
+     * failures are normalized as an `INVALID_RESPONSE` error with the
+     * original error preserved as its cause.
      *
      * @param id - The TMDb TV series identifier.
      * @returns The normalized TV detail.
@@ -52,8 +60,8 @@ export function createTmdbDetailService(http: TmdbHttpClient) {
 
       try {
         return mapTvDetailResponse(TmdbTvDetailRawSchema.parse(raw));
-      } catch {
-        throw createTmdbError('INVALID_RESPONSE');
+      } catch (error) {
+        throw createTmdbError('INVALID_RESPONSE', { cause: error });
       }
     },
   };
