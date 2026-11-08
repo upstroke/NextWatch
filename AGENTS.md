@@ -25,6 +25,12 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 Read specs/architecture/001-service-boundaries.md before changing API or state code.
 
+- Keep code simple, readable and easy to follow. Prefer direct, explicit solutions over clever, dense or hard-to-understand abstractions.
+- Structure code for straightforward testing: separate decisions from side effects and keep dependencies explicit.
+- Do not use object-oriented patterns unless they solve a concrete need. Prefer plain functions, data and composition.
+- Document every exported function and method with a concise TSDoc/JSDoc comment directly above its declaration. Describe behavior, parameters and return values where they are not self-evident.
+- Document local functions only when their purpose or contract is not immediately clear. Keep documentation synchronized with behavior; do not restate obvious implementation details.
+- Use TSDoc-compatible JSDoc comments so documentation can later be generated automatically.
 - Components render UI; composables call our API and manage UI execution state.
 - Browser code must never import server modules or know TMDb credentials.
 - Nitro routes adapt HTTP input/output; do not add mapping or domain rules there.
