@@ -1,3 +1,4 @@
+import { defineEventHandler, getRouterParam, setResponseHeader } from 'h3';
 import type { TmdbMovieDetail } from '@lib/schemas/tmdb-detail';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTmdbDetailService } from '@server/services/tmdb/detail';
