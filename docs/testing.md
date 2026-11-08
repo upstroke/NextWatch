@@ -79,6 +79,20 @@ Use `tests/fixtures` for representative, reusable API payloads and domain data.
 
 Use `tests/mocks` for shared HTTP-client, TMDb-transport, and Nitro-event doubles. Prefer a small explicit mock over mocking the module under test.
 
+## Test identifiers
+
+Give integration and E2E tests stable identifiers that support traceability.
+
+| Test type | Identifier | Purpose |
+| --- | --- | --- |
+| Unit test | None | The coverage-intent comment documents the test's purpose |
+| Integration test | `TMDB-INT-001`, `TMDB-INT-002`, … | Stable technical traceability and selective execution |
+| E2E test | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user story and its acceptance criterion |
+
+E2E tests are derived from user stories and their acceptance criteria. Each E2E test receives a stable identifier that references its user story and acceptance criterion, for example `SEARCH-001-AC1`. Multiple tests may verify different aspects of the same acceptance criterion, but each test receives a unique identifier.
+
+Do not reuse an identifier after removing or replacing a test. Maintain the link between the user story, acceptance criterion and E2E test.
+
 ## Coverage
 
 Coverage is collected with V8 and limited to application code:
@@ -136,4 +150,5 @@ Do not use Nuxt’s default `@` or `~` aliases for shared application code; they
 - Keep framework-specific code out of services and shared domain logic.
 - Keep fixtures deterministic and reusable.
 - Prefer focused tests over broad end-to-end assertions.
+- Give integration and E2E tests stable identifiers that support traceability. Do not reuse an identifier after removing or replacing a test.
 - Do not expand Playwright E2E coverage for now; Vitest unit and integration tests are the active testing focus.
