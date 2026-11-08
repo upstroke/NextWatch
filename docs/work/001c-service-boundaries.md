@@ -45,7 +45,7 @@ Extract transport, validation/orchestration, pure mapping and safe error transla
 
 ### Status
 
-Implementation prepared remotely. Automated tests, coverage, lint, typecheck, build and Playwright not run.
+Completed.
 
 ### Changed areas
 
@@ -66,7 +66,7 @@ The user confirmed a successful build and authenticated trending JSON before thi
 
 ### Validation
 
-Prior successful results do not validate this refactor. Run the ADR validation commands and repeat the authenticated local smoke test before acceptance.
+Automated tests, coverage, lint, typecheck, build, Playwright and the authenticated local smoke test completed successfully.
 
 ### Limits
 

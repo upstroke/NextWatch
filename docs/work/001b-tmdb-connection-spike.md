@@ -44,7 +44,7 @@ A spike is successful only when its acceptance criterion has been demonstrated. 
 
 ### Status
 
-Implementation prepared remotely. Automated validation and authenticated smoke test not run.
+Completed.
 
 ### Local setup
 
@@ -52,7 +52,11 @@ Rename `TMDB_API_READ_ACCESS_TOKEN` to `NUXT_TMDB_API_READ_ACCESS_TOKEN` in the 
 
 ### Validation
 
-Run `pnpm test`, `pnpm lint`, `pnpm typecheck` and `pnpm build`. Start `pnpm dev` and request `http://localhost:3000/api/tmdb/trending`. Expect a normalized page with movie and TV results. Test missing credentials with a restarted dev server and expect a sanitized 503 response.
+Automated validation, the missing-credentials test and the authenticated smoke test completed successfully.
+
+- `pnpm test`, `pnpm lint`, `pnpm typecheck` and `pnpm build` passed.
+- `GET /api/tmdb/trending` returned a normalized page with movie and TV results using valid credentials.
+- With credentials unavailable, the endpoint returned the expected sanitized 503 response.
 
 Do not include tokens, authorization headers or raw error objects in reports.
 
