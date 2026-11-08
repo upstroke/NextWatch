@@ -23,7 +23,7 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 ## Architecture and testability
 
-Read specs/architecture/001-service-boundaries.md before changing API or state code.
+Read docs/work/specs/architecture/001-service-boundaries.md before changing API or state code.
 
 - Keep code simple, readable and easy to follow. Prefer direct, explicit solutions over clever, dense or hard-to-understand abstractions.
 - Structure code for straightforward testing: separate decisions from side effects and keep dependencies explicit.

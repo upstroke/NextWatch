@@ -67,19 +67,19 @@ Movie and TV use different date parameters. Do not create one generic media Disc
 
 ## Files created or changed
 
-- `../../../src/lib/schemas/discover.ts`
-- `../../../src/lib/schemas/tmdb-discover.ts`
-- `../server/services/tmdb/discover-params.ts`
-- `../server/services/tmdb/http.ts`
-- `../server/services/tmdb/errors.ts`
-- `../server/services/tmdb/discover-mappers.ts`
-- `../server/services/tmdb/discover.ts`
-- `../server/api/tmdb/discover/movie.get.ts`
-- `../server/api/tmdb/discover/tv.get.ts`
-- `../../../tests/unit/services/discover.spec.ts`
+- `src/lib/schemas/discover.ts`
+- `src/lib/schemas/tmdb-discover.ts`
+- `server/services/tmdb/discover-params.ts`
+- `server/services/tmdb/http.ts`
+- `server/services/tmdb/errors.ts`
+- `server/services/tmdb/discover-mappers.ts`
+- `server/services/tmdb/discover.ts`
+- `server/api/tmdb/discover/movie.get.ts`
+- `server/api/tmdb/discover/tv.get.ts`
+- `../tests/unit/services/discover.spec.ts`
 - `tests/http/discover.api.ts`
-- `../../../specs/architecture/002-tmdb-discover.md`
-- `001d-tmdb-discover-spike.md`
+- `docs/work/specs/architecture/002-tmdb-discover.md`
+- `docs/work/tasks/001d-tmdb-discover-spike.md`
 
 ## Test cases
 
