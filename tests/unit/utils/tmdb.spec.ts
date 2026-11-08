@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { fetchWeeklyTrending, createTmdbSpikeError } from '@server/utils/tmdb';
-import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending';
+import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 
 const config = {
   apiReadAccessToken: 'synthetic-test-token',

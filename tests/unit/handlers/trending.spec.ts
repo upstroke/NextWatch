@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { H3Event } from 'h3';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
-import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending';
+import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 
 let mocks: ReturnType<typeof createNuxtHandlerMocks>;
 let handler: typeof import('@server/api/tmdb/trending.get').default;
