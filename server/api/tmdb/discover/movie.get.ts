@@ -7,6 +7,7 @@ import { createTmdbError } from '@server/services/tmdb/errors';
 import { sendTmdbError } from '@server/utils/tmdb-errors';
 import { getTmdbConfig } from '@server/utils/tmdb';
 
+/** Handles a request for Movie Discover results. */
 export default defineEventHandler(
   async (event): Promise<TmdbPagedResponse | { statusCode: number; statusMessage: string }> => {
     setResponseHeader(event, 'Cache-Control', 'no-store');
