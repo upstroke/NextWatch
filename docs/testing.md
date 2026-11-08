@@ -89,11 +89,11 @@ Use `tests/mocks` for shared HTTP-client, TMDb-transport, and Nitro-event double
 
 Give integration and E2E tests stable identifiers that support traceability.
 
-| Test type | Identifier | Purpose |
-| --- | --- | --- |
-| Unit test | None | The coverage-intent comment documents the test's purpose |
-| Integration test | `TMDB-INT-001`, `TMDB-INT-002`, … | Stable technical traceability and selective execution |
-| E2E test | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user story and its acceptance criterion |
+| Test type        | Identifier                            | Purpose                                                   |
+| ---------------- | ------------------------------------- | --------------------------------------------------------- |
+| Unit test        | None                                  | The coverage-intent comment documents the test's purpose  |
+| Integration test | `TMDB-INT-001`, `TMDB-INT-002`, …     | Stable technical traceability and selective execution     |
+| E2E test         | `SEARCH-001-AC1`, `SEARCH-001-AC2`, … | Traceability to a user story and its acceptance criterion |
 
 E2E tests are derived from user stories and their acceptance criteria. Each E2E test receives a stable identifier that references its user story and acceptance criterion, for example `SEARCH-001-AC1`. Multiple tests may verify different aspects of the same acceptance criterion, but each test receives a unique identifier.
 

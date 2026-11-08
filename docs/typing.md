@@ -51,14 +51,14 @@ Do not use `as` to suppress type errors or as a substitute for validation.
 
 Store reusable TypeScript types in a dedicated, topic-based location.
 
-| Type | Location | Rule |
-| --- | --- | --- |
-| Zod contract | `src/lib/schemas` | One schema per external structure; derive its type with `z.infer` |
-| Derived contract type | Beside its schema or in the relevant domain module | Keep it directly associated with its contract |
-| Cross-module type | `src/types/<topic>.ts` | Use only for types shared by independent modules |
-| Feature- or domain-specific type | Near its feature or domain | Keep it close to its use |
-| Local function type | In the function's file | Do not centralize a type used by one function |
-| Injected dependency type | In the module defining the boundary | Keep the contract with its consumer or provider |
+| Type                             | Location                                           | Rule                                                              |
+| -------------------------------- | -------------------------------------------------- | ----------------------------------------------------------------- |
+| Zod contract                     | `src/lib/schemas`                                  | One schema per external structure; derive its type with `z.infer` |
+| Derived contract type            | Beside its schema or in the relevant domain module | Keep it directly associated with its contract                     |
+| Cross-module type                | `src/types/<topic>.ts`                             | Use only for types shared by independent modules                  |
+| Feature- or domain-specific type | Near its feature or domain                         | Keep it close to its use                                          |
+| Local function type              | In the function's file                             | Do not centralize a type used by one function                     |
+| Injected dependency type         | In the module defining the boundary                | Keep the contract with its consumer or provider                   |
 
 Do not create a central catch-all `types.ts` or an automatic barrel export for types. Imports should point to the specific type file.
 
