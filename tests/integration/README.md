@@ -17,3 +17,9 @@ integration/
 - Start each test with a coverage intent comment:
   - `// Statement coverage: ...`
   - `// Branch coverage: ...`
+
+## HTTP integration test identifiers
+
+HTTP integration tests in `tests/http` use stable `TMDB-INT-…` identifiers, for example `TMDB-INT-001`.
+
+These identifiers support technical traceability and selective execution. Do not reuse an identifier after removing or replacing the test it identified.
