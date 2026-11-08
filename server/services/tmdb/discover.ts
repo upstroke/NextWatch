@@ -6,21 +6,40 @@ import {
 } from '@lib/schemas/tmdb-discover';
 import type { TmdbHttpClient } from './http';
 import { createTmdbError } from './errors';
-import { buildDiscoverParams, type DiscoverMediaType } from './discover-params';
+import { buildDiscoverParams } from './discover-params';
 import { mapMovieDiscoverResponse, mapTvDiscoverResponse } from './discover-mappers';
 
-async function discover(
+async function discoverMovies(
   http: TmdbHttpClient,
-  endpoint: string,
-  mediaType: DiscoverMediaType,
   filters: DiscoverFilters,
-  parseResponse: (raw: unknown) => unknown,
-  mapResponse: (response: never) => TmdbPagedResponse,
 ): Promise<TmdbPagedResponse> {
-  const raw = await http.get(endpoint, buildDiscoverParams(mediaType, filters));
+  const raw = await http.get(
+    '/discover/movie',
+    buildDiscoverParams('movie', filters),
+  );
 
   try {
-    return mapResponse(parseResponse(raw) as never);
+    return mapMovieDiscoverResponse(
+      TmdbDiscoverMovieResponseSchema.parse(raw),
+    );
+  } catch {
+    throw createTmdbError('INVALID_RESPONSE');
+  }
+}
+
+async function discoverTv(
+  http: TmdbHttpClient,
+  filters: DiscoverFilters,
+): Promise<TmdbPagedResponse> {
+  const raw = await http.get(
+    '/discover/tv',
+    buildDiscoverParams('tv', filters),
+  );
+
+  try {
+    return mapTvDiscoverResponse(
+      TmdbDiscoverTvResponseSchema.parse(raw),
+    );
   } catch {
     throw createTmdbError('INVALID_RESPONSE');
   }
@@ -29,25 +48,11 @@ async function discover(
 export function createDiscoverService(http: TmdbHttpClient) {
   return {
     discoverMovies(filters: DiscoverFilters): Promise<TmdbPagedResponse> {
-      return discover(
-        http,
-        '/discover/movie',
-        'movie',
-        filters,
-        TmdbDiscoverMovieResponseSchema.parse,
-        mapMovieDiscoverResponse,
-      );
+      return discoverMovies(http, filters);
     },
 
     discoverTv(filters: DiscoverFilters): Promise<TmdbPagedResponse> {
-      return discover(
-        http,
-        '/discover/tv',
-        'tv',
-        filters,
-        TmdbDiscoverTvResponseSchema.parse,
-        mapTvDiscoverResponse,
-      );
+      return discoverTv(http, filters);
     },
   };
 }
