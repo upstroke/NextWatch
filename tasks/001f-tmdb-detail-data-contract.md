@@ -8,7 +8,7 @@ This spike focuses on the data basis and contracts. It verifies that Movie and T
 
 ## Implementation status
 
-Implemented through the documentation step:
+Completed.
 
 1. Raw Movie and TV detail Zod contracts.
 2. Normalized `TmdbDetailBase`, `TmdbMovieDetail` and `TmdbTvDetail` contracts.
@@ -18,8 +18,10 @@ Implemented through the documentation step:
 6. Unit tests for schemas, mapping, orchestration and error isolation.
 7. HTTP contract tests for invalid Movie and TV IDs.
 8. Spec and task documentation.
+9. Optional TMDb metadata is tolerated by the raw detail contracts.
+10. `INVALID_RESPONSE` errors preserve the original validation or mapping error as their `cause`.
 
-Local automated validation and manual TMDb verification remain outstanding. No test, coverage, lint, typecheck, build or live detail result is claimed as successful.
+Local automated test and coverage validation completed successfully. Manual TMDb verification remains outstanding.
 
 ## Data contracts
 
@@ -83,11 +85,13 @@ The following fields are intentionally excluded from the first contract:
 - `src/lib/schemas/tmdb-detail.ts`
 - `server/services/tmdb/detail-mappers.ts`
 - `server/services/tmdb/detail.ts`
+- `server/services/tmdb/errors.ts`
 - `server/api/tmdb/movie/[id].get.ts`
 - `server/api/tmdb/tv/[id].get.ts`
 - `tests/fixtures/tmdb/detail-movie.raw.ts`
 - `tests/fixtures/tmdb/detail-tv.raw.ts`
 - `tests/unit/services/detail.spec.ts`
+- `tests/unit/api/tmdb/detail-handlers.spec.ts`
 - `tests/integration/http/detail.api.ts`
 - `specs/001f-tmdb-detail-data-contract.md`
 - `tasks/001f-tmdb-detail-data-contract.md`
@@ -114,4 +118,4 @@ Record only a summary: status code, presence of title, overview, poster/backdrop
 
 ## Status
 
-Implemented. Local validation and manual TMDb verification remain outstanding.
+Completed. Manual TMDb verification remains outstanding.
