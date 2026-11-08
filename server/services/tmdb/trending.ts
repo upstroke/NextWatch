@@ -1,7 +1,7 @@
 import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
 import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
 import type { TmdbHttpClient } from './http';
-import { TmdbError } from './errors';
+import { createTmdbError } from './errors';
 import { mapTrendingResponse } from './mappers';
 
 export function createTrendingService(http: TmdbHttpClient) {
@@ -11,7 +11,7 @@ export function createTrendingService(http: TmdbHttpClient) {
       try {
         return mapTrendingResponse(TmdbTrendingResponseSchema.parse(raw));
       } catch {
-        throw new TmdbError('INVALID_RESPONSE');
+        throw createTmdbError('INVALID_RESPONSE');
       }
     },
   };

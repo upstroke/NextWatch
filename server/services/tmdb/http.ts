@@ -1,6 +1,5 @@
-import { z } from 'zod';
 import type { TmdbRuntimeConfig } from '@lib/schemas/runtime-config';
-import { TmdbError } from './errors';
+import { createTmdbError } from './errors';
 
 export type TmdbRequest = (
   url: string,
@@ -19,9 +18,9 @@ const TMDB_TIMEOUT_MS = 10000;
 
 function assertConfiguration(config: TmdbConfig) {
   const token = config.apiReadAccessToken.trim();
-  if (!token) throw new TmdbError('MISSING_TOKEN');
+  if (!token) throw createTmdbError('MISSING_TOKEN');
   if (config.baseUrl.replace(/\/$/, '') !== TMDB_BASE_URL) {
-    throw new TmdbError('INVALID_BASE_URL');
+    throw createTmdbError('INVALID_BASE_URL');
   }
 }
 
@@ -38,7 +37,7 @@ function assertDiscoverPath(path: string) {
     /\s/.test(path) ||
     hasControlCharacter
   ) {
-    throw new TmdbError('INVALID_BASE_URL');
+    throw createTmdbError('INVALID_BASE_URL');
   }
 }
 
@@ -60,7 +59,7 @@ export function createTmdbHttpClient(config: TmdbConfig, request: TmdbRequest) {
           retry: false,
         });
       } catch {
-        throw new TmdbError('UPSTREAM_FAILED');
+        throw createTmdbError('UPSTREAM_FAILED');
       }
     },
 

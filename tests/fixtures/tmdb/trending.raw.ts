@@ -1,3 +1,5 @@
+import type { TmdbTrendingResponse } from '@lib/schemas/tmdb-trending';
+
 export const weeklyTrendingFixture = {
   page: 1,
   total_pages: 1,
@@ -24,4 +26,4 @@ export const weeklyTrendingFixture = {
       first_air_date: '2026-02-01',
     },
   ],
-};
+} satisfies TmdbTrendingResponse;

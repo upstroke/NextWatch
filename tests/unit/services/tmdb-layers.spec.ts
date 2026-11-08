@@ -2,9 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTrendingService } from '@server/services/tmdb/trending';
 import { mapTrendingResponse } from '@server/services/tmdb/mappers';
-import { TmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
+import { createTmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
 import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
-import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending';
+import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 
 const config = {
   apiReadAccessToken: 'synthetic-test-token',
@@ -51,7 +51,7 @@ describe('TMDb layer boundaries', () => {
 
   // Branch coverage: preserves transport errors rather than reclassifying them as schema failures
   it('preserves transport errors rather than reclassifying them as schema failures', async () => {
-    const failure = new TmdbError('UPSTREAM_FAILED');
+    const failure = createTmdbError('UPSTREAM_FAILED');
     const http = { getWeeklyTrending: vi.fn().mockRejectedValue(failure) };
     await expect(createTrendingService(http).getWeeklyTrending()).rejects.toBe(failure);
   });
@@ -60,7 +60,7 @@ describe('TMDb layer boundaries', () => {
   it.each(['MISSING_TOKEN', 'INVALID_BASE_URL'] as const)(
     'maps configuration error %s to 503',
     (code) => {
-      expect(toTmdbHttpError(new TmdbError(code))).toEqual({
+      expect(toTmdbHttpError(createTmdbError(code))).toEqual({
         statusCode: 503,
         statusMessage: 'TMDb configuration unavailable',
       });
@@ -71,7 +71,7 @@ describe('TMDb layer boundaries', () => {
   it.each(['UPSTREAM_FAILED', 'INVALID_RESPONSE'] as const)(
     'maps service error %s to a sanitized 502',
     (code) => {
-      expect(toTmdbHttpError(new TmdbError(code))).toEqual({
+      expect(toTmdbHttpError(createTmdbError(code))).toEqual({
         statusCode: 502,
         statusMessage: 'TMDb request or response invalid',
       });
