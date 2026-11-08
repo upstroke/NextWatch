@@ -11,6 +11,7 @@ export function createNuxtHandlerMocks() {
     },
   });
   const queryMock = vi.fn().mockReturnValue({});
+  const routerParamMock = vi.fn();
   const headerMock = vi.fn();
 
   function install() {
@@ -18,9 +19,17 @@ export function createNuxtHandlerMocks() {
     vi.stubGlobal('createError', createError);
     vi.stubGlobal('setResponseHeader', headerMock);
     vi.stubGlobal('getQuery', queryMock);
+    vi.stubGlobal('getRouterParam', routerParamMock);
     vi.stubGlobal('useRuntimeConfig', runtimeConfigMock);
     vi.stubGlobal('$fetch', fetchMock);
   }
 
-  return { fetchMock, runtimeConfigMock, queryMock, headerMock, install };
+  return {
+    fetchMock,
+    runtimeConfigMock,
+    queryMock,
+    routerParamMock,
+    headerMock,
+    install,
+  };
 }
