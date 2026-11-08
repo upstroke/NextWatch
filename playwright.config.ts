@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   reporter: 'list',
-  testDir: './tests/http',
+  testDir: './tests/integration/http',
   testMatch: '**/*.api.ts',
   use: { baseURL: 'http://127.0.0.1:3101' },
   webServer: {
