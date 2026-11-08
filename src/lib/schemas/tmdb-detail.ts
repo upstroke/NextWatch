@@ -17,7 +17,6 @@ const detailCreatorSchema = z.object({
 
 export const TmdbDetailBaseSchema = z.object({
   id: z.number().int().positive(),
-  mediaType: z.enum(['movie', 'tv']),
   title: z.string(),
   originalTitle: z.string(),
   overview: z.string().nullable(),
@@ -68,11 +67,11 @@ export const TmdbMovieDetailRawSchema = z.object({
   vote_count: z.number().int().nonnegative(),
   genres: z.array(detailGenreSchema),
   original_language: z.string(),
-  status: z.string(),
+  status: z.string().nullable(),
   homepage: z.string().nullable(),
   popularity: z.number().nonnegative(),
   release_date: z.string().nullable(),
-  runtime: z.number().int().positive().nullable(),
+  runtime: z.number().int().nonnegative().nullable(),
 });
 
 export type TmdbMovieDetailRaw = z.infer<typeof TmdbMovieDetailRawSchema>;
@@ -89,7 +88,7 @@ export const TmdbTvDetailRawSchema = z.object({
   vote_count: z.number().int().nonnegative(),
   genres: z.array(detailGenreSchema),
   original_language: z.string(),
-  status: z.string(),
+  status: z.string().nullable(),
   homepage: z.string().nullable(),
   popularity: z.number().nonnegative(),
   first_air_date: z.string().nullable(),
