@@ -24,6 +24,12 @@ vi.mock(import('h3'), async (importOriginal) => {
   };
 });
 
+const createEvent = () => ({
+  node: {
+    res: {},
+  },
+}) as never;
+
 beforeEach(() => {
   vi.unstubAllGlobals();
   mocks.install();
@@ -37,7 +43,7 @@ describe('TMDb detail route handlers', () => {
     getRouterParamMock.mockReturnValue('101');
     mocks.fetchMock.mockResolvedValue(movieRaw);
 
-    const event = {} as never;
+    const event = createEvent();
     const result = await movieDetailHandler(event);
 
     expect(mocks.fetchMock).toHaveBeenCalledWith(
@@ -65,7 +71,7 @@ describe('TMDb detail route handlers', () => {
     getRouterParamMock.mockReturnValue('201');
     mocks.fetchMock.mockResolvedValue(tvRaw);
 
-    const event = {} as never;
+    const event = createEvent();
     const result = await tvDetailHandler(event);
 
     expect(mocks.fetchMock).toHaveBeenCalledWith(
@@ -92,7 +98,7 @@ describe('TMDb detail route handlers', () => {
   it('returns a sanitized 400 for an invalid Movie ID', async () => {
     getRouterParamMock.mockReturnValue('invalid');
 
-    const event = {} as never;
+    const event = createEvent();
     const result = await movieDetailHandler(event);
 
     expect(mocks.fetchMock).not.toHaveBeenCalled();
@@ -106,7 +112,7 @@ describe('TMDb detail route handlers', () => {
   it('returns a sanitized 400 for an invalid TV ID', async () => {
     getRouterParamMock.mockReturnValue('invalid');
 
-    const event = {} as never;
+    const event = createEvent();
     const result = await tvDetailHandler(event);
 
     expect(mocks.fetchMock).not.toHaveBeenCalled();
