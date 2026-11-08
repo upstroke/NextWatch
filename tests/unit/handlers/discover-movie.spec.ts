@@ -1,27 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { defineEventHandler } from 'h3';
 import type { H3Event } from 'h3';
+import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
 
-const fetchMock = vi.fn();
-const runtimeConfigMock = vi.fn();
-const queryMock = vi.fn();
-const headerMock = vi.fn();
+let mocks: ReturnType<typeof createNuxtHandlerMocks>;
 let handler: typeof import('@server/api/tmdb/discover/movie.get').default;
 
 beforeEach(async () => {
-  vi.resetAllMocks();
-  vi.stubGlobal('defineEventHandler', defineEventHandler);
-  vi.stubGlobal('setResponseHeader', headerMock);
-  vi.stubGlobal('getQuery', queryMock);
-  vi.stubGlobal('useRuntimeConfig', runtimeConfigMock);
-  vi.stubGlobal('$fetch', fetchMock);
-  queryMock.mockReturnValue({});
-  runtimeConfigMock.mockReturnValue({
-    tmdb: {
-      apiReadAccessToken: 'synthetic-test-token',
-      baseUrl: 'https://api.themoviedb.org/3',
-    },
-  });
+  mocks = createNuxtHandlerMocks();
+  mocks.install();
   handler = (await import('@server/api/tmdb/discover/movie.get')).default;
 });
 
@@ -32,22 +18,22 @@ afterEach(() => {
 async function invokeHandler() {
   const event = { node: { res: { statusCode: 200 } } } as unknown as H3Event;
   const result = await handler(event);
-  expect(queryMock).toHaveBeenCalledExactlyOnceWith(event);
-  expect(headerMock).toHaveBeenCalledExactlyOnceWith(event, 'Cache-Control', 'no-store');
+  expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
+  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(event, 'Cache-Control', 'no-store');
   return { event, result };
 }
 
 describe('Movie Discover route handler', () => {
   // Statement coverage: validates query input and executes real parameter mapping and normalization
   it('requests Movie Discover with validated filters and returns normalized data', async () => {
-    queryMock.mockReturnValue({
+    mocks.queryMock.mockReturnValue({
       genreIds: '28,878',
       minRating: '7',
       yearFrom: '2020',
       yearTo: '2024',
       sortBy: 'vote_average.desc',
     });
-    fetchMock.mockResolvedValue({
+    mocks.fetchMock.mockResolvedValue({
       page: 1,
       total_pages: 2,
       total_results: 25,
@@ -84,8 +70,8 @@ describe('Movie Discover route handler', () => {
       ],
     });
     expect(event.node.res.statusCode).toBe(200);
-    expect(runtimeConfigMock).toHaveBeenCalledExactlyOnceWith(event);
-    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.runtimeConfigMock).toHaveBeenCalledExactlyOnceWith(event);
+    expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
       'https://api.themoviedb.org/3/discover/movie',
       {
         headers: {
@@ -108,7 +94,7 @@ describe('Movie Discover route handler', () => {
 
   // Statement coverage: accepts default filters and preserves valid empty results
   it('accepts an empty query and preserves a valid empty page', async () => {
-    fetchMock.mockResolvedValue({
+    mocks.fetchMock.mockResolvedValue({
       page: 1,
       total_pages: 0,
       total_results: 0,
@@ -119,7 +105,7 @@ describe('Movie Discover route handler', () => {
 
     expect(result).toEqual({ page: 1, totalPages: 0, totalResults: 0, results: [] });
     expect(event.node.res.statusCode).toBe(200);
-    expect(fetchMock).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
       'https://api.themoviedb.org/3/discover/movie',
       expect.objectContaining({ query: { sort_by: 'popularity.desc' } }),
     );
@@ -127,26 +113,26 @@ describe('Movie Discover route handler', () => {
 
   // Branch coverage: returns INVALID_QUERY before accessing configuration or transport
   it('returns a controlled 400 for an invalid query', async () => {
-    queryMock.mockReturnValue({ minRating: 'not-a-number' });
+    mocks.queryMock.mockReturnValue({ minRating: 'not-a-number' });
 
     const { event, result } = await invokeHandler();
 
     expect(result).toEqual({ statusCode: 400, statusMessage: 'Invalid Discover query' });
     expect(event.node.res.statusCode).toBe(400);
-    expect(runtimeConfigMock).not.toHaveBeenCalled();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
+    expect(mocks.fetchMock).not.toHaveBeenCalled();
   });
 
   // Branch coverage: rejects a reversed year range after successful query parsing
   it('returns a controlled 400 for invalid domain filters', async () => {
-    queryMock.mockReturnValue({ yearFrom: '2024', yearTo: '2020' });
+    mocks.queryMock.mockReturnValue({ yearFrom: '2024', yearTo: '2020' });
 
     const { event, result } = await invokeHandler();
 
     expect(result).toEqual({ statusCode: 400, statusMessage: 'Invalid Discover filters' });
     expect(event.node.res.statusCode).toBe(400);
-    expect(runtimeConfigMock).not.toHaveBeenCalled();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
+    expect(mocks.fetchMock).not.toHaveBeenCalled();
   });
 
   // Branch coverage: maps transport configuration errors without sending credentials
@@ -154,7 +140,7 @@ describe('Movie Discover route handler', () => {
     { apiReadAccessToken: ' ', baseUrl: 'https://api.themoviedb.org/3' },
     { apiReadAccessToken: 'synthetic-test-token', baseUrl: 'https://example.com/3' },
   ])('returns a controlled 503 for invalid transport configuration: %o', async (tmdb) => {
-    runtimeConfigMock.mockReturnValue({ tmdb });
+    mocks.runtimeConfigMock.mockReturnValue({ tmdb });
 
     const { event, result } = await invokeHandler();
 
@@ -163,12 +149,12 @@ describe('Movie Discover route handler', () => {
       statusMessage: 'TMDb configuration unavailable',
     });
     expect(event.node.res.statusCode).toBe(503);
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(mocks.fetchMock).not.toHaveBeenCalled();
   });
 
   // Branch coverage: translates upstream rejection through the real error factory and HTTP adapter
   it('returns a sanitized 502 when the upstream request fails', async () => {
-    fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
+    mocks.fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
 
     const { event, result } = await invokeHandler();
 
@@ -177,12 +163,12 @@ describe('Movie Discover route handler', () => {
       statusMessage: 'TMDb request or response invalid',
     });
     expect(event.node.res.statusCode).toBe(502);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mocks.fetchMock).toHaveBeenCalledTimes(1);
   });
 
   // Branch coverage: translates real response validation failures to a controlled 502
   it('returns a controlled 502 for malformed upstream data', async () => {
-    fetchMock.mockResolvedValue({ results: [{ id: 'invalid' }] });
+    mocks.fetchMock.mockResolvedValue({ results: [{ id: 'invalid' }] });
 
     const { event, result } = await invokeHandler();
 
@@ -191,6 +177,6 @@ describe('Movie Discover route handler', () => {
       statusMessage: 'TMDb request or response invalid',
     });
     expect(event.node.res.statusCode).toBe(502);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(mocks.fetchMock).toHaveBeenCalledTimes(1);
   });
 });
