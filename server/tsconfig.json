@@ -1,6 +1,4 @@
 {
   "extends": "../.nuxt/tsconfig.server.json",
-  "files": [
-    "types/runtime-config.d.ts"
-  ]
+  "files": ["types/runtime-config.d.ts"]
 }
