@@ -60,7 +60,7 @@ Movie and TV use different date parameters. Do not create one generic media Disc
 
 ### Status
 
-Implemented through the architecture documentation step. Local automated validation and manual TMDb verification remain outstanding.
+Completed.
 
 ### Implemented
 
@@ -88,6 +88,8 @@ Implemented through the architecture documentation step. Local automated validat
 - `docs/work/specs/architecture/002-tmdb-discover.md`
 
 ### Validation
+
+Local automated validation and manual TMDb verification completed successfully.
 
 Run:
 
