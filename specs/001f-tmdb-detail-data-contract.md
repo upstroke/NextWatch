@@ -70,23 +70,23 @@ export type TmdbDetailBase = z.infer<typeof TmdbDetailBaseSchema>;
 
 ### Field mapping
 
-| Normalized field | Movie source | TV source | Notes |
-| --- | --- | --- | --- |
-| `id` | `id` | `id` | Stable TMDb identifier |
-| `mediaType` | Fixed value | Fixed value | Set by the mapper |
-| `title` | `title` | `name` | Display title |
-| `originalTitle` | `original_title` | `original_name` | Original-language title |
-| `overview` | `overview` | `overview` | Optional description |
-| `tagline` | `tagline` | `tagline` | Optional marketing tagline |
-| `posterPath` | `poster_path` | `poster_path` | Optional image path |
-| `backdropPath` | `backdrop_path` | `backdrop_path` | Optional image path |
-| `voteAverage` | `vote_average` | `vote_average` | TMDb rating |
-| `voteCount` | `vote_count` | `vote_count` | Number of votes |
-| `genres` | `genres` | `genres` | Genre ID and name |
-| `originalLanguage` | `original_language` | `original_language` | ISO 639-1 language code |
-| `status` | `status` | `status` | Production or release status |
-| `homepage` | `homepage` | `homepage` | Optional official website |
-| `popularity` | `popularity` | `popularity` | TMDb popularity metric |
+| Normalized field   | Movie source        | TV source           | Notes                        |
+| ------------------ | ------------------- | ------------------- | ---------------------------- |
+| `id`               | `id`                | `id`                | Stable TMDb identifier       |
+| `mediaType`        | Fixed value         | Fixed value         | Set by the mapper            |
+| `title`            | `title`             | `name`              | Display title                |
+| `originalTitle`    | `original_title`    | `original_name`     | Original-language title      |
+| `overview`         | `overview`          | `overview`          | Optional description         |
+| `tagline`          | `tagline`           | `tagline`           | Optional marketing tagline   |
+| `posterPath`       | `poster_path`       | `poster_path`       | Optional image path          |
+| `backdropPath`     | `backdrop_path`     | `backdrop_path`     | Optional image path          |
+| `voteAverage`      | `vote_average`      | `vote_average`      | TMDb rating                  |
+| `voteCount`        | `vote_count`        | `vote_count`        | Number of votes              |
+| `genres`           | `genres`            | `genres`            | Genre ID and name            |
+| `originalLanguage` | `original_language` | `original_language` | ISO 639-1 language code      |
+| `status`           | `status`            | `status`            | Production or release status |
+| `homepage`         | `homepage`          | `homepage`          | Optional official website    |
+| `popularity`       | `popularity`        | `popularity`        | TMDb popularity metric       |
 
 `spokenLanguages` is intentionally excluded from the first contract. `originalLanguage` provides the essential language information without introducing redundant metadata.
 
@@ -102,10 +102,10 @@ export const TmdbMovieDetailSchema = TmdbDetailBaseSchema.extend({
 export type TmdbMovieDetail = z.infer<typeof TmdbMovieDetailSchema>;
 ```
 
-| Normalized field | Movie source | Notes |
-| --- | --- | --- |
-| `releaseDate` | `release_date` | Optional theatrical release date |
-| `runtime` | `runtime` | Optional runtime in minutes |
+| Normalized field | Movie source   | Notes                            |
+| ---------------- | -------------- | -------------------------------- |
+| `releaseDate`    | `release_date` | Optional theatrical release date |
+| `runtime`        | `runtime`      | Optional runtime in minutes      |
 
 The following Movie fields are intentionally excluded:
 
@@ -144,15 +144,15 @@ export const TmdbTvDetailSchema = TmdbDetailBaseSchema.extend({
 export type TmdbTvDetail = z.infer<typeof TmdbTvDetailSchema>;
 ```
 
-| Normalized field | TV source | Notes |
-| --- | --- | --- |
-| `firstAirDate` | `first_air_date` | Optional first air date |
-| `lastAirDate` | `last_air_date` | Optional most recent air date |
-| `numberOfSeasons` | `number_of_seasons` | Optional season count |
-| `numberOfEpisodes` | `number_of_episodes` | Optional episode count |
-| `networks` | `networks` | Broadcasting networks or platforms |
-| `createdBy` | `created_by` | Series creators |
-| `originCountries` | `origin_country` | Countries of origin |
+| Normalized field   | TV source            | Notes                              |
+| ------------------ | -------------------- | ---------------------------------- |
+| `firstAirDate`     | `first_air_date`     | Optional first air date            |
+| `lastAirDate`      | `last_air_date`      | Optional most recent air date      |
+| `numberOfSeasons`  | `number_of_seasons`  | Optional season count              |
+| `numberOfEpisodes` | `number_of_episodes` | Optional episode count             |
+| `networks`         | `networks`           | Broadcasting networks or platforms |
+| `createdBy`        | `created_by`         | Series creators                    |
+| `originCountries`  | `origin_country`     | Countries of origin                |
 
 The following TV fields are intentionally excluded:
 
@@ -250,9 +250,9 @@ export type TmdbTvDetailRaw = z.infer<typeof TmdbTvDetailRawSchema>;
 Follow the established boundaries:
 
 - `src/lib/schemas` contains the Zod contracts for raw TMDb responses and normalized detail data.
-- `server/services/tmdb` contains framework-free detail services, mappers and errors.
-- `server/api/tmdb` contains thin Nitro route handlers.
-- `server/utils` contains H3-specific helpers.
+- `../docs/work/server` contains framework-free detail services, mappers and errors.
+- `../docs/work/server` contains thin Nitro route handlers.
+- `../docs/work/server` contains H3-specific helpers.
 - External TMDb HTTP transports are injected into services.
 - Do not mock the module under test; mock only external boundaries.
 

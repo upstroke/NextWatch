@@ -1,13 +1,13 @@
-import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
-import { DiscoverFiltersSchema } from '@lib/schemas/discover';
-import { DiscoverQuerySchema } from '@lib/schemas/discover-query';
-import { createTmdbHttpClient } from '@server/services/tmdb/http';
-import { createDiscoverService } from '@server/services/tmdb/discover';
-import { createTmdbError } from '@server/services/tmdb/errors';
-import { sendTmdbError } from '@server/utils/tmdb-errors';
-import { getTmdbConfig } from '@server/utils/tmdb';
+import type { TmdbPagedResponse } from 'src/lib/schemas/tmdb';
+import { DiscoverFiltersSchema } from 'src/lib/schemas/discover';
+import { DiscoverQuerySchema } from 'src/lib/schemas/discover-query';
+import { createTmdbHttpClient } from 'docs/work/server/services/tmdb/http';
+import { createDiscoverService } from 'docs/work/server/services/tmdb/discover';
+import { createTmdbError } from 'docs/work/server/services/tmdb/errors';
+import { sendTmdbError } from 'docs/work/server/utils/tmdb-errors';
+import { getTmdbConfig } from 'docs/work/server/utils/tmdb';
 
-/** Handles a request for TV Discover results. */
+/** Handles a request for Movie Discover results. */
 export default defineEventHandler(
   async (event): Promise<TmdbPagedResponse | { statusCode: number; statusMessage: string }> => {
     setResponseHeader(event, 'Cache-Control', 'no-store');
@@ -28,7 +28,7 @@ export default defineEventHandler(
     );
 
     try {
-      return await createDiscoverService(http).discoverTv(filters.data);
+      return await createDiscoverService(http).discoverMovies(filters.data);
     } catch (error) {
       return sendTmdbError(event, error);
     }

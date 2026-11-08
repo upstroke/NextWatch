@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-test('TMDB-INT-004: GET movie detail returns a sanitized 400 for an invalid ID', async ({ request }) => {
+test('TMDB-INT-004: GET movie detail returns a sanitized 400 for an invalid ID', async ({
+  request,
+}) => {
   const response = await request.get('/api/tmdb/movie/invalid');
 
   expect(response.status()).toBe(400);
@@ -17,7 +19,9 @@ test('TMDB-INT-004: GET movie detail returns a sanitized 400 for an invalid ID',
   expect(serialized).not.toContain('stack');
 });
 
-test('TMDB-INT-005: GET tv detail returns a sanitized 400 for an invalid ID', async ({ request }) => {
+test('TMDB-INT-005: GET tv detail returns a sanitized 400 for an invalid ID', async ({
+  request,
+}) => {
   const response = await request.get('/api/tmdb/tv/invalid');
 
   expect(response.status()).toBe(400);

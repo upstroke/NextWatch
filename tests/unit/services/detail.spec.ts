@@ -1,12 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  TmdbMovieDetailRawSchema,
-  TmdbTvDetailRawSchema,
-} from '@lib/schemas/tmdb-detail';
-import {
-  mapMovieDetailResponse,
-  mapTvDetailResponse,
-} from '@server/services/tmdb/detail-mappers';
+import { TmdbMovieDetailRawSchema, TmdbTvDetailRawSchema } from '@lib/schemas/tmdb-detail';
+import { mapMovieDetailResponse, mapTvDetailResponse } from '@server/services/tmdb/detail-mappers';
 import { createTmdbDetailService } from '@server/services/tmdb/detail';
 import { createTmdbError } from '@server/services/tmdb/errors';
 import {

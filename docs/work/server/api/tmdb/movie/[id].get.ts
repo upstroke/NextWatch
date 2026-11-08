@@ -1,10 +1,10 @@
 import { defineEventHandler, getRouterParam, setResponseHeader } from 'h3';
-import type { TmdbMovieDetail } from '@lib/schemas/tmdb-detail';
-import { createTmdbHttpClient } from '@server/services/tmdb/http';
-import { createTmdbDetailService } from '@server/services/tmdb/detail';
-import { createTmdbError } from '@server/services/tmdb/errors';
-import { sendTmdbError } from '@server/utils/tmdb-errors';
-import { getTmdbConfig } from '@server/utils/tmdb';
+import type { TmdbMovieDetail } from 'src/lib/schemas/tmdb-detail';
+import { createTmdbHttpClient } from 'docs/work/server/services/tmdb/http';
+import { createTmdbDetailService } from 'docs/work/server/services/tmdb/detail';
+import { createTmdbError } from 'docs/work/server/services/tmdb/errors';
+import { sendTmdbError } from 'docs/work/server/utils/tmdb-errors';
+import { getTmdbConfig } from 'docs/work/server/utils/tmdb';
 
 /** Handles a request for Movie details. */
 export default defineEventHandler(

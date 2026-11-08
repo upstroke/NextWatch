@@ -15,14 +15,11 @@ const tmdbErrors = new WeakSet<Error>();
  * @param options - Optional error context, including the underlying cause.
  * @returns The marked error instance.
  */
-export function createTmdbError(
-  code: TmdbErrorCode,
-  options?: { cause?: unknown },
-) {
-  const error = Object.assign(
-    new Error(code, { cause: options?.cause }),
-    { name: 'TmdbError', code } as const,
-  );
+export function createTmdbError(code: TmdbErrorCode, options?: { cause?: unknown }) {
+  const error = Object.assign(new Error(code, { cause: options?.cause }), {
+    name: 'TmdbError',
+    code,
+  } as const);
   tmdbErrors.add(error);
   return error;
 }

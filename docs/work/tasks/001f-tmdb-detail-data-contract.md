@@ -82,19 +82,19 @@ The following fields are intentionally excluded from the first contract:
 
 ## Files created or changed
 
-- `src/lib/schemas/tmdb-detail.ts`
-- `server/services/tmdb/detail-mappers.ts`
-- `server/services/tmdb/detail.ts`
-- `server/services/tmdb/errors.ts`
-- `server/api/tmdb/movie/[id].get.ts`
-- `server/api/tmdb/tv/[id].get.ts`
-- `tests/fixtures/tmdb/detail-movie.raw.ts`
-- `tests/fixtures/tmdb/detail-tv.raw.ts`
-- `tests/unit/services/detail.spec.ts`
-- `tests/unit/api/tmdb/detail-handlers.spec.ts`
-- `tests/integration/http/detail.api.ts`
-- `specs/001f-tmdb-detail-data-contract.md`
-- `tasks/001f-tmdb-detail-data-contract.md`
+- `../../../src/lib/schemas/tmdb-detail.ts`
+- `../server/services/tmdb/detail-mappers.ts`
+- `../server/services/tmdb/detail.ts`
+- `../server/services/tmdb/errors.ts`
+- `../server/api/tmdb/movie/[id].get.ts`
+- `../server/api/tmdb/tv/[id].get.ts`
+- `../../../tests/fixtures/tmdb/detail-movie.raw.ts`
+- `../../../tests/fixtures/tmdb/detail-tv.raw.ts`
+- `../../../tests/unit/services/detail.spec.ts`
+- `../../../tests/unit/api/tmdb/detail-handlers.spec.ts`
+- `../../../tests/integration/http/detail.api.ts`
+- `../../../specs/001f-tmdb-detail-data-contract.md`
+- `001f-tmdb-detail-data-contract.md`
 
 ## Manual verification
 

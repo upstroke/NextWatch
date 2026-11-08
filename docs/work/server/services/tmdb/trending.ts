@@ -1,5 +1,5 @@
-import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
-import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
+import { TmdbTrendingResponseSchema } from 'src/lib/schemas/tmdb-trending';
+import type { TmdbPagedResponse } from 'src/lib/schemas/tmdb';
 import type { TmdbHttpClient } from './http';
 import { createTmdbError } from './errors';
 import { mapTrendingResponse } from './mappers';

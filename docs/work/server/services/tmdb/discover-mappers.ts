@@ -1,5 +1,8 @@
-import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
-import type { TmdbDiscoverMovieResponse, TmdbDiscoverTvResponse } from '@lib/schemas/tmdb-discover';
+import type { TmdbPagedResponse } from 'src/lib/schemas/tmdb';
+import type {
+  TmdbDiscoverMovieResponse,
+  TmdbDiscoverTvResponse,
+} from 'src/lib/schemas/tmdb-discover';
 
 type PagedFields = Pick<TmdbPagedResponse, 'page' | 'totalPages' | 'totalResults'>;
 

@@ -3,12 +3,8 @@ import { getRouterParam, setResponseHeader } from 'h3';
 import movieDetailHandler from '@server/api/tmdb/movie/[id].get';
 import tvDetailHandler from '@server/api/tmdb/tv/[id].get';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
-import {
-  movieDetailRawFixture as movieRaw,
-} from '@tests/fixtures/tmdb/detail-movie.raw';
-import {
-  tvDetailRawFixture as tvRaw,
-} from '@tests/fixtures/tmdb/detail-tv.raw';
+import { movieDetailRawFixture as movieRaw } from '@tests/fixtures/tmdb/detail-movie.raw';
+import { tvDetailRawFixture as tvRaw } from '@tests/fixtures/tmdb/detail-tv.raw';
 
 const mocks = createNuxtHandlerMocks();
 const getRouterParamMock = vi.mocked(getRouterParam);
@@ -24,11 +20,12 @@ vi.mock(import('h3'), async (importOriginal) => {
   };
 });
 
-const createEvent = () => ({
-  node: {
-    res: {},
-  },
-}) as never;
+const createEvent = () =>
+  ({
+    node: {
+      res: {},
+    },
+  }) as never;
 
 beforeEach(() => {
   vi.unstubAllGlobals();

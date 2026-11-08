@@ -4,7 +4,7 @@ import type {
   TmdbMovieDetailRaw,
   TmdbTvDetail,
   TmdbTvDetailRaw,
-} from '@lib/schemas/tmdb-detail';
+} from 'src/lib/schemas/tmdb-detail';
 
 function toDetailBase(
   raw: TmdbMovieDetailRaw | TmdbTvDetailRaw,
