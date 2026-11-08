@@ -139,7 +139,10 @@ describe('Detail response mappers', () => {
 describe('Detail service', () => {
   // Statement coverage: requests Movie details and returns normalized data
   it('requests Movie details and returns normalized data', async () => {
-    const http = { get: vi.fn().mockResolvedValue(movieRaw) };
+    const http = {
+      get: vi.fn().mockResolvedValue(movieRaw),
+      getWeeklyTrending: vi.fn(),
+    };
     const result = await createTmdbDetailService(http).getMovieDetail(101);
 
     expect(http.get).toHaveBeenCalledWith('/movie/101');
@@ -148,7 +151,10 @@ describe('Detail service', () => {
 
   // Statement coverage: requests TV details and returns normalized data
   it('requests TV details and returns normalized data', async () => {
-    const http = { get: vi.fn().mockResolvedValue(tvRaw) };
+    const http = {
+      get: vi.fn().mockResolvedValue(tvRaw),
+      getWeeklyTrending: vi.fn(),
+    };
     const result = await createTmdbDetailService(http).getTvDetail(201);
 
     expect(http.get).toHaveBeenCalledWith('/tv/201');
@@ -157,7 +163,10 @@ describe('Detail service', () => {
 
   // Branch coverage: rejects malformed Movie data as INVALID_RESPONSE
   it('rejects malformed Movie data as INVALID_RESPONSE', async () => {
-    const http = { get: vi.fn().mockResolvedValue({}) };
+    const http = {
+      get: vi.fn().mockResolvedValue({}),
+      getWeeklyTrending: vi.fn(),
+    };
     await expect(createTmdbDetailService(http).getMovieDetail(101)).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
@@ -165,7 +174,10 @@ describe('Detail service', () => {
 
   // Branch coverage: rejects malformed TV data as INVALID_RESPONSE
   it('rejects malformed TV data as INVALID_RESPONSE', async () => {
-    const http = { get: vi.fn().mockResolvedValue({}) };
+    const http = {
+      get: vi.fn().mockResolvedValue({}),
+      getWeeklyTrending: vi.fn(),
+    };
     await expect(createTmdbDetailService(http).getTvDetail(201)).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
@@ -174,7 +186,10 @@ describe('Detail service', () => {
   // Branch coverage: preserves transport errors instead of reclassifying them
   it('preserves transport errors instead of reclassifying them', async () => {
     const failure = createTmdbError('UPSTREAM_FAILED');
-    const http = { get: vi.fn().mockRejectedValue(failure) };
+    const http = {
+      get: vi.fn().mockRejectedValue(failure),
+      getWeeklyTrending: vi.fn(),
+    };
 
     await expect(createTmdbDetailService(http).getMovieDetail(101)).rejects.toBe(failure);
     await expect(createTmdbDetailService(http).getTvDetail(201)).rejects.toBe(failure);
