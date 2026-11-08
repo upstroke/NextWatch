@@ -16,10 +16,17 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 ## Contract rules
 
-- Zod schemas are the source of truth for runtime validation.
+- Zod schemas are the source of truth for validated data contracts and runtime validation.
 - TypeScript data-contract types are derived with `z.infer`.
 - Derive related field keys and dependent types from existing contracts; do not maintain parallel lists or duplicate data-contract definitions.
 - This does not require a Zod schema for every internal function or implementation detail. Derive implementation-specific types from their existing source where appropriate, for example with `ReturnType`.
+- For functions without a Zod contract, type only the parameters TypeScript cannot infer from context. Prefer inferred return types; add an explicit return type only for a public contract or when inference is unclear.
+- Use a named `type` or `interface` only when a structure is reused, forms a public contract, or needs a distinct name. Do not create Zod schemas, interfaces or type aliases for every internal function.
+- Store reusable TypeScript types in a dedicated, topic-based location. Use `src/types/` only for types shared across independent modules; keep feature- or domain-specific types close to their use.
+- Do not create a central catch-all `types.ts` or an automatic barrel export for types.
+- Do not duplicate a type that can be derived from an existing Zod contract.
+- Prefer `type` for reusable TypeScript types. Use `interface` only when declaration merging or interface extension is intentionally required.
+- Do not use `as` to suppress type errors or as a substitute for validation. Use Zod for external or untrusted data; use a type predicate only after a real runtime check.
 - Validate LLM output before changing state.
 - Validate TMDb responses at the server boundary.
 - Search state changes only through validated, domain-approved changes.
