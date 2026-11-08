@@ -16,17 +16,7 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 ## Contract rules
 
-- Zod schemas are the source of truth for validated data contracts and runtime validation.
-- TypeScript data-contract types are derived with `z.infer`.
-- Derive related field keys and dependent types from existing contracts; do not maintain parallel lists or duplicate data-contract definitions.
-- This does not require a Zod schema for every internal function or implementation detail. Derive implementation-specific types from their existing source where appropriate, for example with `ReturnType`.
-- For functions without a Zod contract, type only the parameters TypeScript cannot infer from context. Prefer inferred return types; add an explicit return type only for a public contract or when inference is unclear.
-- Use a named `type` or `interface` only when a structure is reused, forms a public contract, or needs a distinct name. Do not create Zod schemas, interfaces or type aliases for every internal function.
-- Store reusable TypeScript types in a dedicated, topic-based location. Use `src/types/` only for types shared across independent modules; keep feature- or domain-specific types close to their use.
-- Do not create a central catch-all `types.ts` or an automatic barrel export for types.
-- Do not duplicate a type that can be derived from an existing Zod contract.
-- Prefer `type` for reusable TypeScript types. Use `interface` only when declaration merging or interface extension is intentionally required.
-- Do not use `as` to suppress type errors or as a substitute for validation. Use Zod for external or untrusted data; use a type predicate only after a real runtime check.
+- Follow [Typing](docs/typing.md) for all TypeScript and Zod typing conventions.
 - Validate LLM output before changing state.
 - Validate TMDb responses at the server boundary.
 - Search state changes only through validated, domain-approved changes.
@@ -79,6 +69,6 @@ Read specs/architecture/001-service-boundaries.md before changing API or state c
 
 - Keep normal replies concise. Do not show code blocks or full file contents unless requested; required write-approval previews are an exception.
 - Report what changed, what was checked, which commands actually ran and what remains unverified. Do not present plans as completed work.
-- Keep the README as an evolving entry point with current setup and implemented scope. Keep shared development rules in this file and architecture decisions in the relevant specifications.
+- Keep the README as an evolving entry point with current setup and implemented scope. Keep shared development rules in one authoritative document and link to it rather than duplicating rules.
 - Link to the authoritative documentation rather than duplicating rules. Add specialized coding-agent configuration only for an agreed need, referencing these shared rules.
 - Obtain explicit approval for each GitHub write action with its exact target and content. Approval to create a branch is not approval to commit, open a pull request or merge.

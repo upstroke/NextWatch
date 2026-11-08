@@ -42,37 +42,7 @@ This separation determines where tests belong:
 
 ## Single source of truth for types
 
-Zod schemas are the single source of truth for external data structures.
-
-For every external structure, define exactly one schema in `src/lib/schemas` and derive its TypeScript type from that schema:
-
-```ts
-export const TmdbRuntimeConfigSchema = z.object({
-  apiReadAccessToken: z.string(),
-  baseUrl: z.string(),
-});
-
-export type TmdbRuntimeConfig = z.infer<typeof TmdbRuntimeConfigSchema>;
-```
-
-Follow these rules:
-
-- Do not create a separate manual `interface` or `type` for a structure that already has a Zod schema.
-- Derive public domain types with `z.infer<typeof Schema>`.
-- Services and UI code import the derived type, not the schema.
-- Only boundaries call `.parse()` or `.safeParse()`: TMDb responses, query parameters, runtime configuration, and other external input.
-- A semantic type alias may reference a derived type, for example `type TmdbConfig = TmdbRuntimeConfig`, but must not redefine its fields.
-
-Examples:
-
-| Schema                            | Derived type                       | Boundary                     |
-| --------------------------------- | ---------------------------------- | ---------------------------- |
-| `TmdbRuntimeConfigSchema`         | `TmdbRuntimeConfig` / `TmdbConfig` | Nuxt runtime configuration   |
-| `DiscoverQuerySchema`             | `DiscoverQuery`                    | Discover query parameters    |
-| `DiscoverFiltersSchema`           | `DiscoverFilters`                  | Validated discover filters   |
-| `TmdbDiscoverMovieResponseSchema` | `TmdbDiscoverMovieResponse`        | TMDb Discover Movie response |
-| `TmdbTrendingResponseSchema`      | `TmdbTrendingResponse`             | TMDb Trending response       |
-| `TmdbPagedResponseSchema`         | `TmdbPagedResponse`                | Public paged response model  |
+Follow [Typing](typing.md) for all TypeScript and Zod typing conventions.
 
 ## Folder structure
 

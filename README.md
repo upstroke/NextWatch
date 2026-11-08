@@ -46,12 +46,13 @@ The application UI has not yet been built. UI fallback behavior for missing cont
 
 ## Contracts and typing
 
-Zod schemas are the source of truth for data contracts and runtime validation. Derive TypeScript data-contract types with `z.infer` and derive related field keys from the existing contracts instead of maintaining parallel definitions. This does not require a Zod schema for every internal function or implementation detail.
+Zod schemas are the source of truth for validated external data contracts and runtime validation. For all typing conventions, including internal functions, shared type locations and type assertions, see [Typing](docs/typing.md).
 
 ## Documentation and collaboration
 
 This README is a concise, evolving entry point, not a complete project specification. Update it when the implemented scope or setup changes.
 
+- [Typing](docs/typing.md): authoritative TypeScript and Zod typing conventions.
 - [AI development rules and working agreement](AGENTS.md): shared architecture, contract, testing and approval rules.
 - [Service boundaries and ADR 001](specs/architecture/001-service-boundaries.md): architecture decisions for API and state code.
 
