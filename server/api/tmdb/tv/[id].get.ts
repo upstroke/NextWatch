@@ -1,10 +1,10 @@
 import { defineEventHandler, getRouterParam, setResponseHeader } from 'h3';
-import type { TmdbTvDetail } from 'src/lib/schemas/tmdb-detail';
-import { createTmdbHttpClient } from 'server/services/tmdb/http';
-import { createTmdbDetailService } from 'server/services/tmdb/detail';
-import { createTmdbError } from 'server/services/tmdb/errors';
-import { sendTmdbError } from 'server/utils/tmdb-errors';
-import { getTmdbConfig } from 'server/utils/tmdb';
+import type { TmdbTvDetail } from '@lib/schemas/tmdb-detail';
+import { createTmdbHttpClient } from '@server/services/tmdb/http';
+import { createTmdbDetailService } from '@server/services/tmdb/detail';
+import { createTmdbError } from '@server/services/tmdb/errors';
+import { sendTmdbError } from '@server/utils/tmdb-errors';
+import { getTmdbConfig } from '@server/utils/tmdb';
 
 /** Handles a request for TV series details. */
 export default defineEventHandler(
