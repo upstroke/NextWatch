@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getRouterParam, setResponseHeader } from 'h3';
 import movieDetailHandler from '@server/api/tmdb/movie/[id].get';
 import tvDetailHandler from '@server/api/tmdb/tv/[id].get';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
@@ -10,22 +11,30 @@ import {
 } from '@tests/fixtures/tmdb/detail-tv.raw';
 
 const mocks = createNuxtHandlerMocks();
+const getRouterParamMock = vi.mocked(getRouterParam);
+const setResponseHeaderMock = vi.mocked(setResponseHeader);
 
-vi.mock('h3', () => ({
-  defineEventHandler: (handler: unknown) => handler,
-  getRouterParam: vi.fn(),
-  setResponseHeader: vi.fn(),
-}));
+vi.mock(import('h3'), async (importOriginal) => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    getRouterParam: vi.fn(),
+    setResponseHeader: vi.fn(),
+  };
+});
 
 beforeEach(() => {
   vi.unstubAllGlobals();
   mocks.install();
+  getRouterParamMock.mockReset();
+  setResponseHeaderMock.mockClear();
 });
 
 describe('TMDb detail route handlers', () => {
   // Statement coverage: returns normalized Movie details for a valid ID
   it('returns normalized Movie details for a valid ID', async () => {
-    mocks.routerParamMock.mockReturnValue('101');
+    getRouterParamMock.mockReturnValue('101');
     mocks.fetchMock.mockResolvedValue(movieRaw);
 
     const event = {} as never;
@@ -44,7 +53,7 @@ describe('TMDb detail route handlers', () => {
       mediaType: 'movie',
       title: 'Synthetic Movie',
     });
-    expect(mocks.headerMock).toHaveBeenCalledWith(
+    expect(setResponseHeaderMock).toHaveBeenCalledWith(
       expect.anything(),
       'Cache-Control',
       'no-store',
@@ -53,7 +62,7 @@ describe('TMDb detail route handlers', () => {
 
   // Statement coverage: returns normalized TV details for a valid ID
   it('returns normalized TV details for a valid ID', async () => {
-    mocks.routerParamMock.mockReturnValue('201');
+    getRouterParamMock.mockReturnValue('201');
     mocks.fetchMock.mockResolvedValue(tvRaw);
 
     const event = {} as never;
@@ -72,7 +81,7 @@ describe('TMDb detail route handlers', () => {
       mediaType: 'tv',
       title: 'Synthetic Series',
     });
-    expect(mocks.headerMock).toHaveBeenCalledWith(
+    expect(setResponseHeaderMock).toHaveBeenCalledWith(
       expect.anything(),
       'Cache-Control',
       'no-store',
@@ -81,7 +90,7 @@ describe('TMDb detail route handlers', () => {
 
   // Branch coverage: returns a sanitized 400 for an invalid Movie ID
   it('returns a sanitized 400 for an invalid Movie ID', async () => {
-    mocks.routerParamMock.mockReturnValue('invalid');
+    getRouterParamMock.mockReturnValue('invalid');
 
     const event = {} as never;
     const result = await movieDetailHandler(event);
@@ -95,7 +104,7 @@ describe('TMDb detail route handlers', () => {
 
   // Branch coverage: returns a sanitized 400 for an invalid TV ID
   it('returns a sanitized 400 for an invalid TV ID', async () => {
-    mocks.routerParamMock.mockReturnValue('invalid');
+    getRouterParamMock.mockReturnValue('invalid');
 
     const event = {} as never;
     const result = await tvDetailHandler(event);
