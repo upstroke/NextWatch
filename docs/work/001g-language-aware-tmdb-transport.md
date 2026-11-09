@@ -13,9 +13,9 @@ This work package removes the hardcoded German content language from the TMDb tr
 The user selects one application language. That selection controls both the UI locale and the TMDb content language.
 
 | Application locale | TMDb content language |
-| ------------------ | --------------------- |
-| `en`               | `en-US`               |
-| `de`               | `de-DE`               |
+| --- | --- |
+| `en` | `en-US` |
+| `de` | `de-DE` |
 
 There is intentionally no separate selection for UI language and TMDb search language.
 
@@ -52,7 +52,10 @@ The value is validated with Zod. An invalid value must not silently fall back; i
 ```ts
 export const AppLocaleSchema = z.enum(['en', 'de']);
 
-export const TmdbContentLanguageSchema = z.enum(['en-US', 'de-DE']);
+export const TmdbContentLanguageSchema = z.enum([
+  'en-US',
+  'de-DE',
+]);
 
 export const localeToTmdbLanguage = {
   en: 'en-US',
@@ -128,7 +131,6 @@ Add or update tests for:
 - Translated UI text
 - Browser language detection
 - Language persistence in cookies or localStorage
-- Search, Discover, Detail and Watch Provider endpoints
 - Separate configuration for UI language and TMDb content language
 
 ## Execution status

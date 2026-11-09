@@ -49,6 +49,22 @@ Add server-side support for regional availability:
 
 The region is an explicit query parameter, for example `region=DE`. The response must distinguish streaming, rental and purchase availability where TMDb provides it.
 
+#### Language-aware existing endpoints
+
+Update the existing endpoints to accept the resolved TMDb content language:
+
+- `GET /api/tmdb/discover/movie`
+- `GET /api/tmdb/discover/tv`
+- `GET /api/tmdb/movie/[id]`
+- `GET /api/tmdb/tv/[id]`
+
+The application locale resolves to the TMDb content language:
+
+- `en` resolves to `en-US`.
+- `de` resolves to `de-DE`.
+
+Watch-provider requests use an explicit `region` parameter instead of deriving it from the application locale.
+
 #### Discover extension
 
 Extend the existing Discover capability with validated IDs:
@@ -58,14 +74,14 @@ Extend the existing Discover capability with validated IDs:
 
 The server maps these application-level fields to the appropriate TMDb Discover parameters:
 
-| Application field     | TMDb parameter                                      |
-| --------------------- | --------------------------------------------------- |
-| `personIds`           | `with_cast`                                         |
-| `keywordIds`          | `with_keywords`                                     |
-| `genreIds`            | `with_genres`                                       |
+| Application field | TMDb parameter |
+| --- | --- |
+| `personIds` | `with_cast` |
+| `keywordIds` | `with_keywords` |
+| `genreIds` | `with_genres` |
 | `yearFrom` / `yearTo` | Media-specific release or first-air-date parameters |
-| `minRating`           | `vote_average.gte`                                  |
-| `sortBy`              | `sort_by`                                           |
+| `minRating` | `vote_average.gte` |
+| `sortBy` | `sort_by` |
 
 ### Zod contracts
 
@@ -106,6 +122,7 @@ Invalid or missing input returns a defined client error. Technical failures must
 - `server/services/tmdb/search.ts` contains the Search service.
 - `server/services/tmdb/search-mappers.ts` maps raw responses to stable application candidates.
 - `server/services/tmdb/discover.ts` is extended to map person and keyword IDs.
+- `server/services/tmdb/detail.ts` accepts the resolved TMDb content language.
 - `server/api/tmdb/search` contains thin Nitro route handlers and query validation.
 - `server/utils/tmdb.ts` remains the injected HTTP transport boundary.
 - `server/utils/tmdb-errors.ts` maps transport and validation failures to safe HTTP responses.
@@ -121,6 +138,7 @@ Add unit tests for:
 - Transport-error isolation.
 - Discover parameter mapping for person and keyword IDs.
 - Watch-provider mapping and region handling.
+- Language forwarding for Discover and Detail services.
 
 Add HTTP contract tests for:
 
@@ -141,6 +159,7 @@ Use stable `TMDB-INT-…` identifiers in HTTP integration test titles.
 - Raw TMDb Search responses are validated with Zod at the server boundary.
 - Search responses are mapped to stable application candidates.
 - Discover supports validated person and keyword IDs.
+- Discover and Detail requests use the TMDb content language resolved from the application locale.
 - Watch-provider availability is available for a selected Movie or TV ID and an explicit region.
 - Streaming, rental and purchase availability remain distinguishable.
 - Invalid queries, pages, regions and IDs produce defined client errors.
@@ -173,6 +192,7 @@ Planned.
 3. Extend the Discover query contract with person and keyword IDs.
 4. Implement the Search service and Search mappers.
 5. Implement the Search Nitro routes and query validation.
-6. Extend the Discover service and routes.
-7. Add unit, HTTP contract and manual live verification.
-8. Run local validation and record the results.
+6. Extend the Discover service and routes with person, keyword and language support.
+7. Extend the Detail service and routes with language support.
+8. Add unit, HTTP contract and manual live verification.
+9. Run local validation and record the results.
