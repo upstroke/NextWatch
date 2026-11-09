@@ -56,6 +56,7 @@ describe('TMDb layer boundaries', () => {
     'orchestrates validation and mapping for %s',
     async (language) => {
       const http = {
+        get: vi.fn(),
         getWeeklyTrending: vi.fn().mockResolvedValue(weeklyTrendingFixture),
       };
       const service = createTrendingService(http);
@@ -68,7 +69,10 @@ describe('TMDb layer boundaries', () => {
 
   // Branch coverage: rejects malformed data instead of representing it as no results
   it('rejects malformed data instead of representing it as no results', async () => {
-    const http = { getWeeklyTrending: vi.fn().mockResolvedValue({ results: [] }) };
+    const http = {
+      get: vi.fn(),
+      getWeeklyTrending: vi.fn().mockResolvedValue({ results: [] }),
+    };
     await expect(createTrendingService(http).getWeeklyTrending('en-US')).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
@@ -77,7 +81,10 @@ describe('TMDb layer boundaries', () => {
   // Branch coverage: preserves transport errors rather than reclassifying them as schema failures
   it('preserves transport errors rather than reclassifying them as schema failures', async () => {
     const failure = createTmdbError('UPSTREAM_FAILED');
-    const http = { getWeeklyTrending: vi.fn().mockRejectedValue(failure) };
+    const http = {
+      get: vi.fn(),
+      getWeeklyTrending: vi.fn().mockRejectedValue(failure),
+    };
     await expect(createTrendingService(http).getWeeklyTrending('de-DE')).rejects.toBe(failure);
   });
 
