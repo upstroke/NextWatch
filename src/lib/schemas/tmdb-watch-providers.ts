@@ -19,9 +19,7 @@ export const TmdbWatchProvidersRawSchema = z.object({
   results: z.record(z.string(), rawWatchProviderCategorySchema).optional(),
 });
 
-export type TmdbWatchProvidersRaw = z.infer<
-  typeof TmdbWatchProvidersRawSchema
->;
+export type TmdbWatchProvidersRaw = z.infer<typeof TmdbWatchProvidersRawSchema>;
 
 const watchProviderSchema = z
   .object({
@@ -43,6 +41,4 @@ export const WatchProviderAvailabilitySchema = z
   .strict();
 
 export type WatchProvider = z.infer<typeof watchProviderSchema>;
-export type WatchProviderAvailability = z.infer<
-  typeof WatchProviderAvailabilitySchema
->;
+export type WatchProviderAvailability = z.infer<typeof WatchProviderAvailabilitySchema>;

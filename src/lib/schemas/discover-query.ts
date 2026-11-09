@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  MAX_GENRE_IDS,
-  MAX_KEYWORD_IDS,
-  MAX_PERSON_IDS,
-} from '@lib/config/domain';
+import { MAX_GENRE_IDS, MAX_KEYWORD_IDS, MAX_PERSON_IDS } from '@lib/config/domain';
 
 const toUndefinedIfEmpty = (value: unknown) =>
   value === undefined || value === '' ? undefined : value;
@@ -46,9 +42,7 @@ export const DiscoverQuerySchema = z.object({
   minRating: optionalRatingSchema,
   yearFrom: optionalYearSchema,
   yearTo: optionalYearSchema,
-  sortBy: z
-    .enum(['popularity.desc', 'vote_average.desc'])
-    .default('popularity.desc'),
+  sortBy: z.enum(['popularity.desc', 'vote_average.desc']).default('popularity.desc'),
 });
 
 export type DiscoverQuery = z.infer<typeof DiscoverQuerySchema>;

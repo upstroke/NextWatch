@@ -15,27 +15,27 @@ import {
 describe('TmdbWatchProvidersRawSchema', () => {
   // Statement coverage: accepts a movie watch provider response
   it('accepts a movie watch provider response', () => {
-    expect(
-      TmdbWatchProvidersRawSchema.parse(movieWatchProvidersRawFixture),
-    ).toEqual(movieWatchProvidersRawFixture);
+    expect(TmdbWatchProvidersRawSchema.parse(movieWatchProvidersRawFixture)).toEqual(
+      movieWatchProvidersRawFixture,
+    );
   });
 
   // Statement coverage: accepts a tv watch provider response
   it('accepts a tv watch provider response', () => {
-    expect(
-      TmdbWatchProvidersRawSchema.parse(tvWatchProvidersRawFixture),
-    ).toEqual(tvWatchProvidersRawFixture);
+    expect(TmdbWatchProvidersRawSchema.parse(tvWatchProvidersRawFixture)).toEqual(
+      tvWatchProvidersRawFixture,
+    );
   });
 
   // Statement coverage: accepts an empty provider response
   it('accepts an empty provider response', () => {
-    expect(
-      TmdbWatchProvidersRawSchema.parse(emptyMovieWatchProvidersRawFixture),
-    ).toEqual(emptyMovieWatchProvidersRawFixture);
+    expect(TmdbWatchProvidersRawSchema.parse(emptyMovieWatchProvidersRawFixture)).toEqual(
+      emptyMovieWatchProvidersRawFixture,
+    );
 
-    expect(
-      TmdbWatchProvidersRawSchema.parse(emptyTvWatchProvidersRawFixture),
-    ).toEqual(emptyTvWatchProvidersRawFixture);
+    expect(TmdbWatchProvidersRawSchema.parse(emptyTvWatchProvidersRawFixture)).toEqual(
+      emptyTvWatchProvidersRawFixture,
+    );
   });
 
   // Branch coverage: rejects an invalid media id
@@ -100,9 +100,7 @@ describe('WatchProviderAvailabilitySchema', () => {
       ],
     };
 
-    expect(WatchProviderAvailabilitySchema.parse(availability)).toEqual(
-      availability,
-    );
+    expect(WatchProviderAvailabilitySchema.parse(availability)).toEqual(availability);
   });
 
   // Statement coverage: accepts empty availability categories
@@ -115,9 +113,7 @@ describe('WatchProviderAvailabilitySchema', () => {
       buy: [],
     };
 
-    expect(WatchProviderAvailabilitySchema.parse(availability)).toEqual(
-      availability,
-    );
+    expect(WatchProviderAvailabilitySchema.parse(availability)).toEqual(availability);
   });
 
   // Branch coverage: rejects an invalid region

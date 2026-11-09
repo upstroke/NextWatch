@@ -124,16 +124,12 @@ describe('Discover query schema', () => {
 
   // Branch coverage: rejects more than five person IDs
   it('rejects more than five person IDs', () => {
-    expect(() =>
-      DiscoverQuerySchema.parse({ personIds: '1,2,3,4,5,6' }),
-    ).toThrow();
+    expect(() => DiscoverQuerySchema.parse({ personIds: '1,2,3,4,5,6' })).toThrow();
   });
 
   // Branch coverage: rejects more than five keyword IDs
   it('rejects more than five keyword IDs', () => {
-    expect(() =>
-      DiscoverQuerySchema.parse({ keywordIds: '1,2,3,4,5,6' }),
-    ).toThrow();
+    expect(() => DiscoverQuerySchema.parse({ keywordIds: '1,2,3,4,5,6' })).toThrow();
   });
 
   // Branch coverage: rejects invalid person IDs
