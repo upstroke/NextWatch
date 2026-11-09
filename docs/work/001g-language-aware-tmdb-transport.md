@@ -13,9 +13,9 @@ This work package removes the hardcoded German content language from the TMDb tr
 The user selects one application language. That selection controls both the UI locale and the TMDb content language.
 
 | Application locale | TMDb content language |
-| ------------------ | --------------------- |
-| `en`               | `en-US`               |
-| `de`               | `de-DE`               |
+| --- | --- |
+| `en` | `en-US` |
+| `de` | `de-DE` |
 
 There is intentionally no separate selection for UI language and TMDb search language.
 
@@ -52,7 +52,10 @@ The value is validated with Zod. An invalid value must not silently fall back; i
 ```ts
 export const AppLocaleSchema = z.enum(['en', 'de']);
 
-export const TmdbContentLanguageSchema = z.enum(['en-US', 'de-DE']);
+export const TmdbContentLanguageSchema = z.enum([
+  'en-US',
+  'de-DE',
+]);
 
 export const localeToTmdbLanguage = {
   en: 'en-US',
@@ -134,7 +137,14 @@ Add or update tests for:
 
 ### Status
 
-Implemented — pending local validation.
+Complete.
+
+### Validation
+
+- [x] `pnpm test`
+- [x] `pnpm lint`
+- [x] `pnpm typecheck`
+- [x] `pnpm build`
 
 ### Next steps
 
@@ -143,4 +153,4 @@ Implemented — pending local validation.
 3. [x] Parameterize the TMDb HTTP transport.
 4. [x] Update the Trending service and its tests.
 5. [x] Update existing transport mocks and route tests.
-6. [ ] Run local validation and record results.
+6. [x] Run local validation and record results.
