@@ -47,3 +47,8 @@ export const searchKeywordCandidateFixture: SearchKeywordCandidate = {
   id: 801,
   name: 'space exploration',
 };
+
+export const searchSecondKeywordCandidateFixture: SearchKeywordCandidate = {
+  id: 802,
+  name: 'artificial intelligence',
+};

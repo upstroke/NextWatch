@@ -5,6 +5,7 @@ import {
   searchKeywordCandidateFixture,
   searchMovieCandidateFixture,
   searchPersonCandidateFixture,
+  searchSecondKeywordCandidateFixture,
   searchTvCandidateFixture,
 } from '@tests/fixtures/tmdb/search-candidates';
 import {
@@ -104,6 +105,7 @@ describe('search service', () => {
 
     await expect(search.searchKeywords('space')).resolves.toEqual([
       searchKeywordCandidateFixture,
+      searchSecondKeywordCandidateFixture,
     ]);
     expect(http.get).toHaveBeenCalledWith('/search/keyword', {
       query: 'space',
