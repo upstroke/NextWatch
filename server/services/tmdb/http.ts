@@ -1,4 +1,5 @@
 import type { TmdbRuntimeConfig } from '@lib/schemas/runtime-config';
+import type { TmdbContentLanguage } from '@lib/schemas/locale';
 import { createTmdbError } from './errors';
 
 export type TmdbRequest = (
@@ -74,12 +75,13 @@ export function createTmdbHttpClient(config: TmdbConfig, request: TmdbRequest) {
     },
 
     /**
-     * Retrieves the weekly trending media from TMDb.
+     * Retrieves the weekly trending media from TMDb in the requested content language.
      *
+     * @param language - The validated TMDb content language.
      * @returns The unvalidated raw trending response body.
      */
-    async getWeeklyTrending(): Promise<unknown> {
-      return this.get('/trending/all/week', { language: 'de-DE' });
+    async getWeeklyTrending(language: TmdbContentLanguage): Promise<unknown> {
+      return this.get('/trending/all/week', { language });
     },
   };
 }

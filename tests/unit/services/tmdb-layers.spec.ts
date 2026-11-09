@@ -16,10 +16,26 @@ describe('TMDb layer boundaries', () => {
   it('leaves schema validation to the service rather than HTTP transport', async () => {
     const malformed = { arbitrary: true };
     const request = vi.fn().mockResolvedValue(malformed);
-    await expect(createTmdbHttpClient(config, request).getWeeklyTrending()).resolves.toBe(
-      malformed,
-    );
+    await expect(
+      createTmdbHttpClient(config, request).getWeeklyTrending('en-US'),
+    ).resolves.toBe(malformed);
   });
+
+  // Statement coverage: passes each supported content language to the transport
+  it.each(['en-US', 'de-DE'] as const)(
+    'passes %s to the weekly trending transport',
+    async (language) => {
+      const request = vi.fn().mockResolvedValue({ arbitrary: true });
+      await createTmdbHttpClient(config, request).getWeeklyTrending(language);
+
+      expect(request).toHaveBeenCalledWith(
+        'https://api.themoviedb.org/3/trending/all/week',
+        expect.objectContaining({
+          query: { language },
+        }),
+      );
+    },
+  );
 
   // Statement coverage: maps validated movie and TV fields without mutating input
   it('maps validated movie and TV fields without mutating input', () => {
@@ -34,17 +50,26 @@ describe('TMDb layer boundaries', () => {
   });
 
   // Statement coverage: orchestrates validation and mapping with an injected client
-  it('orchestrates validation and mapping with an injected client', async () => {
-    const http = { getWeeklyTrending: vi.fn().mockResolvedValue(weeklyTrendingFixture) };
-    const service = createTrendingService(http);
-    expect((await service.getWeeklyTrending()).results).toHaveLength(2);
-    expect(http.getWeeklyTrending).toHaveBeenCalledTimes(1);
-  });
+  it.each(['en-US', 'de-DE'] as const)(
+    'orchestrates validation and mapping for %s',
+    async (language) => {
+      const http = {
+        getWeeklyTrending: vi.fn().mockResolvedValue(weeklyTrendingFixture),
+      };
+      const service = createTrendingService(http);
+
+      expect((await service.getWeeklyTrending(language)).results).toHaveLength(2);
+      expect(http.getWeeklyTrending).toHaveBeenCalledWith(language);
+      expect(http.getWeeklyTrending).toHaveBeenCalledTimes(1);
+    },
+  );
 
   // Branch coverage: rejects malformed data instead of representing it as no results
   it('rejects malformed data instead of representing it as no results', async () => {
     const http = { getWeeklyTrending: vi.fn().mockResolvedValue({ results: [] }) };
-    await expect(createTrendingService(http).getWeeklyTrending()).rejects.toMatchObject({
+    await expect(
+      createTrendingService(http).getWeeklyTrending('en-US'),
+    ).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
   });
@@ -53,7 +78,9 @@ describe('TMDb layer boundaries', () => {
   it('preserves transport errors rather than reclassifying them as schema failures', async () => {
     const failure = createTmdbError('UPSTREAM_FAILED');
     const http = { getWeeklyTrending: vi.fn().mockRejectedValue(failure) };
-    await expect(createTrendingService(http).getWeeklyTrending()).rejects.toBe(failure);
+    await expect(
+      createTrendingService(http).getWeeklyTrending('de-DE'),
+    ).rejects.toBe(failure);
   });
 
   // Branch coverage: maps configuration error %s to 503

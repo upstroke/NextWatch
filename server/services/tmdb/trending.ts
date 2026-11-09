@@ -1,3 +1,4 @@
+import type { TmdbContentLanguage } from '@lib/schemas/locale';
 import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
 import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
 import type { TmdbHttpClient } from './http';
@@ -13,14 +14,15 @@ import { mapTrendingResponse } from './mappers';
 export function createTrendingService(http: TmdbHttpClient) {
   return {
     /**
-     * Retrieves, validates and maps the weekly trending media.
+     * Retrieves, validates and maps the weekly trending media in the requested content language.
      *
+     * @param language - The validated TMDb content language.
      * @returns The mapped trending media response.
      * @throws A TMDb error with code `INVALID_RESPONSE` when the response
      * cannot be validated or mapped.
      */
-    async getWeeklyTrending(): Promise<TmdbPagedResponse> {
-      const raw = await http.getWeeklyTrending();
+    async getWeeklyTrending(language: TmdbContentLanguage): Promise<TmdbPagedResponse> {
+      const raw = await http.getWeeklyTrending(language);
       try {
         return mapTrendingResponse(TmdbTrendingResponseSchema.parse(raw));
       } catch {
