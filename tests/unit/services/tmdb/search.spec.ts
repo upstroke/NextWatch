@@ -27,10 +27,7 @@ import {
   emptySearchPersonRawFixture,
   searchPersonRawFixture,
 } from '@tests/fixtures/tmdb/search-person.raw';
-import {
-  emptySearchTvRawFixture,
-  searchTvRawFixture,
-} from '@tests/fixtures/tmdb/search-tv.raw';
+import { emptySearchTvRawFixture, searchTvRawFixture } from '@tests/fixtures/tmdb/search-tv.raw';
 
 describe('search service', () => {
   let http: ReturnType<typeof createTmdbHttpMock>;

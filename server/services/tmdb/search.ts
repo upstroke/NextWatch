@@ -31,10 +31,7 @@ import {
  * @throws A TMDb error with code `INVALID_RESPONSE` when the response
  * cannot be validated or mapped.
  */
-async function searchMovies(
-  http: TmdbHttpClient,
-  query: string,
-): Promise<SearchMovieCandidate[]> {
+async function searchMovies(http: TmdbHttpClient, query: string): Promise<SearchMovieCandidate[]> {
   const raw = await http.get('/search/movie', { query });
 
   try {
@@ -55,10 +52,7 @@ async function searchMovies(
  * @throws A TMDb error with code `INVALID_RESPONSE` when the response
  * cannot be validated or mapped.
  */
-async function searchTv(
-  http: TmdbHttpClient,
-  query: string,
-): Promise<SearchTvCandidate[]> {
+async function searchTv(http: TmdbHttpClient, query: string): Promise<SearchTvCandidate[]> {
   const raw = await http.get('/search/tv', { query });
 
   try {
@@ -79,10 +73,7 @@ async function searchTv(
  * @throws A TMDb error with code `INVALID_RESPONSE` when the response
  * cannot be validated or mapped.
  */
-async function searchMulti(
-  http: TmdbHttpClient,
-  query: string,
-): Promise<MultiSearchCandidate[]> {
+async function searchMulti(http: TmdbHttpClient, query: string): Promise<MultiSearchCandidate[]> {
   const raw = await http.get('/search/multi', { query });
 
   try {
@@ -103,10 +94,7 @@ async function searchMulti(
  * @throws A TMDb error with code `INVALID_RESPONSE` when the response
  * cannot be validated or mapped.
  */
-async function searchPeople(
-  http: TmdbHttpClient,
-  query: string,
-): Promise<SearchPersonCandidate[]> {
+async function searchPeople(http: TmdbHttpClient, query: string): Promise<SearchPersonCandidate[]> {
   const raw = await http.get('/search/person', { query });
 
   try {
