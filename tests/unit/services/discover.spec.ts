@@ -32,7 +32,12 @@ describe('Discover filter schema', () => {
   // Branch coverage: accepts a valid filter set and applies defaults
   it('accepts a valid filter set and applies defaults', () => {
     const filters = DiscoverFiltersSchema.parse({ genreIds: [28] });
-    expect(filters).toEqual({ genreIds: [28], sortBy: 'popularity.desc' });
+    expect(filters).toEqual({
+      genreIds: [28],
+      personIds: [],
+      keywordIds: [],
+      sortBy: 'popularity.desc',
+    });
   });
 
   // Branch coverage: rejects more than three genres
