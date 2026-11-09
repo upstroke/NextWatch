@@ -10,6 +10,11 @@ import {
   TmdbSearchMultiResponseSchema,
   TmdbSearchPersonResponseSchema,
   TmdbSearchTvResponseSchema,
+  TmdbWatchProvidersMovieSchema,
+  TmdbWatchProvidersMovieResponseSchema,
+  TmdbWatchProvidersTvSchema,
+  TmdbWatchProvidersTvResponseSchema,
+  WatchProviderAvailabilitySchema,
 } from '@lib/schemas/tmdb-search';
 import {
   emptySearchKeywordRawFixture,
@@ -28,6 +33,14 @@ import {
   searchPersonRawFixture,
 } from '@tests/fixtures/tmdb/search-person.raw';
 import { emptySearchTvRawFixture, searchTvRawFixture } from '@tests/fixtures/tmdb/search-tv.raw';
+import {
+  emptyWatchProvidersMovieRawFixture,
+  watchProvidersMovieRawFixture,
+} from '@tests/fixtures/tmdb/watch-providers-movie.raw';
+import {
+  emptyWatchProvidersTvRawFixture,
+  watchProvidersTvRawFixture,
+} from '@tests/fixtures/tmdb/watch-providers-tv.raw';
 
 describe('TmdbSearchMovieResponseSchema', () => {
   // Statement coverage: accepts a valid movie search response
@@ -163,108 +176,141 @@ describe('TmdbSearchKeywordResponseSchema', () => {
   });
 });
 
-describe('normalized search candidates', () => {
-  // Statement coverage: accepts a normalized movie candidate
-  it('accepts a normalized movie candidate', () => {
-    const candidate = {
-      id: 101,
-      title: 'Synthetic Movie',
-      overview: 'Synthetic movie overview',
-      posterPath: '/movie.jpg',
-      backdropPath: '/movie-backdrop.jpg',
-      releaseDate: '2024-05-01',
-      voteAverage: 7.5,
-    };
-
-    expect(SearchMovieCandidateSchema.parse(candidate)).toEqual(candidate);
+describe('TmdbWatchProvidersMovieResponseSchema', () => {
+  // Statement coverage: accepts a valid movie watch provider response
+  it('accepts a valid movie watch provider response', () => {
+    expect(TmdbWatchProvidersMovieResponseSchema.parse(watchProvidersMovieRawFixture)).toEqual(
+      watchProvidersMovieRawFixture,
+    );
   });
 
-  // Statement coverage: accepts a normalized tv candidate
-  it('accepts a normalized tv candidate', () => {
-    const candidate = {
-      id: 201,
-      name: 'Synthetic Series',
-      overview: 'Synthetic series overview',
-      posterPath: '/series.jpg',
-      backdropPath: '/series-backdrop.jpg',
-      firstAirDate: '2024-06-01',
-      voteAverage: 8,
-    };
-
-    expect(SearchTvCandidateSchema.parse(candidate)).toEqual(candidate);
+  // Statement coverage: accepts an empty movie watch provider response
+  it('accepts an empty movie watch provider response', () => {
+    expect(TmdbWatchProvidersMovieResponseSchema.parse(emptyWatchProvidersMovieRawFixture)).toEqual(
+      emptyWatchProvidersMovieRawFixture,
+    );
   });
 
-  // Statement coverage: accepts a normalized person candidate
-  it('accepts a normalized person candidate', () => {
-    const candidate = {
-      id: 301,
-      name: 'Synthetic Person',
-      profilePath: '/person.jpg',
-      knownFor: [
-        {
-          id: 101,
-          mediaType: 'movie',
-          title: 'Synthetic Movie',
+  // Branch coverage: rejects a movie watch provider response without a provider name
+  it('rejects a movie watch provider response without a provider name', () => {
+    const response = {
+      ...watchProvidersMovieRawFixture,
+      results: {
+        DE: {
+          flatrate: [{ provider_id: 8 }],
         },
-      ],
+      },
     };
 
-    expect(SearchPersonCandidateSchema.parse(candidate)).toEqual(candidate);
+    expect(() => TmdbWatchProvidersMovieResponseSchema.parse(response)).toThrow();
+  });
+});
+
+describe('TmdbWatchProvidersTvResponseSchema', () => {
+  // Statement coverage: accepts a valid tv watch provider response
+  it('accepts a valid tv watch provider response', () => {
+    expect(TmdbWatchProvidersTvResponseSchema.parse(watchProvidersTvRawFixture)).toEqual(
+      watchProvidersTvRawFixture,
+    );
   });
 
-  // Statement coverage: accepts a normalized keyword candidate
-  it('accepts a normalized keyword candidate', () => {
-    const candidate = {
-      id: 801,
-      name: 'space exploration',
+  // Statement coverage: accepts an empty tv watch provider response
+  it('accepts an empty tv watch provider response', () => {
+    expect(TmdbWatchProvidersTvResponseSchema.parse(emptyWatchProvidersTvRawFixture)).toEqual(
+      emptyWatchProvidersTvRawFixture,
+    );
+  });
+
+  // Branch coverage: rejects a tv watch provider response without a provider id
+  it('rejects a tv watch provider response without a provider id', () => {
+    const response = {
+      ...watchProvidersTvRawFixture,
+      results: {
+        DE: {
+          flatrate: [{ provider_name: 'Netflix' }],
+        },
+      },
     };
 
-    expect(SearchKeywordCandidateSchema.parse(candidate)).toEqual(candidate);
+    expect(() => TmdbWatchProvidersTvResponseSchema.parse(response)).toThrow();
+  });
+});
+
+describe('normalized watch provider contracts', () => {
+  // Statement coverage: accepts a normalized movie watch provider response
+  it('accepts a normalized movie watch provider response', () => {
+    const response = {
+      id: 101,
+      results: {
+        DE: {
+          region: 'DE',
+          link: 'https://www.themoviedb.org/watch/101',
+          streaming: [
+            {
+              id: 8,
+              name: 'Netflix',
+              logoPath: '/netflix.jpg',
+              displayPriority: 1,
+            },
+          ],
+          rental: [],
+          purchase: [],
+        },
+      },
+    };
+
+    expect(TmdbWatchProvidersMovieSchema.parse(response)).toEqual(response);
   });
 
-  // Statement coverage: accepts normalized multi search candidates
-  it('accepts normalized multi search candidates', () => {
-    const candidates = [
-      {
-        mediaType: 'movie',
-        id: 101,
-        title: 'Synthetic Movie',
+  // Statement coverage: accepts a normalized tv watch provider response
+  it('accepts a normalized tv watch provider response', () => {
+    const response = {
+      id: 201,
+      results: {
+        DE: {
+          region: 'DE',
+          streaming: [],
+          rental: [],
+          purchase: [],
+        },
       },
-      {
-        mediaType: 'tv',
-        id: 201,
-        name: 'Synthetic Series',
-      },
-      {
-        mediaType: 'person',
-        id: 301,
-        name: 'Synthetic Person',
-      },
-    ];
+    };
 
-    for (const candidate of candidates) {
-      expect(MultiSearchCandidateSchema.parse(candidate)).toEqual(candidate);
-    }
+    expect(TmdbWatchProvidersTvSchema.parse(response)).toEqual(response);
   });
 
-  // Branch coverage: rejects an unsupported normalized multi search media type
-  it('rejects an unsupported normalized multi search media type', () => {
+  // Statement coverage: accepts a normalized watch provider availability
+  it('accepts a normalized watch provider availability', () => {
+    const availability = {
+      region: 'DE',
+      link: 'https://www.themoviedb.org/watch/101',
+      streaming: [],
+      rental: [],
+      purchase: [],
+    };
+
+    expect(WatchProviderAvailabilitySchema.parse(availability)).toEqual(availability);
+  });
+
+  // Branch coverage: rejects unknown normalized watch provider properties
+  it('rejects unknown normalized watch provider properties', () => {
     expect(() =>
-      MultiSearchCandidateSchema.parse({
-        mediaType: 'unknown',
-        id: 301,
-        name: 'Synthetic Person',
+      WatchProviderAvailabilitySchema.parse({
+        region: 'DE',
+        streaming: [],
+        rental: [],
+        purchase: [],
+        unsupported: true,
       }),
     ).toThrow();
   });
 
-  // Branch coverage: rejects unknown normalized candidate properties
-  it('rejects unknown normalized candidate properties', () => {
+  // Branch coverage: rejects an invalid normalized watch provider id
+  it('rejects an invalid normalized watch provider id', () => {
     expect(() =>
-      SearchMovieCandidateSchema.parse({
-        id: 101,
-        title: 'Synthetic Movie',
-        unsupported: true,
+      TmdbWatchProvidersMovieSchema.parse({
+        id: 0,
+        results: {},
       }),
     ).toThrow();
   });

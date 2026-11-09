@@ -91,6 +91,37 @@ export type TmdbSearchMultiResponse = z.infer<typeof TmdbSearchMultiResponseSche
 export type TmdbSearchPersonResponse = z.infer<typeof TmdbSearchPersonResponseSchema>;
 export type TmdbSearchKeywordResponse = z.infer<typeof TmdbSearchKeywordResponseSchema>;
 
+const rawWatchProviderSchema = z.object({
+  provider_id: z.number().int().positive(),
+  provider_name: z.string().min(1),
+  logo_path: z.string().nullable().optional(),
+  display_priority: z.number().optional(),
+});
+
+const rawWatchProviderRegionSchema = z.object({
+  link: z.string().optional(),
+  flatrate: z.array(rawWatchProviderSchema).optional(),
+  rent: z.array(rawWatchProviderSchema).optional(),
+  buy: z.array(rawWatchProviderSchema).optional(),
+});
+
+export const TmdbWatchProvidersMovieResponseSchema = z.object({
+  id: z.number().int().positive(),
+  results: z.record(z.string(), rawWatchProviderRegionSchema),
+});
+
+export const TmdbWatchProvidersTvResponseSchema = z.object({
+  id: z.number().int().positive(),
+  results: z.record(z.string(), rawWatchProviderRegionSchema),
+});
+
+export type TmdbWatchProvidersMovieResponse = z.infer<
+  typeof TmdbWatchProvidersMovieResponseSchema
+>;
+export type TmdbWatchProvidersTvResponse = z.infer<
+  typeof TmdbWatchProvidersTvResponseSchema
+>;
+
 export const SearchMovieCandidateSchema = z
   .object({
     id: z.number().int().positive(),
@@ -159,3 +190,41 @@ export type SearchTvCandidate = z.infer<typeof SearchTvCandidateSchema>;
 export type SearchPersonCandidate = z.infer<typeof SearchPersonCandidateSchema>;
 export type SearchKeywordCandidate = z.infer<typeof SearchKeywordCandidateSchema>;
 export type MultiSearchCandidate = z.infer<typeof MultiSearchCandidateSchema>;
+
+export const WatchProviderSchema = z
+  .object({
+    id: z.number().int().positive(),
+    name: z.string().min(1),
+    logoPath: z.string().nullable().optional(),
+    displayPriority: z.number().optional(),
+  })
+  .strict();
+
+export const WatchProviderAvailabilitySchema = z
+  .object({
+    region: z.string().min(1),
+    link: z.string().optional(),
+    streaming: z.array(WatchProviderSchema),
+    rental: z.array(WatchProviderSchema),
+    purchase: z.array(WatchProviderSchema),
+  })
+  .strict();
+
+export const TmdbWatchProvidersMovieSchema = z
+  .object({
+    id: z.number().int().positive(),
+    results: z.record(z.string(), WatchProviderAvailabilitySchema),
+  })
+  .strict();
+
+export const TmdbWatchProvidersTvSchema = z
+  .object({
+    id: z.number().int().positive(),
+    results: z.record(z.string(), WatchProviderAvailabilitySchema),
+  })
+  .strict();
+
+export type WatchProvider = z.infer<typeof WatchProviderSchema>;
+export type WatchProviderAvailability = z.infer<typeof WatchProviderAvailabilitySchema>;
+export type TmdbWatchProvidersMovie = z.infer<typeof TmdbWatchProvidersMovieSchema>;
+export type TmdbWatchProvidersTv = z.infer<typeof TmdbWatchProvidersTvSchema>;
