@@ -6,6 +6,7 @@ import { getTmdbConfig } from '@server/utils/tmdb';
 
 /** Handles a request for Movie Search results. */
 export default defineEventHandler(async (event) => {
+  setResponseHeader(event, 'Cache-Control', 'no-store');
   const query = getQuery(event).query;
 
   if (typeof query !== 'string' || query.trim() === '') {
@@ -15,7 +16,6 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  setResponseHeader(event, 'Cache-Control', 'no-store');
   const config = getTmdbConfig(event);
   const http = createTmdbHttpClient(
     config,

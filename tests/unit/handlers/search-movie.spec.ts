@@ -25,8 +25,18 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function createEvent() {
-  return { node: { res: { statusCode: 200 } } } as unknown as H3Event;
+async function invokeHandler() {
+  const event = { node: { res: { statusCode: 200 } } } as unknown as H3Event;
+  const result = await handler(event);
+
+  expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
+  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+    event,
+    'Cache-Control',
+    'no-store',
+  );
+
+  return { event, result };
 }
 
 describe('Movie Search route handler', () => {
@@ -35,19 +45,13 @@ describe('Movie Search route handler', () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockResolvedValue(searchMovieRawFixture);
 
-    const event = createEvent();
-    const result = await handler(event);
+    const { event, result } = await invokeHandler();
 
     expect(result).toEqual([
       searchMovieCandidateFixture,
       searchSecondMovieCandidateFixture,
     ]);
     expect(event.node.res.statusCode).toBe(200);
-    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-      event,
-      'Cache-Control',
-      'no-store',
-    );
     expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
       'https://api.themoviedb.org/3/search/movie',
       expect.objectContaining({ query: { query: 'movie' } }),
@@ -59,8 +63,7 @@ describe('Movie Search route handler', () => {
     mocks.queryMock.mockReturnValue({ query: 'unknown' });
     mocks.fetchMock.mockResolvedValue(emptySearchMovieRawFixture);
 
-    const event = createEvent();
-    const result = await handler(event);
+    const { event, result } = await invokeHandler();
 
     expect(result).toEqual([]);
     expect(event.node.res.statusCode).toBe(200);
@@ -75,11 +78,9 @@ describe('Movie Search route handler', () => {
   ])('returns a controlled 400 for an invalid query: %o', async (query) => {
     mocks.queryMock.mockReturnValue(query);
 
-    const event = createEvent();
-    const result = await handler(event);
+    const { event, result } = await invokeHandler();
 
-    expect(mocks.headerMock).not.toHaveBeenCalled();
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       statusCode: 400,
       statusMessage: 'Invalid search query',
     });
@@ -89,13 +90,13 @@ describe('Movie Search route handler', () => {
   });
 
   // Branch coverage: translates upstream rejection through the real error factory
-  it('rejects upstream failures with a controlled 502', async () => {
+  it('returns a sanitized 502 when the upstream request fails', async () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
 
-    const event = createEvent();
+    const { event, result } = await invokeHandler();
 
-    await expect(handler(event)).rejects.toMatchObject({
+    expect(result).toEqual({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
@@ -104,13 +105,13 @@ describe('Movie Search route handler', () => {
   });
 
   // Branch coverage: translates response validation failures to a controlled 502
-  it('rejects malformed upstream responses with a controlled 502', async () => {
+  it('returns a controlled 502 for malformed upstream data', async () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockResolvedValue({ results: [{ id: 'invalid' }] });
 
-    const event = createEvent();
+    const { event, result } = await invokeHandler();
 
-    await expect(handler(event)).rejects.toMatchObject({
+    expect(result).toEqual({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
