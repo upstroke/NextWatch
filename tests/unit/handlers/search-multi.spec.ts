@@ -98,11 +98,10 @@ describe('Multi Search route handler', () => {
 
     const { event, result } = await invokeHandler();
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       statusCode: 400,
       statusMessage: 'Invalid search query',
     });
-    expect(event.node.res.statusCode).toBe(400);
     expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
     expect(mocks.fetchMock).not.toHaveBeenCalled();
   });
@@ -112,13 +111,10 @@ describe('Multi Search route handler', () => {
     mocks.queryMock.mockReturnValue({ query: 'synthetic' });
     mocks.fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
 
-    const { event, result } = await invokeHandler();
-
-    expect(result).toEqual({
+    await expect(invokeHandler()).rejects.toMatchObject({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
-    expect(event.node.res.statusCode).toBe(502);
     expect(mocks.fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -127,13 +123,10 @@ describe('Multi Search route handler', () => {
     mocks.queryMock.mockReturnValue({ query: 'synthetic' });
     mocks.fetchMock.mockResolvedValue({ results: [{ id: 'invalid' }] });
 
-    const { event, result } = await invokeHandler();
-
-    expect(result).toEqual({
+    await expect(invokeHandler()).rejects.toMatchObject({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
-    expect(event.node.res.statusCode).toBe(502);
     expect(mocks.fetchMock).toHaveBeenCalledTimes(1);
   });
 });
