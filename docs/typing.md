@@ -31,6 +31,14 @@ Follow these rules:
 - A semantic type alias may reference a derived type, for example `type TmdbConfig = TmdbRuntimeConfig`, but must not redefine its fields.
 - Derive related field keys and dependent types from existing contracts instead of maintaining parallel lists or duplicate data-contract definitions.
 
+## Domain configuration
+
+Store stable domain rules and limits in `src/lib/config/domain.ts`.
+
+Examples include maximum counts for genre, person, and keyword filters. Zod schemas reference these constants instead of repeating the same numeric limit in multiple schemas.
+
+Use environment configuration for deployment-specific values and secrets, such as API credentials, service URLs, and a configurable default locale. Do not place stable domain rules in `.env`.
+
 ## Internal functions
 
 For functions without a Zod contract, type only the parameters TypeScript cannot infer from context. Prefer inferred return types; add an explicit return type only for a public contract or when inference is unclear.
