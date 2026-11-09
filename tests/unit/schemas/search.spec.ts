@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  MediaTypeSchema,
-  SearchFiltersSchema,
-  SearchSortSchema,
-} from '@lib/schemas/search';
+import { MediaTypeSchema, SearchFiltersSchema, SearchSortSchema } from '@lib/schemas/search';
 
 describe('MediaTypeSchema', () => {
   // Statement coverage: accepts every supported media type
@@ -25,9 +21,7 @@ describe('SearchSortSchema', () => {
   // Statement coverage: accepts supported sort values
   it('accepts supported sort values', () => {
     expect(SearchSortSchema.parse('popularity.desc')).toBe('popularity.desc');
-    expect(SearchSortSchema.parse('voteaverage.desc')).toBe(
-      'voteaverage.desc',
-    );
+    expect(SearchSortSchema.parse('voteaverage.desc')).toBe('voteaverage.desc');
   });
 
   // Branch coverage: rejects unsupported sort values
@@ -83,13 +77,9 @@ describe('SearchFiltersSchema', () => {
 
   // Branch coverage: rejects non-positive keyword and genre ids
   it('rejects non-positive keyword and genre ids', () => {
-    expect(() =>
-      SearchFiltersSchema.parse({ keywordIds: [0] }),
-    ).toThrow();
+    expect(() => SearchFiltersSchema.parse({ keywordIds: [0] })).toThrow();
 
-    expect(() =>
-      SearchFiltersSchema.parse({ genreIds: [-1] }),
-    ).toThrow();
+    expect(() => SearchFiltersSchema.parse({ genreIds: [-1] })).toThrow();
   });
 
   // Branch coverage: rejects ratings outside the supported range
@@ -106,9 +96,7 @@ describe('SearchFiltersSchema', () => {
 
   // Branch coverage: rejects non-integer years
   it('rejects non-integer years', () => {
-    expect(() =>
-      SearchFiltersSchema.parse({ minYear: 2000.5 }),
-    ).toThrow();
+    expect(() => SearchFiltersSchema.parse({ minYear: 2000.5 })).toThrow();
   });
 
   // Branch coverage: rejects unknown properties

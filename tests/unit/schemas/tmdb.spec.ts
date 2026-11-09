@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  TmdbMediaTypeSchema,
-  TmdbMediaSchema,
-  TmdbPagedResponseSchema,
-} from '@lib/schemas/tmdb';
+import { TmdbMediaTypeSchema, TmdbMediaSchema, TmdbPagedResponseSchema } from '@lib/schemas/tmdb';
 
 const movie = {
   id: 1,
@@ -85,20 +81,14 @@ describe('TmdbMediaSchema', () => {
 
   // Branch coverage: rejects invalid ids
   it('rejects invalid ids', () => {
-    expect(() =>
-      TmdbMediaSchema.parse({ id: 0, mediaType: 'movie' }),
-    ).toThrow();
+    expect(() => TmdbMediaSchema.parse({ id: 0, mediaType: 'movie' })).toThrow();
 
-    expect(() =>
-      TmdbMediaSchema.parse({ id: 1.5, mediaType: 'movie' }),
-    ).toThrow();
+    expect(() => TmdbMediaSchema.parse({ id: 1.5, mediaType: 'movie' })).toThrow();
   });
 
   // Branch coverage: rejects invalid media types
   it('rejects invalid media types', () => {
-    expect(() =>
-      TmdbMediaSchema.parse({ id: 1, mediaType: 'person' }),
-    ).toThrow();
+    expect(() => TmdbMediaSchema.parse({ id: 1, mediaType: 'person' })).toThrow();
   });
 });
 

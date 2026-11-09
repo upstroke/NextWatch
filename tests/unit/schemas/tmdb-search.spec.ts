@@ -27,24 +27,21 @@ import {
   emptySearchPersonRawFixture,
   searchPersonRawFixture,
 } from '@tests/fixtures/tmdb/search-person.raw';
-import {
-  emptySearchTvRawFixture,
-  searchTvRawFixture,
-} from '@tests/fixtures/tmdb/search-tv.raw';
+import { emptySearchTvRawFixture, searchTvRawFixture } from '@tests/fixtures/tmdb/search-tv.raw';
 
 describe('TmdbSearchMovieResponseSchema', () => {
   // Statement coverage: accepts a valid movie search response
   it('accepts a valid movie search response', () => {
-    expect(
-      TmdbSearchMovieResponseSchema.parse(searchMovieRawFixture),
-    ).toEqual(searchMovieRawFixture);
+    expect(TmdbSearchMovieResponseSchema.parse(searchMovieRawFixture)).toEqual(
+      searchMovieRawFixture,
+    );
   });
 
   // Statement coverage: accepts an empty movie search response
   it('accepts an empty movie search response', () => {
-    expect(
-      TmdbSearchMovieResponseSchema.parse(emptySearchMovieRawFixture),
-    ).toEqual(emptySearchMovieRawFixture);
+    expect(TmdbSearchMovieResponseSchema.parse(emptySearchMovieRawFixture)).toEqual(
+      emptySearchMovieRawFixture,
+    );
   });
 
   // Branch coverage: rejects a movie result without a title
@@ -61,16 +58,14 @@ describe('TmdbSearchMovieResponseSchema', () => {
 describe('TmdbSearchTvResponseSchema', () => {
   // Statement coverage: accepts a valid tv search response
   it('accepts a valid tv search response', () => {
-    expect(TmdbSearchTvResponseSchema.parse(searchTvRawFixture)).toEqual(
-      searchTvRawFixture,
-    );
+    expect(TmdbSearchTvResponseSchema.parse(searchTvRawFixture)).toEqual(searchTvRawFixture);
   });
 
   // Statement coverage: accepts an empty tv search response
   it('accepts an empty tv search response', () => {
-    expect(
-      TmdbSearchTvResponseSchema.parse(emptySearchTvRawFixture),
-    ).toEqual(emptySearchTvRawFixture);
+    expect(TmdbSearchTvResponseSchema.parse(emptySearchTvRawFixture)).toEqual(
+      emptySearchTvRawFixture,
+    );
   });
 
   // Branch coverage: rejects a tv result without a name
@@ -87,16 +82,16 @@ describe('TmdbSearchTvResponseSchema', () => {
 describe('TmdbSearchMultiResponseSchema', () => {
   // Statement coverage: accepts movie, tv and person results
   it('accepts movie, tv and person results', () => {
-    expect(
-      TmdbSearchMultiResponseSchema.parse(searchMultiRawFixture),
-    ).toEqual(searchMultiRawFixture);
+    expect(TmdbSearchMultiResponseSchema.parse(searchMultiRawFixture)).toEqual(
+      searchMultiRawFixture,
+    );
   });
 
   // Statement coverage: accepts an empty multi search response
   it('accepts an empty multi search response', () => {
-    expect(
-      TmdbSearchMultiResponseSchema.parse(emptySearchMultiRawFixture),
-    ).toEqual(emptySearchMultiRawFixture);
+    expect(TmdbSearchMultiResponseSchema.parse(emptySearchMultiRawFixture)).toEqual(
+      emptySearchMultiRawFixture,
+    );
   });
 
   // Branch coverage: rejects an unsupported multi search media type
@@ -119,16 +114,16 @@ describe('TmdbSearchMultiResponseSchema', () => {
 describe('TmdbSearchPersonResponseSchema', () => {
   // Statement coverage: accepts a valid person search response
   it('accepts a valid person search response', () => {
-    expect(
-      TmdbSearchPersonResponseSchema.parse(searchPersonRawFixture),
-    ).toEqual(searchPersonRawFixture);
+    expect(TmdbSearchPersonResponseSchema.parse(searchPersonRawFixture)).toEqual(
+      searchPersonRawFixture,
+    );
   });
 
   // Statement coverage: accepts an empty person search response
   it('accepts an empty person search response', () => {
-    expect(
-      TmdbSearchPersonResponseSchema.parse(emptySearchPersonRawFixture),
-    ).toEqual(emptySearchPersonRawFixture);
+    expect(TmdbSearchPersonResponseSchema.parse(emptySearchPersonRawFixture)).toEqual(
+      emptySearchPersonRawFixture,
+    );
   });
 
   // Branch coverage: rejects a person result without a name
@@ -145,16 +140,16 @@ describe('TmdbSearchPersonResponseSchema', () => {
 describe('TmdbSearchKeywordResponseSchema', () => {
   // Statement coverage: accepts a valid keyword search response
   it('accepts a valid keyword search response', () => {
-    expect(
-      TmdbSearchKeywordResponseSchema.parse(searchKeywordRawFixture),
-    ).toEqual(searchKeywordRawFixture);
+    expect(TmdbSearchKeywordResponseSchema.parse(searchKeywordRawFixture)).toEqual(
+      searchKeywordRawFixture,
+    );
   });
 
   // Statement coverage: accepts an empty keyword search response
   it('accepts an empty keyword search response', () => {
-    expect(
-      TmdbSearchKeywordResponseSchema.parse(emptySearchKeywordRawFixture),
-    ).toEqual(emptySearchKeywordRawFixture);
+    expect(TmdbSearchKeywordResponseSchema.parse(emptySearchKeywordRawFixture)).toEqual(
+      emptySearchKeywordRawFixture,
+    );
   });
 
   // Branch coverage: rejects a keyword result without a name

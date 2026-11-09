@@ -85,21 +85,11 @@ export const TmdbSearchKeywordResponseSchema = z.object({
   results: z.array(rawKeywordResultSchema),
 });
 
-export type TmdbSearchMovieResponse = z.infer<
-  typeof TmdbSearchMovieResponseSchema
->;
-export type TmdbSearchTvResponse = z.infer<
-  typeof TmdbSearchTvResponseSchema
->;
-export type TmdbSearchMultiResponse = z.infer<
-  typeof TmdbSearchMultiResponseSchema
->;
-export type TmdbSearchPersonResponse = z.infer<
-  typeof TmdbSearchPersonResponseSchema
->;
-export type TmdbSearchKeywordResponse = z.infer<
-  typeof TmdbSearchKeywordResponseSchema
->;
+export type TmdbSearchMovieResponse = z.infer<typeof TmdbSearchMovieResponseSchema>;
+export type TmdbSearchTvResponse = z.infer<typeof TmdbSearchTvResponseSchema>;
+export type TmdbSearchMultiResponse = z.infer<typeof TmdbSearchMultiResponseSchema>;
+export type TmdbSearchPersonResponse = z.infer<typeof TmdbSearchPersonResponseSchema>;
+export type TmdbSearchKeywordResponse = z.infer<typeof TmdbSearchKeywordResponseSchema>;
 
 export const SearchMovieCandidateSchema = z
   .object({
@@ -164,18 +154,8 @@ export const MultiSearchCandidateSchema = z.discriminatedUnion('mediaType', [
   }),
 ]);
 
-export type SearchMovieCandidate = z.infer<
-  typeof SearchMovieCandidateSchema
->;
-export type SearchTvCandidate = z.infer<
-  typeof SearchTvCandidateSchema
->;
-export type SearchPersonCandidate = z.infer<
-  typeof SearchPersonCandidateSchema
->;
-export type SearchKeywordCandidate = z.infer<
-  typeof SearchKeywordCandidateSchema
->;
-export type MultiSearchCandidate = z.infer<
-  typeof MultiSearchCandidateSchema
->;
+export type SearchMovieCandidate = z.infer<typeof SearchMovieCandidateSchema>;
+export type SearchTvCandidate = z.infer<typeof SearchTvCandidateSchema>;
+export type SearchPersonCandidate = z.infer<typeof SearchPersonCandidateSchema>;
+export type SearchKeywordCandidate = z.infer<typeof SearchKeywordCandidateSchema>;
+export type MultiSearchCandidate = z.infer<typeof MultiSearchCandidateSchema>;
