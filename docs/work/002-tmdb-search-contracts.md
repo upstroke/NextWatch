@@ -74,14 +74,14 @@ Extend the existing Discover capability with validated IDs:
 
 The server maps these application-level fields to the appropriate TMDb Discover parameters:
 
-| Application field | TMDb parameter |
-| --- | --- |
-| `personIds` | `with_cast` |
-| `keywordIds` | `with_keywords` |
-| `genreIds` | `with_genres` |
+| Application field     | TMDb parameter                                      |
+| --------------------- | --------------------------------------------------- |
+| `personIds`           | `with_cast`                                         |
+| `keywordIds`          | `with_keywords`                                     |
+| `genreIds`            | `with_genres`                                       |
 | `yearFrom` / `yearTo` | Media-specific release or first-air-date parameters |
-| `minRating` | `vote_average.gte` |
-| `sortBy` | `sort_by` |
+| `minRating`           | `vote_average.gte`                                  |
+| `sortBy`              | `sort_by`                                           |
 
 ### Zod contracts
 
