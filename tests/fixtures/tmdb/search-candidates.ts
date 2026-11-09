@@ -35,10 +35,15 @@ export const searchPersonCandidateFixture: SearchPersonCandidate = {
       mediaType: 'movie',
       title: 'Synthetic Movie',
     },
+    {
+      id: 201,
+      mediaType: 'tv',
+      name: 'Synthetic Series',
+    },
   ],
 };
 
 export const searchKeywordCandidateFixture: SearchKeywordCandidate = {
-  id: 401,
-  name: 'Synthetic Keyword',
+  id: 801,
+  name: 'space exploration',
 };
