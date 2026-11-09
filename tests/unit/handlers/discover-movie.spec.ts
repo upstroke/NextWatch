@@ -131,8 +131,16 @@ describe('Movie Discover route handler', () => {
 
   // Branch coverage: maps transport configuration errors without sending credentials
   it.each([
-    { apiReadAccessToken: ' ', baseUrl: 'https://api.themoviedb.org/3' },
-    { apiReadAccessToken: 'synthetic-test-token', baseUrl: 'https://example.com/3' },
+    {
+      apiReadAccessToken: ' ',
+      baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: 'en',
+    },
+    {
+      apiReadAccessToken: 'synthetic-test-token',
+      baseUrl: 'https://example.com/3',
+      defaultLocale: 'en',
+    },
   ])('returns a controlled 503 for invalid transport configuration: %o', async (tmdb) => {
     mocks.runtimeConfigMock.mockReturnValue({ tmdb });
 
