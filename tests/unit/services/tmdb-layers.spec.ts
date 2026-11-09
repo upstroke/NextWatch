@@ -9,6 +9,7 @@ import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 const config = {
   apiReadAccessToken: 'synthetic-test-token',
   baseUrl: 'https://api.themoviedb.org/3',
+  defaultLocale: 'en',
 };
 
 describe('TMDb layer boundaries', () => {
