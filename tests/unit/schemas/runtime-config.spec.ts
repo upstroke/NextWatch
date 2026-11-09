@@ -7,12 +7,24 @@ describe('TMDb runtime config schema', () => {
     const config = TmdbRuntimeConfigSchema.parse({
       apiReadAccessToken: 'synthetic-token',
       baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: 'de',
     });
 
     expect(config).toEqual({
       apiReadAccessToken: 'synthetic-token',
       baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: 'de',
     });
+  });
+
+  // Statement coverage: defaults the application locale to English
+  it('defaults the application locale to English', () => {
+    const config = TmdbRuntimeConfigSchema.parse({
+      apiReadAccessToken: 'synthetic-token',
+      baseUrl: 'https://api.themoviedb.org/3',
+    });
+
+    expect(config.defaultLocale).toBe('en');
   });
 
   // Branch coverage: rejects a missing access token
@@ -29,6 +41,17 @@ describe('TMDb runtime config schema', () => {
     expect(() =>
       TmdbRuntimeConfigSchema.parse({
         apiReadAccessToken: 'synthetic-token',
+      }),
+    ).toThrow();
+  });
+
+  // Branch coverage: rejects an unsupported default locale
+  it('rejects an unsupported default locale', () => {
+    expect(() =>
+      TmdbRuntimeConfigSchema.parse({
+        apiReadAccessToken: 'synthetic-token',
+        baseUrl: 'https://api.themoviedb.org/3',
+        defaultLocale: 'fr',
       }),
     ).toThrow();
   });
