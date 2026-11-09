@@ -47,11 +47,6 @@ async function invokeHandler(route: SearchRoute) {
   const result = await handlers[route](event);
 
   expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
-  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-    event,
-    'Cache-Control',
-    'no-store',
-  );
 
   return { event, result };
 }
@@ -64,6 +59,11 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('movie');
 
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
     expect(result).toEqual([
       {
         id: 101,
@@ -93,6 +93,11 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('tv');
 
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
     expect(result).toEqual([
       {
         id: 201,
@@ -122,6 +127,11 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('multi');
 
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
     expect(result).toHaveLength(3);
     expect(result[0]).toMatchObject({ mediaType: 'movie', id: 101 });
     expect(result[1]).toMatchObject({ mediaType: 'tv', id: 201 });
@@ -152,6 +162,11 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('person');
 
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
     expect(result).toEqual([
       {
         id: 301,
@@ -189,6 +204,11 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('keyword');
 
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
     expect(result).toEqual([
       {
         id: 801,
@@ -206,7 +226,7 @@ describe('Search route handlers', () => {
     );
   });
 
-  // Branch coverage: returns a controlled 400 before configuration or transport
+  // Branch coverage: returns a controlled 400 before configuration, transport, or response headers
   it.each([
     {},
     { query: '' },
@@ -217,6 +237,7 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('movie');
 
+    expect(mocks.headerMock).not.toHaveBeenCalled();
     expect(result).toEqual({
       statusCode: 400,
       statusMessage: 'Invalid search query',
@@ -231,9 +252,14 @@ describe('Search route handlers', () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
 
-    const { event, result } = await invokeHandler('movie');
+    const { event } = await invokeHandler('movie');
 
-    expect(result).toEqual({
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
+    await expect(handlers.movie(event)).rejects.toMatchObject({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
@@ -246,9 +272,14 @@ describe('Search route handlers', () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockResolvedValue({ results: [{ id: 'invalid' }] });
 
-    const { event, result } = await invokeHandler('movie');
+    const { event } = await invokeHandler('movie');
 
-    expect(result).toEqual({
+    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+      event,
+      'Cache-Control',
+      'no-store',
+    );
+    await expect(handlers.movie(event)).rejects.toMatchObject({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
