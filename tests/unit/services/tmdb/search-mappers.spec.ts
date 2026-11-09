@@ -63,7 +63,16 @@ describe('search mappers', () => {
       },
       {
         mediaType: 'person',
-        ...searchPersonCandidateFixture,
+        id: searchPersonCandidateFixture.id,
+        name: searchPersonCandidateFixture.name,
+        profilePath: searchPersonCandidateFixture.profilePath,
+        knownFor: [
+          {
+            id: 101,
+            mediaType: 'movie',
+            title: 'Synthetic Movie',
+          },
+        ],
       },
     ]);
   });
