@@ -1,10 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { H3Event } from 'h3';
-import movieHandler from '@server/api/tmdb/search/movie.get';
-import tvHandler from '@server/api/tmdb/search/tv.get';
-import multiHandler from '@server/api/tmdb/search/multi.get';
-import personHandler from '@server/api/tmdb/search/person.get';
-import keywordHandler from '@server/api/tmdb/search/keyword.get';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
 import { searchKeywordRawFixture } from '@tests/fixtures/tmdb/search-keyword.raw';
 import { searchMovieRawFixture } from '@tests/fixtures/tmdb/search-movie.raw';
@@ -13,23 +8,37 @@ import { searchPersonRawFixture } from '@tests/fixtures/tmdb/search-person.raw';
 import { searchTvRawFixture } from '@tests/fixtures/tmdb/search-tv.raw';
 
 let mocks: ReturnType<typeof createNuxtHandlerMocks>;
+let handlers: Record<
+  'movie' | 'tv' | 'multi' | 'person' | 'keyword',
+  (event: H3Event) => Promise<unknown>
+>;
 
-beforeEach(() => {
+beforeEach(async () => {
   mocks = createNuxtHandlerMocks();
   mocks.install();
+
+  handlers = {
+    movie: (
+      await import('@server/api/tmdb/search/movie.get')
+    ).default as (event: H3Event) => Promise<unknown>,
+    tv: (
+      await import('@server/api/tmdb/search/tv.get')
+    ).default as (event: H3Event) => Promise<unknown>,
+    multi: (
+      await import('@server/api/tmdb/search/multi.get')
+    ).default as (event: H3Event) => Promise<unknown>,
+    person: (
+      await import('@server/api/tmdb/search/person.get')
+    ).default as (event: H3Event) => Promise<unknown>,
+    keyword: (
+      await import('@server/api/tmdb/search/keyword.get')
+    ).default as (event: H3Event) => Promise<unknown>,
+  };
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
 });
-
-const handlers = {
-  movie: movieHandler,
-  tv: tvHandler,
-  multi: multiHandler,
-  person: personHandler,
-  keyword: keywordHandler,
-} as const;
 
 type SearchRoute = keyof typeof handlers;
 
