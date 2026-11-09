@@ -205,7 +205,12 @@ describe('Discover service', () => {
 
   // Statement coverage: forwards the supplied content language to TMDb
   it('forwards the supplied content language to TMDb', async () => {
-    const http = { get: vi.fn().mockResolvedValue(movieRaw) };
+    const http = {
+      get: vi
+        .fn()
+        .mockResolvedValueOnce(movieRaw)
+        .mockResolvedValueOnce(tvRaw),
+    };
 
     await createDiscoverService(http).discoverMovies(baseFilters, 'de-DE');
     await createDiscoverService(http).discoverTv(baseFilters, 'de-DE');
