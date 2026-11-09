@@ -105,7 +105,7 @@ describe('TmdbSearchMultiResponseSchema', () => {
       ...searchMultiRawFixture,
       results: [
         {
-          media_type: 'person',
+          media_type: 'unknown',
           id: 301,
           name: 'Synthetic Person',
         },
@@ -256,7 +256,7 @@ describe('normalized search candidates', () => {
   it('rejects an unsupported normalized multi search media type', () => {
     expect(() =>
       MultiSearchCandidateSchema.parse({
-        mediaType: 'person',
+        mediaType: 'unknown',
         id: 301,
         name: 'Synthetic Person',
       }),
