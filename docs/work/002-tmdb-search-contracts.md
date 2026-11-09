@@ -179,6 +179,20 @@ Use stable `TMDB-INT-…` identifiers in HTTP integration test titles.
 - Watchlist, accounts, community features or persistent user data
 - Public deployment, monitoring or telemetry
 
+### Future design note
+
+When implementing Movie and TV detail views, evaluate
+`append_to_response=watch/providers` for the Detail endpoint.
+
+This can return Watch Provider availability in the same request as the
+Movie or TV details, potentially avoiding a separate Watch Provider
+request. The separate `/movie/{id}/watch/providers` and
+`/tv/{id}/watch/providers` endpoints remain available when a standalone
+provider request is preferable.
+
+This does not apply to `/discover/movie` or `/discover/tv`; Discover
+responses do not support `append_to_response`.
+
 ## Execution status
 
 ### Status
