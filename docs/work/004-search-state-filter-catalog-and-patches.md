@@ -48,12 +48,12 @@ The reducer validates the patch, checks the revision, applies deterministic cons
 
 ### Media type rules
 
-| Transition | Rule |
-| --- | --- |
-| `movie` to `tv` | Deactivate and remember Movie runtime filters; never convert runtime to episode duration. |
-| `tv` to `movie` | Deactivate TV-specific filters and restore remembered Movie values where applicable. |
-| `movie` or `tv` to `all` | Use separate Movie and TV queries; media-specific filters apply only to their respective branch. |
-| Genre, provider or date filters | Validate meaning and availability per media type; do not blindly reuse IDs. |
+| Transition                      | Rule                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `movie` to `tv`                 | Deactivate and remember Movie runtime filters; never convert runtime to episode duration.        |
+| `tv` to `movie`                 | Deactivate TV-specific filters and restore remembered Movie values where applicable.             |
+| `movie` or `tv` to `all`        | Use separate Movie and TV queries; media-specific filters apply only to their respective branch. |
+| Genre, provider or date filters | Validate meaning and availability per media type; do not blindly reuse IDs.                      |
 
 ### URL state
 

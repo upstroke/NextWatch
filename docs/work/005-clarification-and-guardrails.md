@@ -17,15 +17,15 @@ Extend the clarification and guardrail layer based on the real TMDb search capab
 
 ### Clarification reasons
 
-| Reason | Example |
-| --- | --- |
-| `ambiguous-entity` | "Zeitreise" could be a title, keyword or person. |
-| `ambiguous-title` | Multiple plausible titles match "Matrix". |
-| `ambiguous-person` | Multiple people match "Chris Evans". |
-| `ambiguous-keyword` | Multiple keywords match "Zeitreise". |
-| `missing-region` | "Wer streamt Matrix?" requires a region. |
-| `missing-media-type` | "Ab 2020" does not specify Movie, TV or both. |
-| `unsupported-intent` | A requested capability is not supported. |
+| Reason                | Example                                           |
+| --------------------- | ------------------------------------------------- |
+| `ambiguous-entity`    | "Zeitreise" could be a title, keyword or person.  |
+| `ambiguous-title`     | Multiple plausible titles match "Matrix".         |
+| `ambiguous-person`    | Multiple people match "Chris Evans".              |
+| `ambiguous-keyword`   | Multiple keywords match "Zeitreise".              |
+| `missing-region`      | "Wer streamt Matrix?" requires a region.          |
+| `missing-media-type`  | "Ab 2020" does not specify Movie, TV or both.     |
+| `unsupported-intent`  | A requested capability is not supported.          |
 | `conflicting-filters` | A requested change conflicts with active filters. |
 
 ### Structured options
