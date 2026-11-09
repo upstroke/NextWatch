@@ -1,4 +1,5 @@
 import type { DiscoverFilters } from '@lib/schemas/discover';
+import type { TmdbContentLanguage } from '@lib/schemas/locale';
 import type { TmdbPagedResponse } from '@lib/schemas/tmdb';
 import {
   TmdbDiscoverMovieResponseSchema,
@@ -14,6 +15,7 @@ import { mapMovieDiscoverResponse, mapTvDiscoverResponse } from './discover-mapp
  *
  * @param http - The TMDb HTTP client used for the upstream request.
  * @param filters - The Discover filters to apply.
+ * @param language - The TMDb content language for localized fields.
  * @returns The mapped paged response containing movie media items.
  * @throws A TMDb error with code `INVALID_RESPONSE` when the response
  * cannot be validated or mapped.
@@ -21,8 +23,9 @@ import { mapMovieDiscoverResponse, mapTvDiscoverResponse } from './discover-mapp
 async function discoverMovies(
   http: TmdbHttpClient,
   filters: DiscoverFilters,
+  language?: TmdbContentLanguage,
 ): Promise<TmdbPagedResponse> {
-  const raw = await http.get('/discover/movie', buildDiscoverParams('movie', filters));
+  const raw = await http.get('/discover/movie', buildDiscoverParams('movie', filters, language));
 
   try {
     return mapMovieDiscoverResponse(TmdbDiscoverMovieResponseSchema.parse(raw));
@@ -36,6 +39,7 @@ async function discoverMovies(
  *
  * @param http - The TMDb HTTP client used for the upstream request.
  * @param filters - The Discover filters to apply.
+ * @param language - The TMDb content language for localized fields.
  * @returns The mapped paged response containing TV media items.
  * @throws A TMDb error with code `INVALID_RESPONSE` when the response
  * cannot be validated or mapped.
@@ -43,8 +47,9 @@ async function discoverMovies(
 async function discoverTv(
   http: TmdbHttpClient,
   filters: DiscoverFilters,
+  language?: TmdbContentLanguage,
 ): Promise<TmdbPagedResponse> {
-  const raw = await http.get('/discover/tv', buildDiscoverParams('tv', filters));
+  const raw = await http.get('/discover/tv', buildDiscoverParams('tv', filters, language));
 
   try {
     return mapTvDiscoverResponse(TmdbDiscoverTvResponseSchema.parse(raw));
@@ -65,20 +70,28 @@ export function createDiscoverService(http: TmdbHttpClient) {
      * Retrieves and maps Movie Discover results for the supplied filters.
      *
      * @param filters - The Discover filters to apply.
+     * @param language - The TMDb content language for localized fields.
      * @returns The mapped paged response containing movie media items.
      */
-    discoverMovies(filters: DiscoverFilters): Promise<TmdbPagedResponse> {
-      return discoverMovies(http, filters);
+    discoverMovies(
+      filters: DiscoverFilters,
+      language?: TmdbContentLanguage,
+    ): Promise<TmdbPagedResponse> {
+      return discoverMovies(http, filters, language);
     },
 
     /**
      * Retrieves and maps TV Discover results for the supplied filters.
      *
      * @param filters - The Discover filters to apply.
+     * @param language - The TMDb content language for localized fields.
      * @returns The mapped paged response containing TV media items.
      */
-    discoverTv(filters: DiscoverFilters): Promise<TmdbPagedResponse> {
-      return discoverTv(http, filters);
+    discoverTv(
+      filters: DiscoverFilters,
+      language?: TmdbContentLanguage,
+    ): Promise<TmdbPagedResponse> {
+      return discoverTv(http, filters, language);
     },
   };
 }

@@ -79,6 +79,7 @@ describe('Movie Discover route handler', () => {
           Accept: 'application/json',
         },
         query: {
+          language: 'en-US',
           with_genres: '28,878',
           'vote_average.gte': '7',
           'primary_release_date.gte': '2020-01-01',
@@ -93,7 +94,7 @@ describe('Movie Discover route handler', () => {
   });
 
   // Statement coverage: accepts default filters and preserves valid empty results
-  it('accepts an empty query and preserves a valid empty page', async () => {
+  it('accepts default filters and preserves a valid empty page', async () => {
     mocks.fetchMock.mockResolvedValue(emptyDiscoverMovieRawFixture);
 
     const { event, result } = await invokeHandler();
@@ -102,7 +103,12 @@ describe('Movie Discover route handler', () => {
     expect(event.node.res.statusCode).toBe(200);
     expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
       'https://api.themoviedb.org/3/discover/movie',
-      expect.objectContaining({ query: { sort_by: 'popularity.desc' } }),
+      expect.objectContaining({
+        query: {
+          language: 'en-US',
+          sort_by: 'popularity.desc',
+        },
+      }),
     );
   });
 

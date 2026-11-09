@@ -203,6 +203,23 @@ describe('Discover service', () => {
     expect(result.results).toHaveLength(2);
   });
 
+  // Statement coverage: forwards the supplied content language to TMDb
+  it('forwards the supplied content language to TMDb', async () => {
+    const http = { get: vi.fn().mockResolvedValue(movieRaw) };
+
+    await createDiscoverService(http).discoverMovies(baseFilters, 'de-DE');
+    await createDiscoverService(http).discoverTv(baseFilters, 'de-DE');
+
+    expect(http.get).toHaveBeenCalledWith(
+      '/discover/movie',
+      expect.objectContaining({ language: 'de-DE' }),
+    );
+    expect(http.get).toHaveBeenCalledWith(
+      '/discover/tv',
+      expect.objectContaining({ language: 'de-DE' }),
+    );
+  });
+
   // Branch coverage: rejects malformed Movie data as INVALID_RESPONSE
   it('rejects malformed Movie data as INVALID_RESPONSE', async () => {
     const http = { get: vi.fn().mockResolvedValue({ results: [] }) };

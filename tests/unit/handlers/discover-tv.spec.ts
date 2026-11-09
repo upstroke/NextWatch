@@ -79,6 +79,7 @@ describe('TV Discover route handler', () => {
           Accept: 'application/json',
         },
         query: {
+          language: 'en-US',
           with_genres: '18,10765',
           'vote_average.gte': '7',
           'first_air_date.gte': '2020-01-01',
@@ -102,7 +103,12 @@ describe('TV Discover route handler', () => {
     expect(event.node.res.statusCode).toBe(200);
     expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
       'https://api.themoviedb.org/3/discover/tv',
-      expect.objectContaining({ query: { sort_by: 'popularity.desc' } }),
+      expect.objectContaining({
+        query: {
+          language: 'en-US',
+          sort_by: 'popularity.desc',
+        },
+      }),
     );
   });
 

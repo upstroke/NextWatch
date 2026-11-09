@@ -1,4 +1,5 @@
 import type { DiscoverFilters } from '@lib/schemas/discover';
+import type { TmdbContentLanguage } from '@lib/schemas/locale';
 
 export type DiscoverMediaType = 'movie' | 'tv';
 
@@ -6,6 +7,7 @@ export type DiscoverQueryParams = {
   with_genres?: string;
   with_cast?: string;
   with_keywords?: string;
+  language?: TmdbContentLanguage;
   'vote_average.gte'?: string;
   'primary_release_date.gte'?: string;
   'primary_release_date.lte'?: string;
@@ -26,10 +28,15 @@ function toYearEnd(year: number) {
 export function buildDiscoverParams(
   mediaType: DiscoverMediaType,
   filters: DiscoverFilters,
+  language?: TmdbContentLanguage,
 ): DiscoverQueryParams {
   const params: DiscoverQueryParams = {
     sort_by: filters.sortBy,
   };
+
+  if (language) {
+    params.language = language;
+  }
 
   if (filters.genreIds.length > 0) {
     params.with_genres = filters.genreIds.join(',');

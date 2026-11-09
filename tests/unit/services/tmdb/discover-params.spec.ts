@@ -12,9 +12,10 @@ describe('buildDiscoverParams', () => {
       yearFrom: 2020,
       yearTo: 2024,
       sortBy: 'vote_average.desc',
-    });
+    }, 'de-DE');
 
     expect(params).toEqual({
+      language: 'de-DE',
       with_genres: '28',
       with_cast: '1,2',
       with_keywords: '10,20',
@@ -53,5 +54,26 @@ describe('buildDiscoverParams', () => {
       'first_air_date.lte': '2024-12-31',
       sort_by: 'popularity.desc',
     });
+  });
+
+  // Branch coverage: includes language only when supplied
+  it('includes language only when supplied', () => {
+    const withoutLanguage = buildDiscoverParams('movie', {
+      genreIds: [],
+      personIds: [],
+      keywordIds: [],
+      sortBy: 'popularity.desc',
+    });
+
+    expect(withoutLanguage).not.toHaveProperty('language');
+
+    const withLanguage = buildDiscoverParams('movie', {
+      genreIds: [],
+      personIds: [],
+      keywordIds: [],
+      sortBy: 'popularity.desc',
+    }, 'en-US');
+
+    expect(withLanguage.language).toBe('en-US');
   });
 });
