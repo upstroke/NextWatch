@@ -137,13 +137,13 @@ Add or update tests for:
 
 ### Status
 
-Planned.
+Implemented — pending local validation.
 
 ### Next steps
 
-1. Add locale and TMDb content-language contracts.
-2. Extend the runtime configuration schema and server configuration.
-3. Parameterize the TMDb HTTP transport.
-4. Update the Trending service and its tests.
-5. Update existing transport mocks and route tests.
-6. Run local validation and record results.
+1. [x] Add locale and TMDb content-language contracts.
+2. [x] Extend the runtime configuration schema and server configuration.
+3. [x] Parameterize the TMDb HTTP transport.
+4. [x] Update the Trending service and its tests.
+5. [x] Update existing transport mocks and route tests.
+6. [ ] Run local validation and record results.
