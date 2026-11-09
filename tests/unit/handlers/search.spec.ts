@@ -42,11 +42,20 @@ afterEach(() => {
 
 type SearchRoute = keyof typeof handlers;
 
+function createEvent() {
+  return { node: { res: { statusCode: 200 } } } as unknown as H3Event;
+}
+
 async function invokeHandler(route: SearchRoute) {
-  const event = { node: { res: { statusCode: 200 } } } as unknown as H3Event;
+  const event = createEvent();
   const result = await handlers[route](event);
 
   expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
+  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
+    event,
+    'Cache-Control',
+    'no-store',
+  );
 
   return { event, result };
 }
@@ -59,11 +68,6 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('movie');
 
-    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-      event,
-      'Cache-Control',
-      'no-store',
-    );
     expect(result).toEqual([
       {
         id: 101,
@@ -93,11 +97,6 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('tv');
 
-    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-      event,
-      'Cache-Control',
-      'no-store',
-    );
     expect(result).toEqual([
       {
         id: 201,
@@ -127,11 +126,6 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('multi');
 
-    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-      event,
-      'Cache-Control',
-      'no-store',
-    );
     expect(result).toHaveLength(3);
     expect(result[0]).toMatchObject({ mediaType: 'movie', id: 101 });
     expect(result[1]).toMatchObject({ mediaType: 'tv', id: 201 });
@@ -162,11 +156,6 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('person');
 
-    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-      event,
-      'Cache-Control',
-      'no-store',
-    );
     expect(result).toEqual([
       {
         id: 301,
@@ -204,11 +193,6 @@ describe('Search route handlers', () => {
 
     const { event, result } = await invokeHandler('keyword');
 
-    expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-      event,
-      'Cache-Control',
-      'no-store',
-    );
     expect(result).toEqual([
       {
         id: 801,
@@ -235,10 +219,12 @@ describe('Search route handlers', () => {
   ])('returns a controlled 400 for an invalid query: %o', async (query) => {
     mocks.queryMock.mockReturnValue(query);
 
-    const { event, result } = await invokeHandler('movie');
+    const event = createEvent();
+    const result = await handlers.movie(event);
 
+    expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
     expect(mocks.headerMock).not.toHaveBeenCalled();
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       statusCode: 400,
       statusMessage: 'Invalid search query',
     });
@@ -252,17 +238,19 @@ describe('Search route handlers', () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
 
-    const { event } = await invokeHandler('movie');
+    const event = createEvent();
 
+    await expect(handlers.movie(event)).rejects.toMatchObject({
+      statusCode: 502,
+      statusMessage: 'TMDb request or response invalid',
+    });
+
+    expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
     expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
       event,
       'Cache-Control',
       'no-store',
     );
-    await expect(handlers.movie(event)).rejects.toMatchObject({
-      statusCode: 502,
-      statusMessage: 'TMDb request or response invalid',
-    });
     expect(event.node.res.statusCode).toBe(502);
     expect(mocks.fetchMock).toHaveBeenCalledTimes(1);
   });
@@ -272,17 +260,19 @@ describe('Search route handlers', () => {
     mocks.queryMock.mockReturnValue({ query: 'movie' });
     mocks.fetchMock.mockResolvedValue({ results: [{ id: 'invalid' }] });
 
-    const { event } = await invokeHandler('movie');
+    const event = createEvent();
 
+    await expect(handlers.movie(event)).rejects.toMatchObject({
+      statusCode: 502,
+      statusMessage: 'TMDb request or response invalid',
+    });
+
+    expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
     expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
       event,
       'Cache-Control',
       'no-store',
     );
-    await expect(handlers.movie(event)).rejects.toMatchObject({
-      statusCode: 502,
-      statusMessage: 'TMDb request or response invalid',
-    });
     expect(event.node.res.statusCode).toBe(502);
     expect(mocks.fetchMock).toHaveBeenCalledTimes(1);
   });
