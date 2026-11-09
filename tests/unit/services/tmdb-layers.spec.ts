@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import type { TmdbConfig } from '@server/services/tmdb/http';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTrendingService } from '@server/services/tmdb/trending';
 import { mapTrendingResponse } from '@server/services/tmdb/mappers';
@@ -10,7 +11,7 @@ const config = {
   apiReadAccessToken: 'synthetic-test-token',
   baseUrl: 'https://api.themoviedb.org/3',
   defaultLocale: 'en',
-};
+} satisfies TmdbConfig;
 
 describe('TMDb layer boundaries', () => {
   // Branch coverage: leaves schema validation to the service rather than HTTP transport
