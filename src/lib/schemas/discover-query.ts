@@ -3,11 +3,26 @@ import { z } from 'zod';
 const toUndefinedIfEmpty = (value: unknown) =>
   value === undefined || value === '' ? undefined : value;
 
-const genreIdsSchema = z.preprocess((value) => {
+const toIdArray = (value: unknown) => {
   if (value === undefined || value === '') return [];
   if (Array.isArray(value)) return value;
   return String(value).split(',');
-}, z.array(z.coerce.number().int().positive()).max(3));
+};
+
+const genreIdsSchema = z.preprocess(
+  toIdArray,
+  z.array(z.coerce.number().int().positive()).max(3),
+);
+
+const personIdsSchema = z.preprocess(
+  toIdArray,
+  z.array(z.coerce.number().int().positive()).max(5),
+);
+
+const keywordIdsSchema = z.preprocess(
+  toIdArray,
+  z.array(z.coerce.number().int().positive()).max(5),
+);
 
 const optionalRatingSchema = z.preprocess(
   toUndefinedIfEmpty,
@@ -21,10 +36,14 @@ const optionalYearSchema = z.preprocess(
 
 export const DiscoverQuerySchema = z.object({
   genreIds: genreIdsSchema,
+  personIds: personIdsSchema,
+  keywordIds: keywordIdsSchema,
   minRating: optionalRatingSchema,
   yearFrom: optionalYearSchema,
   yearTo: optionalYearSchema,
-  sortBy: z.enum(['popularity.desc', 'vote_average.desc']).default('popularity.desc'),
+  sortBy: z
+    .enum(['popularity.desc', 'vote_average.desc'])
+    .default('popularity.desc'),
 });
 
 export type DiscoverQuery = z.infer<typeof DiscoverQuerySchema>;
