@@ -3,11 +3,11 @@ import type { TmdbConfig } from '@server/services/tmdb/http';
 import { fetchWeeklyTrending, createTmdbSpikeError } from '@server/utils/tmdb';
 import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 
-const config = {
+const config: TmdbConfig = {
   apiReadAccessToken: 'synthetic-test-token',
   baseUrl: 'https://api.themoviedb.org/3',
   defaultLocale: 'en',
-} satisfies TmdbConfig;
+};
 
 describe('TMDb trending connection spike', () => {
   // Statement coverage: requests weekly trends with server-side authorization and bounded execution
