@@ -28,7 +28,5 @@ export async function fetchWeeklyTrending(
   request: TmdbRequest,
   language: TmdbContentLanguage,
 ) {
-  return createTrendingService(
-    createTmdbHttpClient(config, request),
-  ).getWeeklyTrending(language);
+  return createTrendingService(createTmdbHttpClient(config, request)).getWeeklyTrending(language);
 }

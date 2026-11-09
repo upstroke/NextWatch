@@ -43,11 +43,7 @@ describe('TMDb trending connection spike', () => {
   it('rejects a missing token without contacting TMDb', async () => {
     const request = vi.fn();
     await expect(
-      fetchWeeklyTrending(
-        { ...config, apiReadAccessToken: ' ' },
-        request,
-        'de-DE',
-      ),
+      fetchWeeklyTrending({ ...config, apiReadAccessToken: ' ' }, request, 'de-DE'),
     ).rejects.toMatchObject({ code: 'MISSING_TOKEN' });
     expect(request).not.toHaveBeenCalled();
   });
@@ -56,11 +52,7 @@ describe('TMDb trending connection spike', () => {
   it('rejects an unexpected host before sending credentials', async () => {
     const request = vi.fn();
     await expect(
-      fetchWeeklyTrending(
-        { ...config, baseUrl: 'https://example.com/3' },
-        request,
-        'de-DE',
-      ),
+      fetchWeeklyTrending({ ...config, baseUrl: 'https://example.com/3' }, request, 'de-DE'),
     ).rejects.toMatchObject({ code: 'INVALID_BASE_URL' });
     expect(request).not.toHaveBeenCalled();
   });
@@ -68,18 +60,16 @@ describe('TMDb trending connection spike', () => {
   // Branch coverage: sanitizes upstream errors without retrying
   it('sanitizes upstream errors without retrying', async () => {
     const request = vi.fn().mockRejectedValue(new Error(config.apiReadAccessToken));
-    await expect(
-      fetchWeeklyTrending(config, request, 'de-DE'),
-    ).rejects.toEqual(createTmdbSpikeError('UPSTREAM_FAILED'));
+    await expect(fetchWeeklyTrending(config, request, 'de-DE')).rejects.toEqual(
+      createTmdbSpikeError('UPSTREAM_FAILED'),
+    );
     expect(request).toHaveBeenCalledTimes(1);
   });
 
   // Branch coverage: rejects invalid response data
   it('rejects invalid response data', async () => {
     const request = vi.fn().mockResolvedValue({ results: [{ id: 'invalid' }] });
-    await expect(
-      fetchWeeklyTrending(config, request, 'de-DE'),
-    ).rejects.toMatchObject({
+    await expect(fetchWeeklyTrending(config, request, 'de-DE')).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
   });
@@ -90,9 +80,7 @@ describe('TMDb trending connection spike', () => {
       ...weeklyTrendingFixture,
       results: [{ ...weeklyTrendingFixture.results[0], media_type: 'person' }],
     });
-    await expect(
-      fetchWeeklyTrending(config, request, 'de-DE'),
-    ).rejects.toMatchObject({
+    await expect(fetchWeeklyTrending(config, request, 'de-DE')).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
   });
@@ -105,9 +93,7 @@ describe('TMDb trending connection spike', () => {
       total_results: 0,
       results: [],
     });
-    await expect(
-      fetchWeeklyTrending(config, request, 'de-DE'),
-    ).resolves.toEqual({
+    await expect(fetchWeeklyTrending(config, request, 'de-DE')).resolves.toEqual({
       page: 1,
       totalPages: 0,
       totalResults: 0,
