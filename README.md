@@ -24,6 +24,8 @@ pnpm dev
 
 Copy `.env.example` to `.env` and add your own TMDb credentials. TMDb requests must remain server-side.
 
+Set `NUXT_APP_DEFAULT_LOCALE` to control the default language used for TMDb content requests. Supported values are `en` and `de`; when the variable is absent or invalid, the application falls back to `en`.
+
 ## Scripts
 
 ```bash

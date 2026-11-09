@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { H3Event } from 'h3';
+import type { TmdbConfig } from '@server/services/tmdb/http';
 import { createNuxtHandlerMocks } from '@test-mocks/nuxt-handler';
 import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 
@@ -60,7 +61,7 @@ describe('Trending route handler', () => {
           Authorization: 'Bearer synthetic-test-token',
           Accept: 'application/json',
         },
-        query: { language: 'de-DE' },
+        query: { language: 'en-US' },
         timeout: 10000,
         retry: false,
         redirect: 'error',
@@ -70,8 +71,16 @@ describe('Trending route handler', () => {
 
   // Branch coverage: translates transport configuration failures without making a request
   it.each([
-    { apiReadAccessToken: ' ', baseUrl: 'https://api.themoviedb.org/3' },
-    { apiReadAccessToken: 'synthetic-test-token', baseUrl: 'https://example.com/3' },
+    {
+      apiReadAccessToken: ' ',
+      baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: 'en',
+    } satisfies TmdbConfig,
+    {
+      apiReadAccessToken: 'synthetic-test-token',
+      baseUrl: 'https://example.com/3',
+      defaultLocale: 'en',
+    } satisfies TmdbConfig,
   ])('rejects invalid transport configuration with a controlled 503: %o', async (tmdb) => {
     const event = {} as H3Event;
     mocks.runtimeConfigMock.mockReturnValue({ tmdb });

@@ -14,6 +14,7 @@ describe('TMDb runtime config adapter', () => {
     const tmdb = {
       apiReadAccessToken: 'synthetic-test-token',
       baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: 'en',
     };
     const useRuntimeConfig = vi.fn().mockReturnValue({ tmdb });
     vi.stubGlobal('useRuntimeConfig', useRuntimeConfig);
@@ -31,11 +32,23 @@ describe('TMDb runtime config adapter', () => {
     { label: 'missing TMDb fields', config: { tmdb: {} } },
     {
       label: 'a non-string token',
-      config: { tmdb: { apiReadAccessToken: 123, baseUrl: 'https://api.themoviedb.org/3' } },
+      config: {
+        tmdb: {
+          apiReadAccessToken: 123,
+          baseUrl: 'https://api.themoviedb.org/3',
+          defaultLocale: 'en',
+        },
+      },
     },
     {
       label: 'a non-string base URL',
-      config: { tmdb: { apiReadAccessToken: 'synthetic-test-token', baseUrl: 123 } },
+      config: {
+        tmdb: {
+          apiReadAccessToken: 'synthetic-test-token',
+          baseUrl: 123,
+          defaultLocale: 'en',
+        },
+      },
     },
   ])('rejects $label', ({ config }) => {
     const event = {} as H3Event;

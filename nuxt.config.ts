@@ -15,6 +15,7 @@ export default defineNuxtConfig({
     tmdb: {
       apiReadAccessToken: '',
       baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: (process.env.NUXT_APP_DEFAULT_LOCALE ?? 'en') as 'en' | 'de',
     },
   },
   typescript: {

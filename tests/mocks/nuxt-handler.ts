@@ -8,6 +8,7 @@ export function createNuxtHandlerMocks() {
     tmdb: {
       apiReadAccessToken: 'synthetic-test-token',
       baseUrl: 'https://api.themoviedb.org/3',
+      defaultLocale: 'en',
     },
   });
   const queryMock = vi.fn().mockReturnValue({});
