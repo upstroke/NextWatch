@@ -6,6 +6,9 @@ import {
   searchMovieCandidateFixture,
   searchPersonCandidateFixture,
   searchSecondKeywordCandidateFixture,
+  searchSecondMovieCandidateFixture,
+  searchSecondPersonCandidateFixture,
+  searchSecondTvCandidateFixture,
   searchTvCandidateFixture,
 } from '@tests/fixtures/tmdb/search-candidates';
 import {
@@ -44,6 +47,7 @@ describe('search service', () => {
 
     await expect(search.searchMovies('movie')).resolves.toEqual([
       searchMovieCandidateFixture,
+      searchSecondMovieCandidateFixture,
     ]);
     expect(http.get).toHaveBeenCalledWith('/search/movie', {
       query: 'movie',
@@ -56,6 +60,7 @@ describe('search service', () => {
 
     await expect(search.searchTv('series')).resolves.toEqual([
       searchTvCandidateFixture,
+      searchSecondTvCandidateFixture,
     ]);
     expect(http.get).toHaveBeenCalledWith('/search/tv', {
       query: 'series',
@@ -93,6 +98,7 @@ describe('search service', () => {
 
     await expect(search.searchPeople('person')).resolves.toEqual([
       searchPersonCandidateFixture,
+      searchSecondPersonCandidateFixture,
     ]);
     expect(http.get).toHaveBeenCalledWith('/search/person', {
       query: 'person',
