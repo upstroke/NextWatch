@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+export const TmdbMediaTypeSchema = z.enum(['movie', 'tv', 'person']);
+
+export type TmdbMediaType = z.infer<typeof TmdbMediaTypeSchema>;
+
 export const TmdbMediaSchema = z.object({
   id: z.number().int().positive(),
   mediaType: z.enum(['movie', 'tv']),

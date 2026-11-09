@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  TmdbMediaTypeSchema,
   TmdbMediaSchema,
   TmdbPagedResponseSchema,
 } from '@lib/schemas/tmdb';
@@ -25,6 +26,21 @@ const tvShow = {
   firstAirDate: '2026-02-01',
   voteAverage: 8,
 };
+
+describe('TmdbMediaTypeSchema', () => {
+  // Statement coverage: accepts documented TMDb media types
+  it('accepts documented TMDb media types', () => {
+    expect(TmdbMediaTypeSchema.parse('movie')).toBe('movie');
+    expect(TmdbMediaTypeSchema.parse('tv')).toBe('tv');
+    expect(TmdbMediaTypeSchema.parse('person')).toBe('person');
+  });
+
+  // Branch coverage: rejects unsupported TMDb media types
+  it('rejects unsupported TMDb media types', () => {
+    expect(() => TmdbMediaTypeSchema.parse('unknown')).toThrow();
+    expect(() => TmdbMediaTypeSchema.parse('')).toThrow();
+  });
+});
 
 describe('TmdbMediaSchema', () => {
   // Statement coverage: accepts a complete movie

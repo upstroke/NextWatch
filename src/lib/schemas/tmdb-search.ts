@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TmdbMediaTypeSchema } from '@lib/schemas/tmdb';
 
 const rawMovieResultSchema = z.object({
   id: z.number().int().positive(),
@@ -28,7 +29,7 @@ const rawPersonResultSchema = z.object({
     .array(
       z.object({
         id: z.number().int().positive(),
-        media_type: z.enum(['movie', 'tv']),
+        media_type: TmdbMediaTypeSchema,
         title: z.string().optional(),
         name: z.string().optional(),
       }),
@@ -134,7 +135,7 @@ export const SearchPersonCandidateSchema = z
         z
           .object({
             id: z.number().int().positive(),
-            mediaType: z.enum(['movie', 'tv']),
+            mediaType: TmdbMediaTypeSchema,
             title: z.string().optional(),
             name: z.string().optional(),
           })
