@@ -19,10 +19,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = getTmdbConfig(event);
-  const http = createTmdbHttpClient(
-    config,
-    (url, options): Promise<unknown> =>
-      $fetch<unknown>(url, { ...options, redirect: 'error' }),
+  const http = createTmdbHttpClient(config, (url, options): Promise<unknown> =>
+    $fetch<unknown>(url, { ...options, redirect: 'error' }),
   );
 
   try {
