@@ -111,12 +111,12 @@ unbekannter Wert), das Zod bereits garantiert. Das ist redundant.
 
 ## Zusammenfassung
 
-| Maßnahme | Tests gespart (ca.) | ROI |
-|---|---:|---|
-| 1. Schema-Tests radikal straffen | ~25 | Hoch |
-| 2. Handler-Invalid-Fälle | ~25 | Hoch |
-| 3. Service-Cross-Layer-Duplikate | ~25 | Hoch |
-| **Summe** | **~75** | |
+| Maßnahme                         | Tests gespart (ca.) | ROI  |
+| -------------------------------- | ------------------: | ---- |
+| 1. Schema-Tests radikal straffen |                 ~25 | Hoch |
+| 2. Handler-Invalid-Fälle         |                 ~25 | Hoch |
+| 3. Service-Cross-Layer-Duplikate |                 ~25 | Hoch |
+| **Summe**                        |             **~75** |      |
 
 **Ergebnis:** 342 → ~265-270 Tests, ohne Abdeckung oder Fehlererkennung zu verlieren.
 Die genaue Zahl ist nicht das Ziel — entscheidend ist, dass nur unnötige Tests entfernt werden.
