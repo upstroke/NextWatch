@@ -43,6 +43,10 @@ Read docs/work/specs/architecture/001-service-boundaries.md before changing API 
 - Do not log raw error objects, request headers, tokens or user conversations.
 - Use synthetic fixtures; mock external boundaries, not every internal collaborator.
 - Reuse existing mocks and fixtures before introducing new ones.
+- Test application behavior, not Zod or framework standard behavior.
+- Keep schema tests focused on happy paths, project-specific transforms, cross-field rules, and error mapping.
+- Do not duplicate HTTP validation paths in direct handler tests when an HTTP integration test already covers the same contract.
+- Test an error path in the layer that decides it; do not repeat the same error classification across schema, service, handler, and integration tests.
 - Test schema/mapping/domain behavior in units, orchestration with injected transport, and real HTTP status/response contracts in integration tests.
 - A service test is not an HTTP integration test.
 - Direct handler tests that do not start a Nuxt/Nitro server are not HTTP integration tests.
