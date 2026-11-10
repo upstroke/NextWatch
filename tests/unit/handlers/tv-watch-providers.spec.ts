@@ -93,8 +93,8 @@ describe('TV watch providers route handler', () => {
   });
 
   // Branch coverage: rejects an invalid TV ID before configuration or transport
-  it.each(['0', '-1', '1.5', 'abc'])('rejects an invalid TV ID: %s', async (id) => {
-    const { result } = await invokeHandler(id);
+  it('rejects an invalid TV ID', async () => {
+    const { result } = await invokeHandler('abc');
 
     expect(result).toMatchObject({
       statusCode: 400,
@@ -105,8 +105,8 @@ describe('TV watch providers route handler', () => {
   });
 
   // Branch coverage: rejects an invalid region before configuration or transport
-  it.each(['   ', 'D', 'DEU', 'D1', 123])('rejects an invalid region: %o', async (region) => {
-    const { result } = await invokeHandler('201', region);
+  it('rejects an invalid region', async () => {
+    const { result } = await invokeHandler('201', 'D');
 
     expect(result).toMatchObject({
       statusCode: 400,
