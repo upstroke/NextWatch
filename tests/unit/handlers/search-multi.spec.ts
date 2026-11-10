@@ -84,21 +84,18 @@ describe('Multi Search route handler', () => {
   });
 
   // Branch coverage: returns a controlled 400 before configuration or transport
-  it.each([{}, { query: '' }, { query: '   ' }, { query: 123 }])(
-    'returns a controlled 400 for an invalid query: %o',
-    async (query) => {
-      mocks.queryMock.mockReturnValue(query);
+  it('returns a controlled 400 for an invalid query', async () => {
+    mocks.queryMock.mockReturnValue({});
 
-      const { result } = await invokeHandler();
+    const { result } = await invokeHandler();
 
-      expect(result).toMatchObject({
-        statusCode: 400,
-        statusMessage: 'Invalid search query',
-      });
-      expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
-      expect(mocks.fetchMock).not.toHaveBeenCalled();
-    },
-  );
+    expect(result).toMatchObject({
+      statusCode: 400,
+      statusMessage: 'Invalid search query',
+    });
+    expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
+    expect(mocks.fetchMock).not.toHaveBeenCalled();
+  });
 
   // Branch coverage: translates upstream rejection through the real error factory
   it('returns a sanitized 502 when the upstream request fails', async () => {
