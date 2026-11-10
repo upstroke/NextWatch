@@ -20,10 +20,13 @@ export default defineEventHandler(async (event) => {
   if (rawRegion === undefined || rawRegion === '') {
     region = 'US';
   } else if (typeof rawRegion !== 'string' || !/^[A-Za-z]{2}$/.test(rawRegion)) {
-    return createError({
+    event.node.res.statusCode = 400;
+
+    return {
       statusCode: 400,
       statusMessage: 'Invalid watch provider region',
-    });
+      message: 'Invalid watch provider region',
+    };
   } else {
     region = rawRegion.toUpperCase();
   }
