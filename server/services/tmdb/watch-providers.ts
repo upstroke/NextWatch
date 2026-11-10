@@ -57,10 +57,7 @@ export function createWatchProviderService(http: TmdbHttpClient) {
      * @throws A TMDb error with code `INVALID_RESPONSE` when the response
      * cannot be validated or mapped.
      */
-    async getMovieWatchProviders(
-      id: number,
-      region: string,
-    ): Promise<WatchProviderAvailability> {
+    async getMovieWatchProviders(id: number, region: string): Promise<WatchProviderAvailability> {
       const raw = await http.get(`/movie/${id}/watch/providers`, { region });
 
       try {
@@ -83,10 +80,7 @@ export function createWatchProviderService(http: TmdbHttpClient) {
      * @throws A TMDb error with code `INVALID_RESPONSE` when the response
      * cannot be validated or mapped.
      */
-    async getTvWatchProviders(
-      id: number,
-      region: string,
-    ): Promise<WatchProviderAvailability> {
+    async getTvWatchProviders(id: number, region: string): Promise<WatchProviderAvailability> {
       const raw = await http.get(`/tv/${id}/watch/providers`, { region });
 
       try {

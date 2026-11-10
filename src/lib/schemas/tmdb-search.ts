@@ -115,12 +115,8 @@ export const TmdbWatchProvidersTvResponseSchema = z.object({
   results: z.record(z.string(), rawWatchProviderRegionSchema),
 });
 
-export type TmdbWatchProvidersMovieResponse = z.infer<
-  typeof TmdbWatchProvidersMovieResponseSchema
->;
-export type TmdbWatchProvidersTvResponse = z.infer<
-  typeof TmdbWatchProvidersTvResponseSchema
->;
+export type TmdbWatchProvidersMovieResponse = z.infer<typeof TmdbWatchProvidersMovieResponseSchema>;
+export type TmdbWatchProvidersTvResponse = z.infer<typeof TmdbWatchProvidersTvResponseSchema>;
 
 export const SearchMovieCandidateSchema = z
   .object({

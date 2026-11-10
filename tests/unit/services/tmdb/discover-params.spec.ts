@@ -4,15 +4,19 @@ import { buildDiscoverParams } from '@server/services/tmdb/discover-params';
 describe('buildDiscoverParams', () => {
   // Statement coverage: maps person and keyword ids to TMDb parameters
   it('maps person and keyword ids to TMDb parameters', () => {
-    const params = buildDiscoverParams('movie', {
-      genreIds: [28],
-      personIds: [1, 2],
-      keywordIds: [10, 20],
-      minRating: 7,
-      yearFrom: 2020,
-      yearTo: 2024,
-      sortBy: 'vote_average.desc',
-    }, 'de-DE');
+    const params = buildDiscoverParams(
+      'movie',
+      {
+        genreIds: [28],
+        personIds: [1, 2],
+        keywordIds: [10, 20],
+        minRating: 7,
+        yearFrom: 2020,
+        yearTo: 2024,
+        sortBy: 'vote_average.desc',
+      },
+      'de-DE',
+    );
 
     expect(params).toEqual({
       language: 'de-DE',
@@ -67,12 +71,16 @@ describe('buildDiscoverParams', () => {
 
     expect(withoutLanguage).not.toHaveProperty('language');
 
-    const withLanguage = buildDiscoverParams('movie', {
-      genreIds: [],
-      personIds: [],
-      keywordIds: [],
-      sortBy: 'popularity.desc',
-    }, 'en-US');
+    const withLanguage = buildDiscoverParams(
+      'movie',
+      {
+        genreIds: [],
+        personIds: [],
+        keywordIds: [],
+        sortBy: 'popularity.desc',
+      },
+      'en-US',
+    );
 
     expect(withLanguage.language).toBe('en-US');
   });

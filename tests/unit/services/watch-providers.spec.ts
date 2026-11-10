@@ -16,10 +16,7 @@ describe('Watch provider service', () => {
     const http = { get: vi.fn().mockResolvedValue(movieRaw), getWeeklyTrending: vi.fn() };
     const result = await createWatchProviderService(http).getMovieWatchProviders(101, 'DE');
 
-    expect(http.get).toHaveBeenCalledWith(
-      '/movie/101/watch/providers',
-      { region: 'DE' },
-    );
+    expect(http.get).toHaveBeenCalledWith('/movie/101/watch/providers', { region: 'DE' });
     expect(result).toEqual({
       mediaId: 101,
       region: 'DE',
@@ -55,10 +52,7 @@ describe('Watch provider service', () => {
     const http = { get: vi.fn().mockResolvedValue(tvRaw), getWeeklyTrending: vi.fn() };
     const result = await createWatchProviderService(http).getTvWatchProviders(201, 'DE');
 
-    expect(http.get).toHaveBeenCalledWith(
-      '/tv/201/watch/providers',
-      { region: 'DE' },
-    );
+    expect(http.get).toHaveBeenCalledWith('/tv/201/watch/providers', { region: 'DE' });
     expect(result).toEqual({
       mediaId: 201,
       region: 'DE',
@@ -126,11 +120,11 @@ describe('Watch provider service', () => {
     const failure = createTmdbError('UPSTREAM_FAILED');
     const http = { get: vi.fn().mockRejectedValue(failure), getWeeklyTrending: vi.fn() };
 
-    await expect(
-      createWatchProviderService(http).getMovieWatchProviders(101, 'DE'),
-    ).rejects.toBe(failure);
-    await expect(
-      createWatchProviderService(http).getTvWatchProviders(201, 'DE'),
-    ).rejects.toBe(failure);
+    await expect(createWatchProviderService(http).getMovieWatchProviders(101, 'DE')).rejects.toBe(
+      failure,
+    );
+    await expect(createWatchProviderService(http).getTvWatchProviders(201, 'DE')).rejects.toBe(
+      failure,
+    );
   });
 });

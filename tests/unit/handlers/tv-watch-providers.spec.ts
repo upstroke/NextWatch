@@ -9,9 +9,9 @@ let handler: (event: H3Event) => Promise<unknown>;
 beforeEach(async () => {
   mocks = createNuxtHandlerMocks();
   mocks.install();
-  handler = (
-    await import('@server/api/tmdb/tv/[id]/watch-providers.get')
-  ).default as (event: H3Event) => Promise<unknown>;
+  handler = (await import('@server/api/tmdb/tv/[id]/watch-providers.get')).default as (
+    event: H3Event,
+  ) => Promise<unknown>;
 });
 
 afterEach(() => {
@@ -105,13 +105,7 @@ describe('TV watch providers route handler', () => {
   });
 
   // Branch coverage: rejects an invalid region before configuration or transport
-  it.each([
-    '   ',
-    'D',
-    'DEU',
-    'D1',
-    123,
-  ])('rejects an invalid region: %o', async (region) => {
+  it.each(['   ', 'D', 'DEU', 'D1', 123])('rejects an invalid region: %o', async (region) => {
     const { result } = await invokeHandler('201', region);
 
     expect(result).toMatchObject({

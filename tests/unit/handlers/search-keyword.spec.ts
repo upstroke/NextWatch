@@ -16,9 +16,9 @@ let handler: (event: H3Event) => Promise<unknown>;
 beforeEach(async () => {
   mocks = createNuxtHandlerMocks();
   mocks.install();
-  handler = (
-    await import('@server/api/tmdb/search/keyword.get')
-  ).default as (event: H3Event) => Promise<unknown>;
+  handler = (await import('@server/api/tmdb/search/keyword.get')).default as (
+    event: H3Event,
+  ) => Promise<unknown>;
 });
 
 afterEach(() => {
@@ -30,11 +30,7 @@ async function invokeHandler() {
   const result = await handler(event);
 
   expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
-  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-    event,
-    'Cache-Control',
-    'no-store',
-  );
+  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(event, 'Cache-Control', 'no-store');
 
   return { event, result };
 }
@@ -47,10 +43,7 @@ describe('Keyword Search route handler', () => {
 
     const { event, result } = await invokeHandler();
 
-    expect(result).toEqual([
-      searchKeywordCandidateFixture,
-      searchSecondKeywordCandidateFixture,
-    ]);
+    expect(result).toEqual([searchKeywordCandidateFixture, searchSecondKeywordCandidateFixture]);
     expect(event.node.res.statusCode).toBe(200);
     expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
       'https://api.themoviedb.org/3/search/keyword',
@@ -70,23 +63,21 @@ describe('Keyword Search route handler', () => {
   });
 
   // Branch coverage: returns a controlled 400 before configuration or transport
-  it.each([
-    {},
-    { query: '' },
-    { query: '   ' },
-    { query: 123 },
-  ])('returns a controlled 400 for an invalid query: %o', async (query) => {
-    mocks.queryMock.mockReturnValue(query);
+  it.each([{}, { query: '' }, { query: '   ' }, { query: 123 }])(
+    'returns a controlled 400 for an invalid query: %o',
+    async (query) => {
+      mocks.queryMock.mockReturnValue(query);
 
-    const { result } = await invokeHandler();
+      const { result } = await invokeHandler();
 
-    expect(result).toMatchObject({
-      statusCode: 400,
-      statusMessage: 'Invalid search query',
-    });
-    expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
-    expect(mocks.fetchMock).not.toHaveBeenCalled();
-  });
+      expect(result).toMatchObject({
+        statusCode: 400,
+        statusMessage: 'Invalid search query',
+      });
+      expect(mocks.runtimeConfigMock).not.toHaveBeenCalled();
+      expect(mocks.fetchMock).not.toHaveBeenCalled();
+    },
+  );
 
   // Branch coverage: translates upstream rejection through the real error factory
   it('returns a sanitized 502 when the upstream request fails', async () => {
