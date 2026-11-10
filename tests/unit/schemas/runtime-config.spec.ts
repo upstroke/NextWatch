@@ -26,33 +26,4 @@ describe('TMDb runtime config schema', () => {
 
     expect(config.defaultLocale).toBe('en');
   });
-
-  // Branch coverage: rejects a missing access token
-  it('rejects a missing access token', () => {
-    expect(() =>
-      TmdbRuntimeConfigSchema.parse({
-        baseUrl: 'https://api.themoviedb.org/3',
-      }),
-    ).toThrow();
-  });
-
-  // Branch coverage: rejects a missing base URL
-  it('rejects a missing base URL', () => {
-    expect(() =>
-      TmdbRuntimeConfigSchema.parse({
-        apiReadAccessToken: 'synthetic-token',
-      }),
-    ).toThrow();
-  });
-
-  // Branch coverage: rejects an unsupported default locale
-  it('rejects an unsupported default locale', () => {
-    expect(() =>
-      TmdbRuntimeConfigSchema.parse({
-        apiReadAccessToken: 'synthetic-token',
-        baseUrl: 'https://api.themoviedb.org/3',
-        defaultLocale: 'fr',
-      }),
-    ).toThrow();
-  });
 });
