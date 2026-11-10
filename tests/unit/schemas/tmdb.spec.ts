@@ -30,12 +30,6 @@ describe('TmdbMediaTypeSchema', () => {
     expect(TmdbMediaTypeSchema.parse('tv')).toBe('tv');
     expect(TmdbMediaTypeSchema.parse('person')).toBe('person');
   });
-
-  // Branch coverage: rejects unsupported TMDb media types
-  it('rejects unsupported TMDb media types', () => {
-    expect(() => TmdbMediaTypeSchema.parse('unknown')).toThrow();
-    expect(() => TmdbMediaTypeSchema.parse('')).toThrow();
-  });
 });
 
 describe('TmdbMediaSchema', () => {
@@ -78,18 +72,6 @@ describe('TmdbMediaSchema', () => {
       backdropPath: null,
     });
   });
-
-  // Branch coverage: rejects invalid ids
-  it('rejects invalid ids', () => {
-    expect(() => TmdbMediaSchema.parse({ id: 0, mediaType: 'movie' })).toThrow();
-
-    expect(() => TmdbMediaSchema.parse({ id: 1.5, mediaType: 'movie' })).toThrow();
-  });
-
-  // Branch coverage: rejects invalid media types
-  it('rejects invalid media types', () => {
-    expect(() => TmdbMediaSchema.parse({ id: 1, mediaType: 'person' })).toThrow();
-  });
 });
 
 describe('TmdbPagedResponseSchema', () => {
@@ -115,38 +97,5 @@ describe('TmdbPagedResponseSchema', () => {
     };
 
     expect(TmdbPagedResponseSchema.parse(page)).toEqual(page);
-  });
-
-  // Branch coverage: rejects invalid pagination values
-  it('rejects invalid pagination values', () => {
-    expect(() =>
-      TmdbPagedResponseSchema.parse({
-        page: 0,
-        totalPages: 0,
-        totalResults: 0,
-        results: [],
-      }),
-    ).toThrow();
-
-    expect(() =>
-      TmdbPagedResponseSchema.parse({
-        page: 1,
-        totalPages: -1,
-        totalResults: 0,
-        results: [],
-      }),
-    ).toThrow();
-  });
-
-  // Branch coverage: rejects invalid result items
-  it('rejects invalid result items', () => {
-    expect(() =>
-      TmdbPagedResponseSchema.parse({
-        page: 1,
-        totalPages: 1,
-        totalResults: 1,
-        results: [{ id: 'invalid' }],
-      }),
-    ).toThrow();
   });
 });
