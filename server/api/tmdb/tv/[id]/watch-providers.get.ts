@@ -15,13 +15,18 @@ export default defineEventHandler(async (event) => {
   }
 
   const rawRegion = getQuery(event).region;
-  if (typeof rawRegion !== 'string' || !/^[A-Za-z]{2}$/.test(rawRegion)) {
+
+  let region: string;
+  if (rawRegion === undefined || rawRegion === '') {
+    region = 'US';
+  } else if (typeof rawRegion !== 'string' || !/^[A-Za-z]{2}$/.test(rawRegion)) {
     return createError({
       statusCode: 400,
       statusMessage: 'Invalid watch provider region',
     });
+  } else {
+    region = rawRegion.toUpperCase();
   }
-  const region = rawRegion.toUpperCase();
 
   const config = getTmdbConfig(event);
   const http = createTmdbHttpClient(config, (url, options): Promise<unknown> =>

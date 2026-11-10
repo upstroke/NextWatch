@@ -86,6 +86,26 @@ describe('Movie watch providers route handler', () => {
     );
   });
 
+  // Statement coverage: uses the default region when region is omitted
+  it('uses the default region when region is omitted', async () => {
+    mocks.fetchMock.mockResolvedValue(movieWatchProvidersRawFixture);
+
+    const { event, result } = await invokeHandler();
+
+    expect(result).toEqual({
+      mediaId: 101,
+      region: 'US',
+      stream: [],
+      rent: [],
+      buy: [],
+    });
+    expect(event.node.res.statusCode).toBe(200);
+    expect(mocks.fetchMock).toHaveBeenCalledExactlyOnceWith(
+      'https://api.themoviedb.org/3/movie/101/watch/providers',
+      expect.objectContaining({ query: { region: 'US' } }),
+    );
+  });
+
   // Branch coverage: rejects an invalid Movie ID before configuration or transport
   it.each(['0', '-1', '1.5', 'abc'])('rejects an invalid Movie ID: %s', async (id) => {
     const { result } = await invokeHandler(id);
@@ -100,8 +120,6 @@ describe('Movie watch providers route handler', () => {
 
   // Branch coverage: rejects an invalid region before configuration or transport
   it.each([
-    undefined,
-    '',
     '   ',
     'D',
     'DEU',
