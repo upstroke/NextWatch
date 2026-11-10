@@ -2,7 +2,7 @@
 
 ## Status
 
-In Progress
+Completed
 
 ## Ziel
 
@@ -130,6 +130,46 @@ Die genaue Zahl ist nicht das Ziel — entscheidend ist, dass nur unnötige Test
 5. Maßnahme 3 umsetzen: Service-Cross-Layer-Duplikate entfernen
 6. Coverage prüfen
 7. Ergebnisse validieren: Tests, Coverage, Typecheck, Build
+
+## Execution status
+
+### Maßnahme 1: Schema-Tests radikal straffen — abgeschlossen
+
+- 45 Tests entfernt.
+- Betroffene Dateien: `tmdb-search.spec.ts`, `tmdb.spec.ts`,
+  `tmdb-watch-providers.spec.ts`, `discover-query.spec.ts`,
+  `discover.spec.ts`, `locale.spec.ts`, `runtime-config.spec.ts`,
+  `search.spec.ts`.
+- Entfernt wurden ausschließlich reine Zod-/Framework-Invalid-Fälle.
+- Behalten wurden Happy Paths, Transformationen, projekt-spezifische Limits,
+  Cross-Field-Regeln und die Non-Mutation-Regel.
+- Coverage für alle betroffenen Schema-Quelldateien blieb bei 100%.
+
+### Maßnahme 2: Handler-Invalid-Fälle reduzieren — abgeschlossen
+
+- 26 Tests entfernt.
+- Search-Handler: 32 → 20 Tests.
+- Watch-Provider-Handler: 26 → 12 Tests.
+- Je Route bleibt ein repräsentativer Invalid-Fall je unterschiedlicher
+  Validierungsregel; die Upstream-Fehlerfälle bleiben erhalten.
+- Coverage für alle geänderten Handler blieb bei 100%.
+
+### Maßnahme 3: Service-Cross-Layer-Duplikate entfernen — abgeschlossen
+
+- 22 Tests entfernt.
+- `services/detail.spec.ts`: 15 → 9 Tests.
+- `services/tmdb-layers.spec.ts`: 13 → 8 Tests.
+- `services/tmdb/search.spec.ts`: 15 → 11 Tests.
+- `services/errors.spec.ts`: 28 → 21 Tests.
+- `services/discover.spec.ts`: 20 → 14 Tests; vier Schema-Fälle wurden in
+  `schemas/discover.spec.ts` verschoben, das dort von 5 auf 9 Tests wuchs.
+- Coverage für alle betroffenen Service- und Schema-Dateien blieb bei 100%.
+
+### Gesamtergebnis
+
+- 93 Tests entfernt.
+- Coverage blieb in allen geprüften Bereichen bei 100%.
+- Offen: vollständige Validierung mit `pnpm test:coverage` und `pnpm typecheck`.
 
 ## Akzeptanzkriterien
 
