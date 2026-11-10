@@ -1,3 +1,4 @@
+import type { TmdbContentLanguage } from '@lib/schemas/locale';
 import type { TmdbMovieDetail, TmdbTvDetail } from '@lib/schemas/tmdb-detail';
 import { TmdbMovieDetailRawSchema, TmdbTvDetailRawSchema } from '@lib/schemas/tmdb-detail';
 import type { TmdbHttpClient } from './http';
@@ -20,12 +21,13 @@ export function createTmdbDetailService(http: TmdbHttpClient) {
      * original error preserved as its cause.
      *
      * @param id - The TMDb Movie identifier.
+     * @param language - The resolved TMDb content language.
      * @returns The normalized Movie detail.
      * @throws A TMDb error with code `INVALID_RESPONSE` when the response
      * cannot be validated or mapped.
      */
-    async getMovieDetail(id: number): Promise<TmdbMovieDetail> {
-      const raw = await http.get(`/movie/${id}`);
+    async getMovieDetail(id: number, language: TmdbContentLanguage): Promise<TmdbMovieDetail> {
+      const raw = await http.get(`/movie/${id}`, { language });
 
       try {
         return mapMovieDetailResponse(TmdbMovieDetailRawSchema.parse(raw));
@@ -42,12 +44,13 @@ export function createTmdbDetailService(http: TmdbHttpClient) {
      * original error preserved as its cause.
      *
      * @param id - The TMDb TV series identifier.
+     * @param language - The resolved TMDb content language.
      * @returns The normalized TV detail.
      * @throws A TMDb error with code `INVALID_RESPONSE` when the response
      * cannot be validated or mapped.
      */
-    async getTvDetail(id: number): Promise<TmdbTvDetail> {
-      const raw = await http.get(`/tv/${id}`);
+    async getTvDetail(id: number, language: TmdbContentLanguage): Promise<TmdbTvDetail> {
+      const raw = await http.get(`/tv/${id}`, { language });
 
       try {
         return mapTvDetailResponse(TmdbTvDetailRawSchema.parse(raw));
