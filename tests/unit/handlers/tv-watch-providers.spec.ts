@@ -20,13 +20,15 @@ afterEach(() => {
 
 async function invokeHandler(id = '201', region: unknown = 'DE') {
   const search = region === undefined ? '' : `?region=${encodeURIComponent(String(region))}`;
+  const url = `/watch-providers${search}`;
   const event = {
+    path: url,
     context: {
       params: { id },
     },
     node: {
       req: {
-        url: `/watch-providers${search}`,
+        url,
       },
       res: {
         statusCode: 200,
