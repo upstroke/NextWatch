@@ -18,7 +18,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-async function invokeHandler(id = '101', region: unknown = 'DE') {
+async function invokeHandler(id = '101', region?: unknown) {
   const search = region === undefined ? '' : `?region=${encodeURIComponent(String(region))}`;
   const url = `/watch-providers${search}`;
   const event = {
@@ -122,7 +122,9 @@ describe('Movie watch providers route handler', () => {
   it('returns a sanitized 502 when the upstream request fails', async () => {
     mocks.fetchMock.mockRejectedValue(new Error('synthetic-upstream-secret'));
 
-    await expect(invokeHandler()).rejects.toMatchObject({
+    const { result } = await invokeHandler();
+
+    expect(result).toMatchObject({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
@@ -133,7 +135,9 @@ describe('Movie watch providers route handler', () => {
   it('returns a controlled 502 for malformed upstream data', async () => {
     mocks.fetchMock.mockResolvedValue({ results: {} });
 
-    await expect(invokeHandler()).rejects.toMatchObject({
+    const { result } = await invokeHandler();
+
+    expect(result).toMatchObject({
       statusCode: 502,
       statusMessage: 'TMDb request or response invalid',
     });
