@@ -1,13 +1,29 @@
 import { z } from 'zod';
+import { MAX_GENRE_IDS, MAX_KEYWORD_IDS, MAX_PERSON_IDS } from '@lib/config/domain';
 
 const toUndefinedIfEmpty = (value: unknown) =>
   value === undefined || value === '' ? undefined : value;
 
-const genreIdsSchema = z.preprocess((value) => {
+const toIdArray = (value: unknown) => {
   if (value === undefined || value === '') return [];
   if (Array.isArray(value)) return value;
   return String(value).split(',');
-}, z.array(z.coerce.number().int().positive()).max(3));
+};
+
+const genreIdsSchema = z.preprocess(
+  toIdArray,
+  z.array(z.coerce.number().int().positive()).max(MAX_GENRE_IDS),
+);
+
+const personIdsSchema = z.preprocess(
+  toIdArray,
+  z.array(z.coerce.number().int().positive()).max(MAX_PERSON_IDS),
+);
+
+const keywordIdsSchema = z.preprocess(
+  toIdArray,
+  z.array(z.coerce.number().int().positive()).max(MAX_KEYWORD_IDS),
+);
 
 const optionalRatingSchema = z.preprocess(
   toUndefinedIfEmpty,
@@ -21,6 +37,8 @@ const optionalYearSchema = z.preprocess(
 
 export const DiscoverQuerySchema = z.object({
   genreIds: genreIdsSchema,
+  personIds: personIdsSchema,
+  keywordIds: keywordIdsSchema,
   minRating: optionalRatingSchema,
   yearFrom: optionalYearSchema,
   yearTo: optionalYearSchema,

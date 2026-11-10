@@ -143,9 +143,12 @@ describe('Detail service', () => {
       get: vi.fn().mockResolvedValue(movieRaw),
       getWeeklyTrending: vi.fn(),
     };
-    const result = await createTmdbDetailService(http).getMovieDetail(101);
+    const result = await createTmdbDetailService(http).getMovieDetail(101, 'de-DE');
 
-    expect(http.get).toHaveBeenCalledWith('/movie/101');
+    expect(http.get).toHaveBeenCalledWith(
+      '/movie/101',
+      expect.objectContaining({ language: 'de-DE' }),
+    );
     expect(result).toMatchObject({ id: 101, mediaType: 'movie' });
   });
 
@@ -155,9 +158,12 @@ describe('Detail service', () => {
       get: vi.fn().mockResolvedValue(tvRaw),
       getWeeklyTrending: vi.fn(),
     };
-    const result = await createTmdbDetailService(http).getTvDetail(201);
+    const result = await createTmdbDetailService(http).getTvDetail(201, 'de-DE');
 
-    expect(http.get).toHaveBeenCalledWith('/tv/201');
+    expect(http.get).toHaveBeenCalledWith(
+      '/tv/201',
+      expect.objectContaining({ language: 'de-DE' }),
+    );
     expect(result).toMatchObject({ id: 201, mediaType: 'tv' });
   });
 
@@ -167,7 +173,7 @@ describe('Detail service', () => {
       get: vi.fn().mockResolvedValue({}),
       getWeeklyTrending: vi.fn(),
     };
-    await expect(createTmdbDetailService(http).getMovieDetail(101)).rejects.toMatchObject({
+    await expect(createTmdbDetailService(http).getMovieDetail(101, 'de-DE')).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
   });
@@ -178,7 +184,7 @@ describe('Detail service', () => {
       get: vi.fn().mockResolvedValue({}),
       getWeeklyTrending: vi.fn(),
     };
-    await expect(createTmdbDetailService(http).getTvDetail(201)).rejects.toMatchObject({
+    await expect(createTmdbDetailService(http).getTvDetail(201, 'de-DE')).rejects.toMatchObject({
       code: 'INVALID_RESPONSE',
     });
   });
@@ -191,7 +197,7 @@ describe('Detail service', () => {
       getWeeklyTrending: vi.fn(),
     };
 
-    await expect(createTmdbDetailService(http).getMovieDetail(101)).rejects.toBe(failure);
-    await expect(createTmdbDetailService(http).getTvDetail(201)).rejects.toBe(failure);
+    await expect(createTmdbDetailService(http).getMovieDetail(101, 'de-DE')).rejects.toBe(failure);
+    await expect(createTmdbDetailService(http).getTvDetail(201, 'de-DE')).rejects.toBe(failure);
   });
 });

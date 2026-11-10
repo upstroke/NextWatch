@@ -32,7 +32,12 @@ describe('Discover filter schema', () => {
   // Branch coverage: accepts a valid filter set and applies defaults
   it('accepts a valid filter set and applies defaults', () => {
     const filters = DiscoverFiltersSchema.parse({ genreIds: [28] });
-    expect(filters).toEqual({ genreIds: [28], sortBy: 'popularity.desc' });
+    expect(filters).toEqual({
+      genreIds: [28],
+      personIds: [],
+      keywordIds: [],
+      sortBy: 'popularity.desc',
+    });
   });
 
   // Branch coverage: rejects more than three genres
@@ -196,6 +201,25 @@ describe('Discover service', () => {
     expect(http.get).toHaveBeenCalledWith('/discover/tv', expect.any(Object));
     expect(result.results[0]).toMatchObject({ id: 201, mediaType: 'tv' });
     expect(result.results).toHaveLength(2);
+  });
+
+  // Statement coverage: forwards the supplied content language to TMDb
+  it('forwards the supplied content language to TMDb', async () => {
+    const http = {
+      get: vi.fn().mockResolvedValueOnce(movieRaw).mockResolvedValueOnce(tvRaw),
+    };
+
+    await createDiscoverService(http).discoverMovies(baseFilters, 'de-DE');
+    await createDiscoverService(http).discoverTv(baseFilters, 'de-DE');
+
+    expect(http.get).toHaveBeenCalledWith(
+      '/discover/movie',
+      expect.objectContaining({ language: 'de-DE' }),
+    );
+    expect(http.get).toHaveBeenCalledWith(
+      '/discover/tv',
+      expect.objectContaining({ language: 'de-DE' }),
+    );
   });
 
   // Branch coverage: rejects malformed Movie data as INVALID_RESPONSE
