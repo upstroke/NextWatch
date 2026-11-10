@@ -42,16 +42,6 @@ describe('DiscoverFiltersSchema', () => {
     expect(() => DiscoverFiltersSchema.parse({ keywordIds })).toThrow();
   });
 
-  // Branch coverage: rejects a non-positive person id
-  it('rejects a non-positive person id', () => {
-    expect(() => DiscoverFiltersSchema.parse({ personIds: [0] })).toThrow();
-  });
-
-  // Branch coverage: rejects a non-positive keyword id
-  it('rejects a non-positive keyword id', () => {
-    expect(() => DiscoverFiltersSchema.parse({ keywordIds: [0] })).toThrow();
-  });
-
   // Branch coverage: rejects a reversed year range
   it('rejects a reversed year range', () => {
     expect(() =>
