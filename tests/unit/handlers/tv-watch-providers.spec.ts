@@ -19,7 +19,14 @@ afterEach(() => {
 });
 
 async function invokeHandler(id = '201', region: unknown = 'DE') {
-  const event = { node: { res: { statusCode: 200 } } } as unknown as H3Event;
+  const event = {
+    node: {
+      res: {
+        statusCode: 200,
+        setHeader: vi.fn(),
+      },
+    },
+  } as unknown as H3Event;
   mocks.routerParamMock.mockReturnValue(id);
   mocks.queryMock.mockReturnValue({ region });
 
