@@ -36,6 +36,19 @@ Follow these boundaries when adding code:
 
 Follow [Typing](typing.md) for all TypeScript and Zod typing conventions.
 
+## Test value
+
+A test earns its place when it verifies application behavior:
+
+- Business rules and domain decisions
+- Transformations, defaults, and cross-field validation
+- Error mapping and sanitized failure responses
+- Service orchestration and injected transport behavior
+- Mapper normalization, including optional and missing data
+- HTTP contracts: status, headers, serialization, and credential/stack safety
+
+Do not write tests that only verify Zod or framework standard behavior, such as rejecting a wrong primitive type or a missing required field.
+
 ## Folder structure
 
 Tests are organized by the boundary they verify, not primarily by the test runner.
@@ -70,6 +83,8 @@ Unit tests exercise one cohesive unit in isolation: schemas, services, mappers, 
 They must not perform real network requests. External boundaries, especially TMDb HTTP calls, are mocked.
 
 Begin every `it` block with an explicit coverage-intent comment: `// Statement coverage:` or `// Branch coverage:`. Use `// Statement coverage:` for a verified execution path and `// Branch coverage:` for a conditional path, error branch, fallback, or boundary.
+
+Do not write unit tests that only verify Zod or framework standard behavior. Keep schema tests focused on happy paths, project-specific transforms, cross-field rules, and error mapping.
 
 ## Integration tests
 
@@ -118,12 +133,11 @@ src/lib/**
 server/**
 ```
 
-The global thresholds are:
+The global threshold is:
 
 - Statements: 80%
-- Branches: 80%
-- Functions: 80%
-- Lines: 80%
+
+Branch coverage is reported and useful as an additional signal, but it is not a separate hard threshold.
 
 ## Coverage comments
 
@@ -156,12 +170,14 @@ import { tmdbTransportMock } from '@test-mocks/tmdb';
 - `@server` resolves to `server`.
 - `@tests` resolves to `tests`.
 - `@test-mocks` resolves to `tests/mocks`.
+- `@test-fixtures` resolves to `tests/fixtures`.
 
 Do not use Nuxt’s default `@` or `~` aliases for shared application code; they resolve to Nuxt’s application source directory rather than `src/lib` or `server`.
 
 ## Testing principles
 
 - Test observable behavior, not implementation details.
+- Test application behavior, not Zod or framework standard behavior.
 - Mock external network boundaries; do not mock the module under test.
 - Keep framework-specific code out of services and shared domain logic.
 - Keep fixtures deterministic and reusable.

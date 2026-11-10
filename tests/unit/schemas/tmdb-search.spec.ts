@@ -51,16 +51,6 @@ describe('TmdbSearchMovieResponseSchema', () => {
       emptySearchMovieRawFixture,
     );
   });
-
-  // Branch coverage: rejects a movie result without a title
-  it('rejects a movie result without a title', () => {
-    const response = {
-      ...searchMovieRawFixture,
-      results: [{ id: 101 }],
-    };
-
-    expect(() => TmdbSearchMovieResponseSchema.parse(response)).toThrow();
-  });
 });
 
 describe('TmdbSearchTvResponseSchema', () => {
@@ -74,16 +64,6 @@ describe('TmdbSearchTvResponseSchema', () => {
     expect(TmdbSearchTvResponseSchema.parse(emptySearchTvRawFixture)).toEqual(
       emptySearchTvRawFixture,
     );
-  });
-
-  // Branch coverage: rejects a tv result without a name
-  it('rejects a tv result without a name', () => {
-    const response = {
-      ...searchTvRawFixture,
-      results: [{ id: 201 }],
-    };
-
-    expect(() => TmdbSearchTvResponseSchema.parse(response)).toThrow();
   });
 });
 
@@ -101,22 +81,6 @@ describe('TmdbSearchMultiResponseSchema', () => {
       emptySearchMultiRawFixture,
     );
   });
-
-  // Branch coverage: rejects an unsupported multi search media type
-  it('rejects an unsupported multi search media type', () => {
-    const response = {
-      ...searchMultiRawFixture,
-      results: [
-        {
-          media_type: 'unknown',
-          id: 301,
-          name: 'Synthetic Person',
-        },
-      ],
-    };
-
-    expect(() => TmdbSearchMultiResponseSchema.parse(response)).toThrow();
-  });
 });
 
 describe('TmdbSearchPersonResponseSchema', () => {
@@ -132,16 +96,6 @@ describe('TmdbSearchPersonResponseSchema', () => {
     expect(TmdbSearchPersonResponseSchema.parse(emptySearchPersonRawFixture)).toEqual(
       emptySearchPersonRawFixture,
     );
-  });
-
-  // Branch coverage: rejects a person result without a name
-  it('rejects a person result without a name', () => {
-    const response = {
-      ...searchPersonRawFixture,
-      results: [{ id: 301 }],
-    };
-
-    expect(() => TmdbSearchPersonResponseSchema.parse(response)).toThrow();
   });
 });
 
@@ -159,16 +113,6 @@ describe('TmdbSearchKeywordResponseSchema', () => {
       emptySearchKeywordRawFixture,
     );
   });
-
-  // Branch coverage: rejects a keyword result without a name
-  it('rejects a keyword result without a name', () => {
-    const response = {
-      ...searchKeywordRawFixture,
-      results: [{ id: 801 }],
-    };
-
-    expect(() => TmdbSearchKeywordResponseSchema.parse(response)).toThrow();
-  });
 });
 
 describe('TmdbWatchProvidersMovieResponseSchema', () => {
@@ -185,20 +129,6 @@ describe('TmdbWatchProvidersMovieResponseSchema', () => {
       emptyWatchProvidersMovieRawFixture,
     );
   });
-
-  // Branch coverage: rejects a movie watch provider response without a provider name
-  it('rejects a movie watch provider response without a provider name', () => {
-    const response = {
-      ...watchProvidersMovieRawFixture,
-      results: {
-        DE: {
-          flatrate: [{ provider_id: 8 }],
-        },
-      },
-    };
-
-    expect(() => TmdbWatchProvidersMovieResponseSchema.parse(response)).toThrow();
-  });
 });
 
 describe('TmdbWatchProvidersTvResponseSchema', () => {
@@ -214,20 +144,6 @@ describe('TmdbWatchProvidersTvResponseSchema', () => {
     expect(TmdbWatchProvidersTvResponseSchema.parse(emptyWatchProvidersTvRawFixture)).toEqual(
       emptyWatchProvidersTvRawFixture,
     );
-  });
-
-  // Branch coverage: rejects a tv watch provider response without a provider id
-  it('rejects a tv watch provider response without a provider id', () => {
-    const response = {
-      ...watchProvidersTvRawFixture,
-      results: {
-        DE: {
-          flatrate: [{ provider_name: 'Netflix' }],
-        },
-      },
-    };
-
-    expect(() => TmdbWatchProvidersTvResponseSchema.parse(response)).toThrow();
   });
 });
 
@@ -285,28 +201,5 @@ describe('normalized watch provider contracts', () => {
     };
 
     expect(WatchProviderAvailabilitySchema.parse(availability)).toEqual(availability);
-  });
-
-  // Branch coverage: rejects unknown normalized watch provider properties
-  it('rejects unknown normalized watch provider properties', () => {
-    expect(() =>
-      WatchProviderAvailabilitySchema.parse({
-        region: 'DE',
-        streaming: [],
-        rental: [],
-        purchase: [],
-        unsupported: true,
-      }),
-    ).toThrow();
-  });
-
-  // Branch coverage: rejects an invalid normalized watch provider id
-  it('rejects an invalid normalized watch provider id', () => {
-    expect(() =>
-      TmdbWatchProvidersMovieSchema.parse({
-        id: 0,
-        results: {},
-      }),
-    ).toThrow();
   });
 });

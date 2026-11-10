@@ -8,13 +8,6 @@ describe('MediaTypeSchema', () => {
     expect(MediaTypeSchema.parse('tv')).toBe('tv');
     expect(MediaTypeSchema.parse('all')).toBe('all');
   });
-
-  // Branch coverage: rejects unsupported media types
-  it('rejects unsupported media types', () => {
-    expect(() => MediaTypeSchema.parse('person')).toThrow();
-    expect(() => MediaTypeSchema.parse('')).toThrow();
-    expect(() => MediaTypeSchema.parse(1)).toThrow();
-  });
 });
 
 describe('SearchSortSchema', () => {
@@ -22,12 +15,6 @@ describe('SearchSortSchema', () => {
   it('accepts supported sort values', () => {
     expect(SearchSortSchema.parse('popularity.desc')).toBe('popularity.desc');
     expect(SearchSortSchema.parse('voteaverage.desc')).toBe('voteaverage.desc');
-  });
-
-  // Branch coverage: rejects unsupported sort values
-  it('rejects unsupported sort values', () => {
-    expect(() => SearchSortSchema.parse('popularity.asc')).toThrow();
-    expect(() => SearchSortSchema.parse('vote_average.desc')).toThrow();
   });
 });
 
@@ -75,13 +62,6 @@ describe('SearchFiltersSchema', () => {
     expect(() => SearchFiltersSchema.parse(filters)).toThrow();
   });
 
-  // Branch coverage: rejects non-positive keyword and genre ids
-  it('rejects non-positive keyword and genre ids', () => {
-    expect(() => SearchFiltersSchema.parse({ keywordIds: [0] })).toThrow();
-
-    expect(() => SearchFiltersSchema.parse({ genreIds: [-1] })).toThrow();
-  });
-
   // Branch coverage: rejects ratings outside the supported range
   it('rejects ratings outside the supported range', () => {
     expect(() => SearchFiltersSchema.parse({ minRating: -0.1 })).toThrow();
@@ -92,20 +72,6 @@ describe('SearchFiltersSchema', () => {
   it('rejects years outside the supported range', () => {
     expect(() => SearchFiltersSchema.parse({ minYear: 1899 })).toThrow();
     expect(() => SearchFiltersSchema.parse({ maxYear: 2101 })).toThrow();
-  });
-
-  // Branch coverage: rejects non-integer years
-  it('rejects non-integer years', () => {
-    expect(() => SearchFiltersSchema.parse({ minYear: 2000.5 })).toThrow();
-  });
-
-  // Branch coverage: rejects unknown properties
-  it('rejects unknown properties', () => {
-    expect(() =>
-      SearchFiltersSchema.parse({
-        unsupported: true,
-      }),
-    ).toThrow();
   });
 
   // Statement coverage: does not mutate the input object

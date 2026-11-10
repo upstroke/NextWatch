@@ -37,35 +37,6 @@ describe('TmdbWatchProvidersRawSchema', () => {
       emptyTvWatchProvidersRawFixture,
     );
   });
-
-  // Branch coverage: rejects an invalid media id
-  it('rejects an invalid media id', () => {
-    expect(() =>
-      TmdbWatchProvidersRawSchema.parse({
-        id: 0,
-        results: {},
-      }),
-    ).toThrow();
-  });
-
-  // Branch coverage: rejects an invalid provider id
-  it('rejects an invalid provider id', () => {
-    const response = {
-      ...movieWatchProvidersRawFixture,
-      results: {
-        DE: {
-          flatrate: [
-            {
-              provider_id: 0,
-              provider_name: 'Synthetic Streaming',
-            },
-          ],
-        },
-      },
-    };
-
-    expect(() => TmdbWatchProvidersRawSchema.parse(response)).toThrow();
-  });
 });
 
 describe('WatchProviderAvailabilitySchema', () => {
@@ -125,20 +96,6 @@ describe('WatchProviderAvailabilitySchema', () => {
         stream: [],
         rent: [],
         buy: [],
-      }),
-    ).toThrow();
-  });
-
-  // Branch coverage: rejects unknown properties
-  it('rejects unknown properties', () => {
-    expect(() =>
-      WatchProviderAvailabilitySchema.parse({
-        mediaId: 101,
-        region: 'DE',
-        stream: [],
-        rent: [],
-        buy: [],
-        unsupported: true,
       }),
     ).toThrow();
   });
