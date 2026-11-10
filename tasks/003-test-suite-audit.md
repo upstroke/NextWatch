@@ -22,6 +22,8 @@ Fehlererkennungswert — nicht maximale Testanzahl.
 - Test-Stack: Vitest, Playwright, Zod
 - Produktionscode und Testcode müssen im Audit quantifiziert werden
 - Aktuelle Coverage-Zahlen müssen im Audit erhoben werden
+- Coverage-Ziel: mindestens 80% Statement Coverage
+- Branch Coverage wird mitgenommen, ist aber kein separates hartes Ziel
 
 ## Audit-Fragen
 
@@ -44,6 +46,8 @@ Fehlererkennungswert — nicht maximale Testanzahl.
 
 ### 2. Coverage Health
 
+- Statement Coverage ist das verbindliche Qualitätsziel.
+- Branch Coverage ist optional und kein Selbstzweck.
 - Schein-Coverage identifizieren: Tests, die Code ausführen, aber keine
   Geschäftsregel, keinen Fehlerpfad oder kein Edge-Case absichern.
 - Bewerten, welche Bereiche stärker getestet werden sollten:
