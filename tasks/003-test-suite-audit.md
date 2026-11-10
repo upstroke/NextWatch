@@ -2,7 +2,7 @@
 
 ## Status
 
-Planned
+In Progress
 
 ## Ziel
 
@@ -25,61 +25,103 @@ Fehlererkennungswert — nicht maximale Testanzahl.
 - Coverage-Ziel: mindestens 80% Statement Coverage
 - Branch Coverage wird mitgenommen, ist aber kein separates hartes Ziel
 
-## Audit-Fragen
+## Ist-Zustand
 
-1. Ist die aktuelle Testanzahl angemessen, aufgebläht oder unzureichend?
-2. Ist die Verteilung zwischen Unit- und Integration-Tests sinnvoll?
-3. Welche Tests erzeugen Schein-Coverage?
-4. Welche Tests sind redundant?
-5. Welche Tests sind brittle und brechen bei Refactorings unnötig?
-6. Welche Bereiche brauchen mehr Tests, welche weniger?
-7. Welche Tests sollten gelöscht, zusammengeführt oder umgeschrieben werden?
+- 342 Tests (326 Unit, 16 Integration)
+- 30 Unit-Testdateien
+- 5 Integration-Testdateien
+- Statement Coverage: 98.14%
+- Branch Coverage: 99.21%
+- Function Coverage: 100%
+- Testdauer: 640ms
+- Typecheck: passed
 
-## Bewertungskriterien
+## Findings
 
-### 1. Test-to-Code Ratio & Balance
+### 1. Handler-Tests: Hohe Redundanz
 
-- Testumfang relativ zum Funktionsumfang bewerten, nicht nur zur LOC-Zahl.
-- Verteilung zwischen Unit- und Integration-Tests im Kontext der Architektur bewerten.
-- Prüfen, ob die Suite eher Test-Pyramide oder Test-Trophy entspricht.
-- Risikolage berücksichtigen: externe TMDb-Grenze, HTTP-Vertrag, Fehlerpfade.
+- Search-Routen: 4 Invalid-Query-Fälle pro Route (identischer Schema-Pfad)
+- Watch-Provider-Routen: 4 Invalid-ID-Fälle + 5 Invalid-Region-Fälle pro Route
+- Gesamt: 29 redundante Tests über 7 Handler-Dateien
+- Betroffene Dateien: search-movie, search-tv, search-multi, search-person,
+  search-keyword, movie-watch-providers, tv-watch-providers
 
-### 2. Coverage Health
+### 2. Service-Tests: Cross-Layer-Duplikate
 
-- Statement Coverage ist das verbindliche Qualitätsziel.
-- Branch Coverage ist optional und kein Selbstzweck.
-- Schein-Coverage identifizieren: Tests, die Code ausführen, aber keine
-  Geschäftsregel, keinen Fehlerpfad oder kein Edge-Case absichern.
-- Bewerten, welche Bereiche stärker getestet werden sollten:
-  Services, Mapper, Fehlerpfade.
-- Bewerten, welche Bereiche schwächer getestet werden sollten:
-  reine Schemas, Boilerplate.
-- Prüfen, ob Coverage-Intent-Kommentare zum tatsächlichen Testinhalt passen.
+- discover.spec.ts: 6 Schema-Tests duplizieren tests/unit/schemas/discover.spec.ts
+- detail.spec.ts: 6 Schema-Tests duplizieren tests/unit/schemas/tmdb-detail.spec.ts
+- tmdb-layers.spec.ts: 5 Error-Mapping-Tests duplizieren errors.spec.ts
+- search.spec.ts: 5 Invalid-Fälle duplizieren Handler-Tests
+- errors.spec.ts: 4 Recognition-Invalid-Fälle redundant
+- Gesamt: 25 redundante Tests über 5 Service-Dateien
 
-### 3. Maintenance Overhead
+### 3. Schema-Tests: Leichte Redundanz
 
-- Brittle Tests identifizieren: Tests, die bei Refactorings brechen,
-  weil sie Implementierungsdetails statt Verhalten prüfen.
-- Duplikate zwischen Unit-Handler-Tests und HTTP-Integration-Tests finden.
-- Mock-Aufwand, Fixture-Wiederverwendung und Test-Laufzeit bewerten.
+- discover-query.spec.ts: 3 Tests pro ID-Feld (Comma, Single, Array)
+- "Single" ist Spezialfall von Comma-String
+- Gesamt: 3 redundante Tests in 1 Schema-Datei
 
-### 4. Maßnahmenplan
+### 4. Bereits optimal
 
-- Top 3 Maßnahmen nach ROI: Fehlererkennung pro Wartungsaufwand.
-- Klare Unterscheidung: löschen, zusammenführen, umschreiben, neu hinzufügen.
-- Kein Default „mehr Tests“.
-- Straffung priorisieren, wenn Redundanz vorliegt.
+- Integration-Tests: 16 Tests, 1-4 pro Endpoint-Gruppe, keine Redundanz
+- Utils-Tests: 14 Tests, kompakt und präzise, keine Redundanz
+- Service-Tests (watch-providers, discover-params, search-mappers): 17 Tests,
+  reine Service-/Mapping-Logik, keine Redundanz
+- Trending-Handler: 5 Tests, klar abgegrenzt, keine Redundanz
+- Detail-Handler: 4 Tests, klar abgegrenzt, keine Redundanz
+
+## Maßnahmenplan (nach ROI)
+
+### Maßnahme 1: Handler-Invalid-Fälle straffen (ROI: hoch)
+
+- Betroffene Dateien: 7 Handler-Dateien
+- Änderung: 4 Invalid-Query-Fälle → 1 Fall (Search),
+  4 Invalid-ID + 5 Invalid-Region → 1+1 (Watch Providers)
+- Tests gespart: 30
+- Ergebnis: 67 → 37 Tests in Handler-Dateien
+
+### Maßnahme 2: Cross-Layer-Schema-Duplikate entfernen (ROI: hoch)
+
+- Betroffene Dateien: discover.spec.ts, detail.spec.ts
+- Änderung: 6 Schema-Tests pro Datei entfernen
+- Tests gespart: 12
+- Ergebnis: 34 → 22 Tests in Service-Dateien
+
+### Maßnahme 3: Error-Mapping- und Search-Invalid-Duplikate entfernen (ROI: mittel)
+
+- Betroffene Dateien: errors.spec.ts, tmdb-layers.spec.ts, search.spec.ts
+- Änderung: 4 Recognition-Invalid-Fälle sparen (errors),
+  5 Error-Mapping-Tests entfernen (layers),
+  4 Invalid-Fälle entfernen (search)
+- Tests gespart: 13
+- Ergebnis: 56 → 43 Tests in Service-Dateien
+
+### Maßnahme 4: discover-query ID-Fälle straffen (ROI: niedrig)
+
+- Betroffene Datei: discover-query.spec.ts
+- Änderung: 3 Tests pro ID-Feld → 2 Tests
+- Tests gespart: 3
+- Ergebnis: 20 → 17 Tests in Schema-Datei
+
+## Zusammenfassung
+
+| Maßnahme | Tests gespart | ROI |
+|---|---:|---|
+| 1. Handler-Invalid-Fälle | 30 | Hoch |
+| 2. Cross-Layer-Schema-Duplikate | 12 | Hoch |
+| 3. Error-Mapping-/Search-Invalid-Duplikate | 13 | Mittel |
+| 4. discover-query ID-Fälle | 3 | Niedrig |
+| **Summe** | **58** | |
+
+**Ergebnis:** 342 → 284 Tests, ohne Abdeckung oder Fehlererkennung zu verlieren.
 
 ## Vorgehen
 
-1. Ist-Zustand erheben: Testanzahl, LOC, Coverage, Laufzeit.
-2. Testdateien kategorisieren: Schema, Service, Mapper, Handler, Integration.
-3. Redundanzen identifizieren.
-4. Schein-Coverage identifizieren.
-5. Brittle Tests identifizieren.
-6. Maßnahmen planen.
-7. Maßnahmen umsetzen.
-8. Ergebnisse validieren: Tests, Coverage, Typecheck, Build.
+1. Maßnahme 1 umsetzen: Handler-Invalid-Fälle straffen
+2. Maßnahme 2 umsetzen: Cross-Layer-Schema-Duplikate entfernen
+3. Maßnahme 3 umsetzen: Error-Mapping- und Search-Invalid-Duplikate entfernen
+4. Maßnahme 4 umsetzen: discover-query ID-Fälle straffen
+5. Ergebnisse validieren: Tests, Coverage, Typecheck, Build
 
 ## Akzeptanzkriterien
 
@@ -89,3 +131,4 @@ Fehlererkennungswert — nicht maximale Testanzahl.
 - Maßnahmen sind priorisiert.
 - Keine blinden Testlöschungen.
 - Keine neuen Tests ohne klaren Fehlererkennungswert.
+- Nach Umsetzung: 284 Tests, gleiche oder bessere Fehlererkennung.
