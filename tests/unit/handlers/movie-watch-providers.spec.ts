@@ -19,26 +19,25 @@ afterEach(() => {
 });
 
 async function invokeHandler(id = '101', region: unknown = 'DE') {
+  const search = region === undefined ? '' : `?region=${encodeURIComponent(String(region))}`;
   const event = {
+    context: {
+      params: { id },
+    },
     node: {
+      req: {
+        url: `/watch-providers${search}`,
+      },
       res: {
         statusCode: 200,
         setHeader: vi.fn(),
       },
     },
   } as unknown as H3Event;
-  mocks.routerParamMock.mockReturnValue(id);
-  mocks.queryMock.mockReturnValue({ region });
 
   const result = await handler(event);
 
-  expect(mocks.routerParamMock).toHaveBeenCalledExactlyOnceWith(event, 'id');
-  expect(mocks.queryMock).toHaveBeenCalledExactlyOnceWith(event);
-  expect(mocks.headerMock).toHaveBeenCalledExactlyOnceWith(
-    event,
-    'Cache-Control',
-    'no-store',
-  );
+  expect(event.node.res.setHeader).toHaveBeenCalledWith('Cache-Control', 'no-store');
 
   return { event, result };
 }
