@@ -8,6 +8,7 @@ export default defineConfig({
       '@server': fileURLToPath(new URL('./server', import.meta.url)),
       '@tests': fileURLToPath(new URL('./tests', import.meta.url)),
       '@test-mocks': fileURLToPath(new URL('./tests/mocks', import.meta.url)),
+      '@test-fixtures': fileURLToPath(new URL('./tests/fixtures', import.meta.url)),
     },
   },
   test: {
