@@ -197,7 +197,7 @@ responses do not support `append_to_response`.
 
 ### Status
 
-In progress.
+Completed.
 
 ### Completed
 
@@ -208,23 +208,18 @@ In progress.
 5. Implemented the Search Nitro routes and query validation.
 6. Extended the Discover service and routes with person, keyword and language support.
 7. Extended the Detail service and routes with language support.
+8. Added unit, HTTP contract and manual live verification.
 
-### In progress
+### Manual live verification
 
-8. Add unit, HTTP contract and manual live verification.
-
-Implemented so far:
-
-- Watch-provider service with TMDb response validation and normalized availability mapping.
-- Movie and TV watch-provider Nitro routes.
-- Watch-provider service tests.
-- Movie and TV watch-provider handler tests.
-- Watch-provider region handling: explicit regions are normalized; an omitted or empty region defaults to `US`.
-
-Remaining:
-
-- Additional HTTP contract tests for Search and Detail endpoints.
-- Manual live verification for Movie Search, TV Search, Multi Search, Person Search, Keyword Search and regional Watch Provider requests.
+- Movie Search returned HTTP 200 with results.
+- TV Search returned HTTP 200 with results.
+- Multi Search returned HTTP 200 with results.
+- Person Search returned HTTP 200 with results.
+- Keyword Search returned HTTP 200 with results.
+- Movie Watch Providers returned HTTP 200 with regional availability.
+- TV Watch Providers returned HTTP 200 with regional availability.
+- Watch Providers without an explicit region used the `US` default and returned HTTP 200.
 
 ### Local validation
 
@@ -236,7 +231,5 @@ Remaining:
 
 ### Next steps
 
-1. Add remaining HTTP contract tests for Search and Detail endpoints.
-2. Complete manual live verification.
-3. Run `pnpm test:coverage` and `pnpm build`.
-4. Review the final work-package status.
+1. Run `pnpm test:coverage` and `pnpm build`.
+2. Review the final work-package status.
