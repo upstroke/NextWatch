@@ -6,60 +6,63 @@ In Progress
 
 ## Ziel
 
-Wir prüfen die aktuelle Test-Suite nicht nach der Anzahl der Tests,
-sondern nach ihrem tatsächlichen Wert: Fehlererkennung, Wartbarkeit,
-Redundanz und Schutz vor Regressionen.
+Wir entfernen unnötige Tests — nicht, um eine bestimmte Testzahl zu erreichen,
+sondern weil Zod, TypeScript und die Integration-Tests einen Großteil der
+Validierung bereits abdecken.
 
 Das Ziel ist eine schlanke, wartbare Test-Suite mit hohem
-Fehlererkennungswert — nicht maximale Testanzahl.
+Fehlererkennungswert. Coverage ist ein Sicherheitsnetz, kein Ziel.
+
+## Prinzip
+
+Ein Test bleibt nur bestehen, wenn er mindestens einen dieser Werte liefert:
+
+- Er prüft unsere Geschäftslogik, nicht Zod- oder Framework-Verhalten.
+- Er prüft Transformationslogik (String → Array, Defaults).
+- Er prüft Cross-Field-Regeln (z. B. yearFrom ≤ yearTo).
+- Er prüft Fehler-Mapping (Zod-Fehler → 400/502/503).
+- Er prüft Service-Orchestrierung (Request-Verhalten, Language-Forwarding).
+- Er prüft Mapper (Normalisierung, Optional-Fields).
+- Er prüft HTTP-Vertrag (Status, Header, Serialisierung, Sanitizing).
+
+Ein Test wird entfernt, wenn er nur Zod- oder Framework-Verhalten spiegelt.
 
 ## Ausgangslage
 
 - 342 Tests insgesamt
 - 326 Unit-Tests
 - 16 Integration-Tests
-- Keine UI-Tests bisher
-- Test-Stack: Vitest, Playwright, Zod
-- Produktionscode und Testcode müssen im Audit quantifiziert werden
-- Aktuelle Coverage-Zahlen müssen im Audit erhoben werden
-- Coverage-Ziel: mindestens 80% Statement Coverage
-- Branch Coverage wird mitgenommen, ist aber kein separates hartes Ziel
-
-## Ist-Zustand
-
-- 342 Tests (326 Unit, 16 Integration)
-- 30 Unit-Testdateien
-- 5 Integration-Testdateien
-- Statement Coverage: 98.14%
-- Branch Coverage: 99.21%
-- Function Coverage: 100%
+- Statement Coverage: 98.14% (Ziel: mindestens 80%)
+- Branch Coverage: 99.21% (optional, kein hartes Ziel)
 - Testdauer: 640ms
 - Typecheck: passed
 
 ## Findings
 
-### 1. Handler-Tests: Hohe Redundanz
+### 1. Schema-Tests: Zod-Verhalten wird getestet
+
+Viele Schema-Tests prüfen Zod-Basisverhalten (falscher Typ, fehlendes Feld,
+unbekannter Wert), das Zod bereits garantiert. Das ist redundant.
+
+- Betroffene Dateien: tmdb-search, discover-query, locale, search, tmdb,
+  tmdb-watch-providers, discover, runtime-config
+- Gesamt: ~25 Tests, die nur Zod-Verhalten spiegeln
+
+### 2. Handler-Tests: Invalid-Fälle duplizieren Integration
 
 - Search-Routen: 4 Invalid-Query-Fälle pro Route (identischer Schema-Pfad)
 - Watch-Provider-Routen: 4 Invalid-ID-Fälle + 5 Invalid-Region-Fälle pro Route
-- Gesamt: 29 redundante Tests über 7 Handler-Dateien
-- Betroffene Dateien: search-movie, search-tv, search-multi, search-person,
-  search-keyword, movie-watch-providers, tv-watch-providers
+- Integration-Tests decken bereits 1 Invalid-Fall pro Route ab
+- Gesamt: ~25 redundante Tests über 7 Handler-Dateien
 
-### 2. Service-Tests: Cross-Layer-Duplikate
+### 3. Service-Tests: Cross-Layer-Duplikate
 
-- discover.spec.ts: 6 Schema-Tests duplizieren tests/unit/schemas/discover.spec.ts
-- detail.spec.ts: 6 Schema-Tests duplizieren tests/unit/schemas/tmdb-detail.spec.ts
+- discover.spec.ts: 6 Schema-Tests duplizieren Schema-Datei
+- detail.spec.ts: 6 Schema-Tests duplizieren Schema-Datei
 - tmdb-layers.spec.ts: 5 Error-Mapping-Tests duplizieren errors.spec.ts
 - search.spec.ts: 5 Invalid-Fälle duplizieren Handler-Tests
 - errors.spec.ts: 4 Recognition-Invalid-Fälle redundant
-- Gesamt: 25 redundante Tests über 5 Service-Dateien
-
-### 3. Schema-Tests: Leichte Redundanz
-
-- discover-query.spec.ts: 3 Tests pro ID-Feld (Comma, Single, Array)
-- "Single" ist Spezialfall von Comma-String
-- Gesamt: 3 redundante Tests in 1 Schema-Datei
+- Gesamt: ~25 redundante Tests über 5 Service-Dateien
 
 ### 4. Bereits optimal
 
@@ -72,63 +75,67 @@ Fehlererkennungswert — nicht maximale Testanzahl.
 
 ## Maßnahmenplan (nach ROI)
 
-### Maßnahme 1: Handler-Invalid-Fälle straffen (ROI: hoch)
+### Maßnahme 1: Schema-Tests radikal straffen (ROI: hoch)
+
+- Betroffene Dateien: alle 8 Schema-Dateien
+- Änderung: Nur Happy Path + Transform + Cross-Field behalten,
+  Zod-Basisfälle (falscher Typ, fehlendes Feld, unbekannter Wert) entfernen
+- Tests gespart: ~25
+- Begründung: Zod garantiert diese Verhalten bereits
+
+### Maßnahme 2: Handler-Invalid-Fälle auf 0-1 reduzieren (ROI: hoch)
 
 - Betroffene Dateien: 7 Handler-Dateien
-- Änderung: 4 Invalid-Query-Fälle → 1 Fall (Search),
-  4 Invalid-ID + 5 Invalid-Region → 1+1 (Watch Providers)
-- Tests gespart: 30
-- Ergebnis: 67 → 37 Tests in Handler-Dateien
+- Änderung: 4 Invalid-Query-Fälle → 0-1 Fall (Search),
+  4 Invalid-ID + 5 Invalid-Region → 0-1+0-1 (Watch Providers)
+- Tests gespart: ~25
+- Begründung: Integration-Tests decken denselben Pfad ab
 
-### Maßnahme 2: Cross-Layer-Schema-Duplikate entfernen (ROI: hoch)
+### Maßnahme 3: Service-Cross-Layer-Duplikate entfernen (ROI: hoch)
 
-- Betroffene Dateien: discover.spec.ts, detail.spec.ts
-- Änderung: 6 Schema-Tests pro Datei entfernen
-- Tests gespart: 12
-- Ergebnis: 34 → 22 Tests in Service-Dateien
+- Betroffene Dateien: discover.spec.ts, detail.spec.ts, tmdb-layers.spec.ts,
+  search.spec.ts, errors.spec.ts
+- Änderung: Schema-Tests in Service-Dateien entfernen,
+  Error-Mapping-Duplikate entfernen,
+  Search-Invalid-Fälle entfernen,
+  Recognition-Invalid-Fälle reduzieren
+- Tests gespart: ~25
+- Begründung: Duplikate zu Schema-Dateien, errors.spec.ts, Handler-Tests
 
-### Maßnahme 3: Error-Mapping- und Search-Invalid-Duplikate entfernen (ROI: mittel)
+### Maßnahme 4: Nach jeder Runde Coverage prüfen
 
-- Betroffene Dateien: errors.spec.ts, tmdb-layers.spec.ts, search.spec.ts
-- Änderung: 4 Recognition-Invalid-Fälle sparen (errors),
-  5 Error-Mapping-Tests entfernen (layers),
-  4 Invalid-Fälle entfernen (search)
-- Tests gespart: 13
-- Ergebnis: 56 → 43 Tests in Service-Dateien
-
-### Maßnahme 4: discover-query ID-Fälle straffen (ROI: niedrig)
-
-- Betroffene Datei: discover-query.spec.ts
-- Änderung: 3 Tests pro ID-Feld → 2 Tests
-- Tests gespart: 3
-- Ergebnis: 20 → 17 Tests in Schema-Datei
+- Nach jeder Maßnahme: `pnpm test:coverage` ausführen
+- Statement Coverage muss bei mindestens 80% bleiben
+- Wenn Coverage deutlich über 80% bleibt, nächste Runde straffen
+- Wenn Coverage nahe 80% kommt, stoppen
 
 ## Zusammenfassung
 
-| Maßnahme | Tests gespart | ROI |
+| Maßnahme | Tests gespart (ca.) | ROI |
 |---|---:|---|
-| 1. Handler-Invalid-Fälle | 30 | Hoch |
-| 2. Cross-Layer-Schema-Duplikate | 12 | Hoch |
-| 3. Error-Mapping-/Search-Invalid-Duplikate | 13 | Mittel |
-| 4. discover-query ID-Fälle | 3 | Niedrig |
-| **Summe** | **58** | |
+| 1. Schema-Tests radikal straffen | ~25 | Hoch |
+| 2. Handler-Invalid-Fälle | ~25 | Hoch |
+| 3. Service-Cross-Layer-Duplikate | ~25 | Hoch |
+| **Summe** | **~75** | |
 
-**Ergebnis:** 342 → 284 Tests, ohne Abdeckung oder Fehlererkennung zu verlieren.
+**Ergebnis:** 342 → ~265-270 Tests, ohne Abdeckung oder Fehlererkennung zu verlieren.
+Die genaue Zahl ist nicht das Ziel — entscheidend ist, dass nur unnötige Tests entfernt werden.
 
 ## Vorgehen
 
-1. Maßnahme 1 umsetzen: Handler-Invalid-Fälle straffen
-2. Maßnahme 2 umsetzen: Cross-Layer-Schema-Duplikate entfernen
-3. Maßnahme 3 umsetzen: Error-Mapping- und Search-Invalid-Duplikate entfernen
-4. Maßnahme 4 umsetzen: discover-query ID-Fälle straffen
-5. Ergebnisse validieren: Tests, Coverage, Typecheck, Build
+1. Maßnahme 1 umsetzen: Schema-Tests radikal straffen
+2. Coverage prüfen
+3. Maßnahme 2 umsetzen: Handler-Invalid-Fälle reduzieren
+4. Coverage prüfen
+5. Maßnahme 3 umsetzen: Service-Cross-Layer-Duplikate entfernen
+6. Coverage prüfen
+7. Ergebnisse validieren: Tests, Coverage, Typecheck, Build
 
 ## Akzeptanzkriterien
 
 - Audit ist datengestützt und nachvollziehbar.
-- Jede Empfehlung hat einen konkreten Befund und eine Begründung.
-- Redundanzen sind explizit benannt.
-- Maßnahmen sind priorisiert.
+- Jede Entfernung hat einen konkreten Befund (Zod-Verhalten, Duplikat, Brittle).
 - Keine blinden Testlöschungen.
 - Keine neuen Tests ohne klaren Fehlererkennungswert.
-- Nach Umsetzung: 284 Tests, gleiche oder bessere Fehlererkennung.
+- Statement Coverage bleibt bei mindestens 80%.
+- Keine Ziel-Testzahl — nur unnötige Tests werden entfernt.
