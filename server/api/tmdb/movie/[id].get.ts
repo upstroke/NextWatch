@@ -1,5 +1,6 @@
 import { defineEventHandler, getRouterParam, setResponseHeader } from 'h3';
 import type { TmdbMovieDetail } from '@lib/schemas/tmdb-detail';
+import { resolveTmdbContentLanguage } from '@lib/schemas/locale';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTmdbDetailService } from '@server/services/tmdb/detail';
 import { createTmdbError } from '@server/services/tmdb/errors';
@@ -17,12 +18,13 @@ export default defineEventHandler(
     }
 
     const config = getTmdbConfig(event);
+    const language = resolveTmdbContentLanguage(config.defaultLocale);
     const http = createTmdbHttpClient(config, (url, options): Promise<unknown> =>
       $fetch<unknown>(url, { ...options, redirect: 'error' }),
     );
 
     try {
-      return await createTmdbDetailService(http).getMovieDetail(id);
+      return await createTmdbDetailService(http).getMovieDetail(id, language);
     } catch (error) {
       return sendTmdbError(event, error);
     }
