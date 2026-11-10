@@ -96,7 +96,7 @@ describe('Multi Search route handler', () => {
   ])('returns a controlled 400 for an invalid query: %o', async (query) => {
     mocks.queryMock.mockReturnValue(query);
 
-    const { event, result } = await invokeHandler();
+    const { result } = await invokeHandler();
 
     expect(result).toMatchObject({
       statusCode: 400,

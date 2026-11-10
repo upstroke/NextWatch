@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  MultiSearchCandidateSchema,
-  SearchKeywordCandidateSchema,
-  SearchMovieCandidateSchema,
-  SearchPersonCandidateSchema,
-  SearchTvCandidateSchema,
   TmdbSearchKeywordResponseSchema,
   TmdbSearchMovieResponseSchema,
   TmdbSearchMultiResponseSchema,
