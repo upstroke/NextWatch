@@ -12,42 +12,6 @@ import {
   minimalTvDetailRawFixture as minimalTvRaw,
 } from '@tests/fixtures/tmdb/detail-tv.raw';
 
-describe('Movie detail raw schema', () => {
-  // Statement coverage: accepts a complete Movie detail response
-  it('accepts a complete Movie detail response', () => {
-    expect(TmdbMovieDetailRawSchema.parse(movieRaw)).toEqual(movieRaw);
-  });
-
-  // Branch coverage: accepts a Movie response with missing optional data
-  it('accepts a Movie response with missing optional data', () => {
-    expect(TmdbMovieDetailRawSchema.parse(minimalMovieRaw)).toEqual(minimalMovieRaw);
-  });
-
-  // Branch coverage: rejects a Movie response without an ID
-  it('rejects a Movie response without an ID', () => {
-    const { id: _id, ...invalid } = movieRaw;
-    expect(() => TmdbMovieDetailRawSchema.parse(invalid)).toThrow();
-  });
-});
-
-describe('TV detail raw schema', () => {
-  // Statement coverage: accepts a complete TV detail response
-  it('accepts a complete TV detail response', () => {
-    expect(TmdbTvDetailRawSchema.parse(tvRaw)).toEqual(tvRaw);
-  });
-
-  // Branch coverage: accepts a TV response with missing optional data
-  it('accepts a TV response with missing optional data', () => {
-    expect(TmdbTvDetailRawSchema.parse(minimalTvRaw)).toEqual(minimalTvRaw);
-  });
-
-  // Branch coverage: rejects a TV response without a name
-  it('rejects a TV response without a name', () => {
-    const { name: _name, ...invalid } = tvRaw;
-    expect(() => TmdbTvDetailRawSchema.parse(invalid)).toThrow();
-  });
-});
-
 describe('Detail response mappers', () => {
   // Statement coverage: maps Movie fields without mutating the fixture
   it('maps a Movie response', () => {

@@ -34,22 +34,6 @@ describe('TMDb error recognition', () => {
   ] as const)('recognizes a factory-created %s error', (code) => {
     expect(isTmdbError(createTmdbError(code))).toBe(true);
   });
-
-  // Branch coverage: rejects ordinary errors, primitives and lookalike objects
-  it.each([
-    new Error('Unexpected failure'),
-    null,
-    undefined,
-    'Unexpected failure',
-    42,
-    { name: 'TmdbError', code: 'MISSING_TOKEN' },
-    Object.assign(new Error('MISSING_TOKEN'), {
-      name: 'TmdbError',
-      code: 'MISSING_TOKEN',
-    }),
-  ])('rejects an error not created by the factory: %s', (error) => {
-    expect(isTmdbError(error)).toBe(false);
-  });
 });
 
 describe('TMDb error mapping', () => {

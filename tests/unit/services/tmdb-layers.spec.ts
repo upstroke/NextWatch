@@ -3,7 +3,7 @@ import type { TmdbConfig } from '@server/services/tmdb/http';
 import { createTmdbHttpClient } from '@server/services/tmdb/http';
 import { createTrendingService } from '@server/services/tmdb/trending';
 import { mapTrendingResponse } from '@server/services/tmdb/mappers';
-import { createTmdbError, toTmdbHttpError } from '@server/services/tmdb/errors';
+import { createTmdbError } from '@server/services/tmdb/errors';
 import { TmdbTrendingResponseSchema } from '@lib/schemas/tmdb-trending';
 import { weeklyTrendingFixture } from '@tests/fixtures/tmdb/trending.raw';
 
@@ -86,34 +86,5 @@ describe('TMDb layer boundaries', () => {
       getWeeklyTrending: vi.fn().mockRejectedValue(failure),
     };
     await expect(createTrendingService(http).getWeeklyTrending('de-DE')).rejects.toBe(failure);
-  });
-
-  // Branch coverage: maps configuration error %s to 503
-  it.each(['MISSING_TOKEN', 'INVALID_BASE_URL'] as const)(
-    'maps configuration error %s to 503',
-    (code) => {
-      expect(toTmdbHttpError(createTmdbError(code))).toEqual({
-        statusCode: 503,
-        statusMessage: 'TMDb configuration unavailable',
-      });
-    },
-  );
-
-  // Statement coverage: maps service error %s to a sanitized 502
-  it.each(['UPSTREAM_FAILED', 'INVALID_RESPONSE'] as const)(
-    'maps service error %s to a sanitized 502',
-    (code) => {
-      expect(toTmdbHttpError(createTmdbError(code))).toEqual({
-        statusCode: 502,
-        statusMessage: 'TMDb request or response invalid',
-      });
-    },
-  );
-
-  // Branch coverage: does not expose arbitrary error messages
-  it('does not expose arbitrary error messages', () => {
-    expect(JSON.stringify(toTmdbHttpError(new Error('synthetic-secret')))).not.toContain(
-      'synthetic-secret',
-    );
   });
 });

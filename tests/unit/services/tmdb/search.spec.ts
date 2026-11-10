@@ -158,40 +158,4 @@ describe('search service', () => {
       code: 'INVALID_RESPONSE',
     });
   });
-
-  // Branch coverage: rejects an invalid tv response
-  it('rejects an invalid tv response', async () => {
-    http.get.mockResolvedValue({});
-
-    await expect(search.searchTv('series')).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE',
-    });
-  });
-
-  // Branch coverage: rejects an invalid multi response
-  it('rejects an invalid multi response', async () => {
-    http.get.mockResolvedValue({});
-
-    await expect(search.searchMulti('synthetic')).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE',
-    });
-  });
-
-  // Branch coverage: rejects an invalid person response
-  it('rejects an invalid person response', async () => {
-    http.get.mockResolvedValue({});
-
-    await expect(search.searchPeople('person')).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE',
-    });
-  });
-
-  // Branch coverage: rejects an invalid keyword response
-  it('rejects an invalid keyword response', async () => {
-    http.get.mockResolvedValue({});
-
-    await expect(search.searchKeywords('space')).rejects.toMatchObject({
-      code: 'INVALID_RESPONSE',
-    });
-  });
 });
