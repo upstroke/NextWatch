@@ -169,7 +169,8 @@ Die genaue Zahl ist nicht das Ziel — entscheidend ist, dass nur unnötige Test
 
 - 93 Tests entfernt.
 - Coverage blieb in allen geprüften Bereichen bei 100%.
-- Offen: vollständige Validierung mit `pnpm test:coverage` und `pnpm typecheck`.
+- Vollständige Validierung abgeschlossen:
+  `pnpm test:coverage` stabil, `pnpm typecheck` bestanden mit Exit Code 0.
 
 ## Akzeptanzkriterien
 
