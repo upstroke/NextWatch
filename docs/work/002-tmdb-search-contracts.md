@@ -226,10 +226,9 @@ Completed.
 - `pnpm test`: passing.
 - `pnpm lint`: passing.
 - `pnpm typecheck`: passing.
-- `pnpm test:coverage`: pending.
-- `pnpm build`: pending.
+- `pnpm test:coverage`: passing.
+- `pnpm build`: passing.
 
 ### Next steps
 
-1. Run `pnpm test:coverage` and `pnpm build`.
-2. Review the final work-package status.
+None.
