@@ -28,46 +28,6 @@ const baseFilters = DiscoverFiltersSchema.parse({
   sortBy: 'vote_average.desc',
 });
 
-describe('Discover filter schema', () => {
-  // Branch coverage: accepts a valid filter set and applies defaults
-  it('accepts a valid filter set and applies defaults', () => {
-    const filters = DiscoverFiltersSchema.parse({ genreIds: [28] });
-    expect(filters).toEqual({
-      genreIds: [28],
-      personIds: [],
-      keywordIds: [],
-      sortBy: 'popularity.desc',
-    });
-  });
-
-  // Branch coverage: rejects more than three genres
-  it('rejects more than three genres', () => {
-    expect(() => DiscoverFiltersSchema.parse({ genreIds: [1, 2, 3, 4] })).toThrow();
-  });
-
-  // Branch coverage: rejects ratings outside the supported range
-  it('rejects ratings outside the supported range', () => {
-    expect(() => DiscoverFiltersSchema.parse({ minRating: 10.1 })).toThrow();
-    expect(() => DiscoverFiltersSchema.parse({ minRating: -0.1 })).toThrow();
-  });
-
-  // Branch coverage: rejects a reversed year range
-  it('rejects a reversed year range', () => {
-    expect(() => DiscoverFiltersSchema.parse({ yearFrom: 2024, yearTo: 2020 })).toThrow();
-  });
-
-  // Branch coverage: rejects years outside the supported range
-  it('rejects years outside the supported range', () => {
-    expect(() => DiscoverFiltersSchema.parse({ yearFrom: 1899 })).toThrow();
-    expect(() => DiscoverFiltersSchema.parse({ yearTo: 2101 })).toThrow();
-  });
-
-  // Branch coverage: rejects unknown sort options
-  it('rejects unknown sort options', () => {
-    expect(() => DiscoverFiltersSchema.parse({ sortBy: 'unknown' })).toThrow();
-  });
-});
-
 describe('Discover parameter mapping', () => {
   // Statement coverage: maps Movie filters to primary release date parameters
   it('maps Movie filters to primary release date parameters', () => {
@@ -170,7 +130,7 @@ describe('Discover response mappers', () => {
   });
 
   // Branch coverage: treats an empty Movie result page as valid
-  it('treats an empty result page as valid', () => {
+  it('treats an empty Movie result page as valid', () => {
     const raw = TmdbDiscoverMovieResponseSchema.parse(emptyDiscoverMovieRawFixture);
     expect(mapMovieDiscoverResponse(raw).results).toEqual([]);
   });

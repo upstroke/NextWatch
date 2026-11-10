@@ -42,6 +42,28 @@ describe('DiscoverFiltersSchema', () => {
     expect(() => DiscoverFiltersSchema.parse({ keywordIds })).toThrow();
   });
 
+  // Branch coverage: rejects more than three genres
+  it('rejects more than three genres', () => {
+    expect(() => DiscoverFiltersSchema.parse({ genreIds: [1, 2, 3, 4] })).toThrow();
+  });
+
+  // Branch coverage: rejects ratings outside the supported range
+  it('rejects ratings outside the supported range', () => {
+    expect(() => DiscoverFiltersSchema.parse({ minRating: 10.1 })).toThrow();
+    expect(() => DiscoverFiltersSchema.parse({ minRating: -0.1 })).toThrow();
+  });
+
+  // Branch coverage: rejects years outside the supported range
+  it('rejects years outside the supported range', () => {
+    expect(() => DiscoverFiltersSchema.parse({ yearFrom: 1899 })).toThrow();
+    expect(() => DiscoverFiltersSchema.parse({ yearTo: 2101 })).toThrow();
+  });
+
+  // Branch coverage: rejects an unknown sort option
+  it('rejects an unknown sort option', () => {
+    expect(() => DiscoverFiltersSchema.parse({ sortBy: 'unknown' })).toThrow();
+  });
+
   // Branch coverage: rejects a reversed year range
   it('rejects a reversed year range', () => {
     expect(() =>
