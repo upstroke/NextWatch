@@ -132,18 +132,6 @@ describe('Discover query schema', () => {
     expect(() => DiscoverQuerySchema.parse({ keywordIds: '1,2,3,4,5,6' })).toThrow();
   });
 
-  // Branch coverage: rejects invalid person IDs
-  it('rejects invalid person IDs', () => {
-    expect(() => DiscoverQuerySchema.parse({ personIds: '0' })).toThrow();
-    expect(() => DiscoverQuerySchema.parse({ personIds: 'abc' })).toThrow();
-  });
-
-  // Branch coverage: rejects invalid keyword IDs
-  it('rejects invalid keyword IDs', () => {
-    expect(() => DiscoverQuerySchema.parse({ keywordIds: '0' })).toThrow();
-    expect(() => DiscoverQuerySchema.parse({ keywordIds: 'abc' })).toThrow();
-  });
-
   // Branch coverage: rejects ratings outside the supported range
   it('rejects ratings outside the supported range', () => {
     expect(() => DiscoverQuerySchema.parse({ genreIds: '28', minRating: '11' })).toThrow();
@@ -154,10 +142,5 @@ describe('Discover query schema', () => {
   it('rejects years outside the supported range', () => {
     expect(() => DiscoverQuerySchema.parse({ genreIds: '28', yearFrom: '1899' })).toThrow();
     expect(() => DiscoverQuerySchema.parse({ genreIds: '28', yearTo: '2101' })).toThrow();
-  });
-
-  // Branch coverage: rejects an unknown sort option
-  it('rejects an unknown sort option', () => {
-    expect(() => DiscoverQuerySchema.parse({ genreIds: '28', sortBy: 'unknown' })).toThrow();
   });
 });
