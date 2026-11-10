@@ -47,7 +47,7 @@ Add server-side support for regional availability:
 - `GET /api/tmdb/movie/[id]/watch-providers`
 - `GET /api/tmdb/tv/[id]/watch-providers`
 
-The region is an explicit query parameter, for example `region=DE`. The response must distinguish streaming, rental and purchase availability where TMDb provides it.
+The region is an optional query parameter, for example `region=DE`. When omitted or empty, the request uses the TMDb default region `US` (corresponding to `en-US`). The response must distinguish streaming, rental and purchase availability where TMDb provides it.
 
 #### Language-aware existing endpoints
 
@@ -63,7 +63,7 @@ The application locale resolves to the TMDb content language:
 - `en` resolves to `en-US`.
 - `de` resolves to `de-DE`.
 
-Watch-provider requests use an explicit `region` parameter instead of deriving it from the application locale.
+Watch-provider requests use an explicit `region` parameter when provided; an omitted or empty region defaults to `US`.
 
 #### Discover extension
 
@@ -111,7 +111,7 @@ Each Search route validates its query at the HTTP boundary:
 
 - `query`: required, trimmed, non-empty, maximum 200 characters
 - `page`: optional positive integer with an upper bound
-- `region`: required for Watch Providers, ISO 3166-1 alpha-2 format
+- `region`: optional for Watch Providers; omitted or empty defaults to `US`; otherwise ISO 3166-1 alpha-2 format
 
 Invalid or missing input returns a defined client error. Technical failures must remain distinguishable from empty results.
 
@@ -160,7 +160,7 @@ Use stable `TMDB-INT-…` identifiers in HTTP integration test titles.
 - Search responses are mapped to stable application candidates.
 - Discover supports validated person and keyword IDs.
 - Discover and Detail requests use the TMDb content language resolved from the application locale.
-- Watch-provider availability is available for a selected Movie or TV ID and an explicit region.
+- Watch-provider availability is available for a selected Movie or TV ID; an explicit region is supported and an omitted or empty region defaults to `US`.
 - Streaming, rental and purchase availability remain distinguishable.
 - Invalid queries, pages, regions and IDs produce defined client errors.
 - Transport failures remain distinguishable from empty results.
@@ -197,16 +197,46 @@ responses do not support `append_to_response`.
 
 ### Status
 
-Planned.
+In progress.
+
+### Completed
+
+1. Added raw and normalized TMDb Search contracts.
+2. Added Watch Provider contracts.
+3. Extended the Discover query contract with person and keyword IDs.
+4. Implemented the Search service and Search mappers.
+5. Implemented the Search Nitro routes and query validation.
+6. Extended the Discover service and routes with person, keyword and language support.
+7. Extended the Detail service and routes with language support.
+
+### In progress
+
+8. Add unit, HTTP contract and manual live verification.
+
+Implemented so far:
+
+- Watch-provider service with TMDb response validation and normalized availability mapping.
+- Movie and TV watch-provider Nitro routes.
+- Watch-provider service tests.
+- Movie and TV watch-provider handler tests.
+- Watch-provider region handling: explicit regions are normalized; an omitted or empty region defaults to `US`.
+
+Remaining:
+
+- Additional HTTP contract tests for Search and Detail endpoints.
+- Manual live verification for Movie Search, TV Search, Multi Search, Person Search, Keyword Search and regional Watch Provider requests.
+
+### Local validation
+
+- `pnpm test`: passing.
+- `pnpm lint`: passing.
+- `pnpm typecheck`: passing.
+- `pnpm test:coverage`: pending.
+- `pnpm build`: pending.
 
 ### Next steps
 
-1. Add raw and normalized TMDb Search contracts.
-2. Add Watch Provider contracts.
-3. Extend the Discover query contract with person and keyword IDs.
-4. Implement the Search service and Search mappers.
-5. Implement the Search Nitro routes and query validation.
-6. Extend the Discover service and routes with person, keyword and language support.
-7. Extend the Detail service and routes with language support.
-8. Add unit, HTTP contract and manual live verification.
-9. Run local validation and record the results.
+1. Add remaining HTTP contract tests for Search and Detail endpoints.
+2. Complete manual live verification.
+3. Run `pnpm test:coverage` and `pnpm build`.
+4. Review the final work-package status.
