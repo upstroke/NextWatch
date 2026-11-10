@@ -9,15 +9,20 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event).query;
 
   if (typeof query !== 'string' || query.trim() === '') {
-    return createError({
+    event.node.res.statusCode = 400;
+
+    return {
       statusCode: 400,
       statusMessage: 'Invalid search query',
-    });
+      message: 'Invalid search query',
+    };
   }
 
   const config = getTmdbConfig(event);
-  const http = createTmdbHttpClient(config, (url, options): Promise<unknown> =>
-    $fetch<unknown>(url, { ...options, redirect: 'error' }),
+  const http = createTmdbHttpClient(
+    config,
+    (url, options): Promise<unknown> =>
+      $fetch<unknown>(url, { ...options, redirect: 'error' }),
   );
 
   try {

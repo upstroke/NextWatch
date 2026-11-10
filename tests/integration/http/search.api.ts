@@ -38,10 +38,10 @@ test('TMDB-INT-007: GET tv search returns a sanitized 400 for an empty query', a
   expect(serialized).not.toContain('stack');
 });
 
-test('TMDB-INT-008: GET multi search returns a sanitized 400 for an invalid query type', async ({
+test('TMDB-INT-008: GET multi search returns a sanitized 400 for a whitespace query', async ({
   request,
 }) => {
-  const response = await request.get('/api/tmdb/search/multi?query=123');
+  const response = await request.get('/api/tmdb/search/multi?query=%20%20');
 
   expect(response.status()).toBe(400);
   expect(response.headers()['cache-control']).toBe('no-store');
