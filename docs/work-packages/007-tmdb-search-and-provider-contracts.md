@@ -168,8 +168,8 @@ It merges pending filters into an existing filter state.
 
 ## Related documentation
 
-- `docs/concepts/003-service-boundaries.md`
-- `docs/concepts/004-tmdb-discover-foundation.md`
-- `docs/concepts/005-tmdb-detail-data-contract.md`
-- `docs/concepts/006-language-aware-tmdb-transport.md`
+- ``
+- ``
+- ``
+- ``
 - `docs/testing.md`

@@ -26,7 +26,7 @@ The application UI language and the TMDb content language are coupled.
 The UI language is the single source of truth for the TMDb content language.
 
 | UI language | TMDb content language |
-|-------------|-----------------------|
+| ----------- | --------------------- |
 | `en`        | `en-US`               |
 | `de`        | `de-DE`               |
 
@@ -89,8 +89,8 @@ No fallback language is introduced.
 
 ## Related documentation
 
-- `docs/concepts/003-service-boundaries.md`
-- `docs/concepts/004-tmdb-discover-foundation.md`
-- `docs/concepts/005-tmdb-detail-data-contract.md`
-- `docs/concepts/007-tmdb-search-and-provider-contracts.md`
+- ``
+- ``
+- ``
+- ``
 - `docs/testing.md`

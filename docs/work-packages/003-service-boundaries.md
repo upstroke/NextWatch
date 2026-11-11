@@ -49,7 +49,7 @@ It separates transport, validation, orchestration, pure mapping and safe error t
 
 ## Related documentation
 
-- `docs/concepts/001-project-foundation.md`
-- `docs/concepts/002-tmdb-connection-and-trending.md`
+- ``
+- ``
 - `docs/testing.md`
 - `docs/typing.md`

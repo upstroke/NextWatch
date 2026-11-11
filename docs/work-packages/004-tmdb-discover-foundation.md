@@ -24,7 +24,7 @@ It verifies that TMDb Discover provides the filters and response data required f
 ## Media-specific mapping
 
 | Application filter | Movie Discover             | TV Discover          |
-|--------------------|----------------------------|----------------------|
+| ------------------ | -------------------------- | -------------------- |
 | Genre IDs          | `with_genres`              | `with_genres`        |
 | Minimum rating     | `vote_average.gte`         | `vote_average.gte`   |
 | Year from          | `primary_release_date.gte` | `first_air_date.gte` |
@@ -58,7 +58,7 @@ Movie and TV use different date parameters. No generic media Discover function f
 
 ## Related documentation
 
-- `docs/concepts/003-service-boundaries.md`
-- `docs/concepts/006-language-aware-tmdb-transport.md`
-- `docs/concepts/007-tmdb-search-and-provider-contracts.md`
+- ``
+- ``
+- ``
 - `docs/testing.md`

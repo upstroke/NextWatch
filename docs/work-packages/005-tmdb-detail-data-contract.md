@@ -114,7 +114,7 @@ The following TV fields are intentionally excluded:
 
 ## Related documentation
 
-- `docs/concepts/003-service-boundaries.md`
-- `docs/concepts/006-language-aware-tmdb-transport.md`
-- `docs/concepts/007-tmdb-search-and-provider-contracts.md`
+- ``
+- ``
+- ``
 - `docs/testing.md`

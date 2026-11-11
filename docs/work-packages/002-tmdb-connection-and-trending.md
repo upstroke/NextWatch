@@ -63,7 +63,7 @@ The response is validated with Zod and mapped to the normalized application cont
 
 ## Related documentation
 
-- `docs/concepts/001-project-foundation.md`
-- `docs/concepts/003-service-boundaries.md`
-- `docs/concepts/006-language-aware-tmdb-transport.md`
+- ``
+- ``
+- ``
 - `docs/testing.md`
