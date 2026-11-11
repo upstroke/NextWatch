@@ -26,9 +26,9 @@ The application UI language and the TMDb content language are coupled.
 The UI language is the single source of truth for the TMDb content language.
 
 | UI language | TMDb content language |
-|---|---|
-| `en` | `en-US` |
-| `de` | `de-DE` |
+|-------------|-----------------------|
+| `en`        | `en-US`               |
+| `de`        | `de-DE`               |
 
 No separate language-selection state is introduced for TMDb content.
 

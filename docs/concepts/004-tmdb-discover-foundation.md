@@ -23,13 +23,13 @@ It verifies that TMDb Discover provides the filters and response data required f
 
 ## Media-specific mapping
 
-| Application filter | Movie Discover | TV Discover |
-|---|---|---|
-| Genre IDs | `with_genres` | `with_genres` |
-| Minimum rating | `vote_average.gte` | `vote_average.gte` |
-| Year from | `primary_release_date.gte` | `first_air_date.gte` |
-| Year to | `primary_release_date.lte` | `first_air_date.lte` |
-| Sorting | `sort_by` | `sort_by` |
+| Application filter | Movie Discover             | TV Discover          |
+|--------------------|----------------------------|----------------------|
+| Genre IDs          | `with_genres`              | `with_genres`        |
+| Minimum rating     | `vote_average.gte`         | `vote_average.gte`   |
+| Year from          | `primary_release_date.gte` | `first_air_date.gte` |
+| Year to            | `primary_release_date.lte` | `first_air_date.lte` |
+| Sorting            | `sort_by`                  | `sort_by`            |
 
 Movie and TV use different date parameters. No generic media Discover function forwards all filters blindly to both endpoints.
 
