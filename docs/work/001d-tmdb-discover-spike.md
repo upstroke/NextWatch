@@ -85,7 +85,7 @@ Completed.
 - `server/api/tmdb/discover/tv.get.ts`
 - `tests/unit/services/discover.spec.ts`
 - `tests/http/discover.api.ts`
-- `docs/work/specs/architecture/002-tmdb-discover.md`
+- `../../tasks/002-tmdb-discover.md`
 
 ### Validation
 
