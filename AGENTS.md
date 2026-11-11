@@ -4,6 +4,23 @@
 
 NextWatch is a controlled search application. The LLM proposes structured filter changes; the application validates and executes them.
 
+## Current project status
+
+- The active work package is
+  `docs/work-packages/008-search-intent-and-filter-application.md`.
+- The branch `feat/003-multi-step-search-orchestration` was discarded and
+  is being deleted. Do not restore, reference or continue its architecture.
+- Do not treat “Task 003a” as an official work package. It was only a
+  temporary label for restarting the search-flow work.
+- Before implementing work package 008, perform a read-only inventory of
+  the existing `main` implementation.
+- The inventory must document existing behavior with file references and
+  distinguish between available, partially available, missing and
+  contradictory capabilities.
+- Do not propose new endpoints, services, deletions, consolidations or
+  architecture changes until the inventory is complete and the user has
+  approved the resulting plan.
+
 ## Non-negotiables
 
 - Do not create autonomous search or recommendation agents.
@@ -57,14 +74,16 @@ Read docs/work/specs/architecture/001-service-boundaries.md before changing API 
 
 ## Workflow
 
-1. Define the task.
-2. Read the relevant specification, schemas and tests.
-3. Create a plan with affected files.
-4. Obtain user approval.
-5. Implement only the approved scope, test-first where executable.
-6. Run automated validation; report commands not run honestly.
-7. Review against specifications and guardrails.
-8. Obtain user approval before committing or opening a pull request.
+1. Establish the active work package and current repository state before
+   proposing implementation work.
+2. Define the task.
+3. Read the relevant specification, schemas and tests.
+4. Create a plan with affected files.
+5. Obtain user approval.
+6. Implement only the approved scope, test-first where executable.
+7. Run automated validation; report commands not run honestly.
+8. Review against specifications and guardrails.
+9. Obtain user approval before committing or opening a pull request.
 
 ## Repository evidence and scope
 
