@@ -26,6 +26,14 @@ It describes how filters and pending entity queries are represented and preserve
 - Pending queries are not resolved IDs and must not be silently applied as active ID filters.
 - Actual person and keyword resolution remains outside this work package and still needs an explicit implementation assignment. This clarification does not assign resolution to WP 011.
 
+### Person filter semantics for movie searches
+
+- A request such as "Ich moechte einen Sci-Fi-Film mit Brad Pitt sehen" means a movie in the science-fiction genre featuring Brad Pitt as a cast member, not a movie involving him in any arbitrary production role.
+- The person criterion needs the TMDb `personId` obtained by resolving the name. The product contract does not introduce separate cast, crew or general-participation role fields for this requirement.
+- Before resolution, preserve "Brad Pitt" as a pending person query, separately from active resolved ID filters. Never guess the ID or treat the name as an ID.
+- The intended later flow is: movie criterion + science-fiction genre + pending person query -> person lookup -> resolved `personId` -> Movie Discover filtered by that cast ID and genre. This describes the required behavior, not functionality implemented by WP 009.
+- Name extraction belongs to WP 011. Person resolution and Discover execution remain outside WP 009. This movie example does not establish TV person-filter support or expand the scope to crew searches.
+
 ### Out of scope
 
 - Natural-language extraction and the entity-query parser contract (WP 011).
@@ -73,4 +81,5 @@ It describes how filters and pending entity queries are represented and preserve
 
 - Planned; this documentation change does not start WP 009 implementation.
 - Entity-query state representation and preservation are explicitly assigned here; parser fields and extraction remain in WP 011.
+- Movie person-filter semantics are explicitly documented: a resolved person ID identifies the requested cast member; no additional role taxonomy is required.
 - No concrete entity-query schema or runtime behavior is introduced by this clarification.
