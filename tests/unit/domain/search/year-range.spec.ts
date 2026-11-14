@@ -42,7 +42,7 @@ describe('year range intent application', () => {
   it.each(['minYear', 'maxYear'])('removes %s to produce an open range', (field) => {
     const filters = SearchFiltersSchema.parse({ minYear: 2000, maxYear: 2020 });
     const result = applyIntent(filters, {
-      status: 'ready', baseRevision: 0, changes: [{ field, operation: 'remove' }],
+      status: 'ready', baseRevision: 0, changes: [{ field, operation: 'remove', value: undefined }],
     }, 0);
 
     expect(result.status).toBe('applied');
