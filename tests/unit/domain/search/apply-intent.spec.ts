@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ChatIntent, FilterChange } from '@lib/schemas/chat';
 import { SearchFiltersSchema } from '@lib/schemas/search';
 import type { SearchFilters } from '@lib/schemas/search';
-import { applyIntent } from '@lib/domain/search';
+import { applyIntent } from '@lib/domain/search/apply-intent';
 
 const emptyFilters: SearchFilters = SearchFiltersSchema.parse({});
 
