@@ -4,24 +4,26 @@ import { SearchFiltersSchema } from '@lib/schemas/search';
 import type { SearchFilters } from '@lib/schemas/search';
 import { applyChangeTo } from './extraction';
 
-type Clarification = ChatIntent['clarification'];
+type Clarification = Extract<ChatIntent, { status: 'needs_clarification' }>['clarification'];
 
 /**
  * Result of applying a chat intent to the active search filters.
  *
- * - `applied`: the intent was valid; `filters` is the new state (possibly
- *   equal to the previous state when the changes were ineffective).
- * - `unchanged`: the intent was not applied; `reason` describes why and
- *   `clarification` carries the pending clarification requirement, if any.
- * - `rejected`: the intent was structurally invalid or violates the
- *   revision guard; the previous state remains authoritative.
+ * - `applied`: valid changes produced a different filter state.
+ * - `unchanged`: no changes were applied; clarification data is present
+ *   only when the reason is `clarification` and is then required.
+ * - `rejected`: validation failed; the previous state remains authoritative.
  */
 export type ApplyIntentResult =
   | { status: 'applied'; filters: SearchFilters }
   | {
       status: 'unchanged';
-      reason: 'clarification' | 'unsupported' | 'error-status' | 'no-effective-change';
-      clarification?: Clarification;
+      reason: 'clarification';
+      clarification: Clarification;
+    }
+  | {
+      status: 'unchanged';
+      reason: 'unsupported' | 'error-status' | 'no-effective-change';
     }
   | {
       status: 'rejected';
@@ -53,27 +55,30 @@ function filtersEqual(a: SearchFilters, b: SearchFilters): boolean {
 }
 
 /**
- * Applies a validated chat intent to the active search filters.
+ * Validates an external intent and applies its changes atomically.
  *
- * The application is atomic: either every change is valid and applied, or
- * nothing changes. The previous filters are never modified; a successful
- * application returns a new filters object. Unknown fields and invalid
- * operations or values reject the whole intent. The intent must carry the
- * current revision; a stale revision is rejected.
+ * Structural validation precedes the revision guard for every status.
+ * Clarification, unsupported and error intents never modify filters.
+ * Unknown fields and invalid operations or values reject the whole intent.
+ * The previous filters are never modified.
  *
- * @param filters Active search filters (unchanged on any non-applied outcome).
- * @param intent Chat intent as produced by the parser.
- * @param revision Current search state revision the intent must match.
+ * @param filters Active, previously validated search filters.
+ * @param intent Untrusted intent input to validate before application.
+ * @param revision Current search state revision every valid intent must match.
  * @returns The application result; see {@link ApplyIntentResult}.
  */
 export function applyIntent(
   filters: SearchFilters,
-  intent: ChatIntent,
+  intent: unknown,
   revision: number,
 ): ApplyIntentResult {
   const parsedIntent = ChatIntentSchema.safeParse(intent);
   if (!parsedIntent.success) {
     return { status: 'rejected', reason: 'invalid-intent' };
+  }
+
+  if (parsedIntent.data.baseRevision !== revision) {
+    return { status: 'rejected', reason: 'stale-revision' };
   }
 
   if (parsedIntent.data.status === 'needs_clarification') {
@@ -90,10 +95,6 @@ export function applyIntent(
 
   if (parsedIntent.data.status === 'error') {
     return { status: 'unchanged', reason: 'error-status' };
-  }
-
-  if (parsedIntent.data.baseRevision !== revision) {
-    return { status: 'rejected', reason: 'stale-revision' };
   }
 
   const candidate: SearchFilters = { ...filters };
