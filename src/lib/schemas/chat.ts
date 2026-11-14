@@ -10,25 +10,42 @@ export const FilterChangeSchema = z.object({
   value: z.unknown(),
 });
 
-export const ChatIntentSchema = z
+const ClarificationSchema = z
   .object({
-    status: ChatStatusSchema,
-    baseRevision: z.number().int().nonnegative(),
-    changes: z.array(FilterChangeSchema).default([]),
-    clarification: z
-      .object({
-        questionKey: z.string().min(1),
-        options: z.array(z.string().min(1)).default([]),
-      })
-      .optional(),
-    evidence: z
-      .object({
-        messageId: z.string().min(1),
-        excerpt: z.string().min(1),
-      })
-      .optional(),
+    questionKey: z.string().trim().min(1),
+    options: z.array(z.string().trim().min(1)).min(1),
   })
   .strict();
+
+const IntentBaseSchema = z.object({
+  baseRevision: z.number().int().nonnegative(),
+  evidence: z
+    .object({
+      messageId: z.string().min(1),
+      excerpt: z.string().min(1),
+    })
+    .optional(),
+});
+
+export const ChatIntentSchema = z.discriminatedUnion('status', [
+  IntentBaseSchema.extend({
+    status: z.literal(ChatStatusSchema.enum.ready),
+    changes: z.array(FilterChangeSchema).default([]),
+  }).strict(),
+  IntentBaseSchema.extend({
+    status: z.literal(ChatStatusSchema.enum.needs_clarification),
+    changes: z.array(FilterChangeSchema).max(0).default([]),
+    clarification: ClarificationSchema,
+  }).strict(),
+  IntentBaseSchema.extend({
+    status: z.literal(ChatStatusSchema.enum.unsupported),
+    changes: z.array(FilterChangeSchema).max(0).default([]),
+  }).strict(),
+  IntentBaseSchema.extend({
+    status: z.literal(ChatStatusSchema.enum.error),
+    changes: z.array(FilterChangeSchema).max(0).default([]),
+  }).strict(),
+]);
 
 export type ChatStatus = z.infer<typeof ChatStatusSchema>;
 export type FilterOperation = z.infer<typeof FilterOperationSchema>;

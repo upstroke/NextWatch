@@ -82,7 +82,7 @@ Unit tests exercise one cohesive unit in isolation: schemas, services, mappers, 
 
 They must not perform real network requests. External boundaries, especially TMDb HTTP calls, are mocked.
 
-Begin every `it` block with an explicit coverage-intent comment: `// Statement coverage:` or `// Branch coverage:`. Use `// Statement coverage:` for a verified execution path and `// Branch coverage:` for a conditional path, error branch, fallback, or boundary.
+Follow [Coverage comments](#coverage-comments) for coverage-intent comment requirements and placement.
 
 Do not write unit tests that only verify Zod or framework standard behavior. Keep schema tests focused on happy paths, project-specific transforms, cross-field rules, and error mapping.
 
@@ -141,18 +141,7 @@ Branch coverage is reported and useful as an additional signal, but it is not a 
 
 ## Coverage comments
 
-Each `it` block begins with an explicit coverage intent:
-
-```ts
-// Statement coverage: validates a valid discover query.
-
-// Branch coverage: rejects an invalid genre filter.
-```
-
-Use:
-
-- `// Statement coverage:` when the test verifies that a code path executes.
-- `// Branch coverage:` when the test verifies a specific conditional path, error branch, fallback, or boundary.
+Place a coverage-intent comment immediately above each unit-test declaration (`it(...)`, `test(...)`, or a parameterized variant such as `it.each(...)`), outside the test callback. Use `// Statement coverage:` for an execution path and `// Branch coverage:` for a conditional path, error branch, fallback, or boundary. For parameterized tests, one comment above the declaration describes the shared intent of all cases.
 
 ## Import aliases
 

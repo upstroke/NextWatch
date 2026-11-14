@@ -76,8 +76,8 @@ The resulting code must preserve the current behavior:
 
 Add concise TSDoc/JSDoc comments to the following exported functions and public methods:
 
-| File                                       | Element                    |
-| ------------------------------------------ | -------------------------- |
+| File                                             | Element                    |
+| ------------------------------------------------ | -------------------------- |
 | `../../server/services/tmdb/errors.ts`           | `createTmdbError`          |
 | `../../server/services/tmdb/errors.ts`           | `toTmdbHttpError`          |
 | `../../server/services/tmdb/discover-mappers.ts` | `mapMovieDiscoverResponse` |
@@ -94,8 +94,8 @@ Add concise TSDoc/JSDoc comments to the following exported functions and public 
 
 Add concise TSDoc/JSDoc comments to the public methods of the HTTP client returned by `createTmdbHttpClient`:
 
-| File                           | Method              |
-| ------------------------------ | ------------------- |
+| File                                 | Method              |
+| ------------------------------------ | ------------------- |
 | `../../server/services/tmdb/http.ts` | `get`               |
 | `../../server/services/tmdb/http.ts` | `getWeeklyTrending` |
 
