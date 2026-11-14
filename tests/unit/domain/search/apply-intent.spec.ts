@@ -125,6 +125,79 @@ describe('applyIntent', () => {
     expect(result.filters.minYear).toBe(2000);
   });
 
+  // Statement coverage: minYear and maxYear accept integer values
+  it('sets minYear and maxYear with integer values', () => {
+    const result = applyIntent(
+      emptyFilters,
+      readyIntent([change('minYear', 'set', 2000), change('maxYear', 'set', 2010)]),
+      0,
+    );
+
+    expect(result).toMatchObject({
+      status: 'applied',
+      filters: { minYear: 2000, maxYear: 2010 },
+    });
+  });
+
+  // Branch coverage: remove works for every optional scalar field
+  it('clears minYear and maxYear on remove', () => {
+    const result = applyIntent(
+      SearchFiltersSchema.parse({ minYear: 2000, maxYear: 2010 }),
+      readyIntent([change('minYear', 'remove', undefined), change('maxYear', 'remove', undefined)]),
+      0,
+    );
+
+    expect(result.status).toBe('applied');
+    if (result.status !== 'applied') throw new Error('unreachable');
+    expect('minYear' in result.filters).toBe(false);
+    expect('maxYear' in result.filters).toBe(false);
+  });
+
+  // Branch coverage: set with undefined value rejects the change
+  it('rejects scalar set operations with undefined value', () => {
+    const result = applyIntent(
+      emptyFilters,
+      readyIntent([change('minRating', 'set', undefined)]),
+      0,
+    );
+
+    expect(result).toEqual({
+      status: 'rejected',
+      reason: 'invalid-value',
+      field: 'minRating',
+    });
+  });
+
+  // Branch coverage: wrong value types reject the change before the schema
+  it('rejects scalar values with the wrong type', () => {
+    const result = applyIntent(
+      emptyFilters,
+      readyIntent([change('mediaType', 'set', 42)]),
+      0,
+    );
+
+    expect(result).toEqual({
+      status: 'rejected',
+      reason: 'invalid-value',
+      field: 'mediaType',
+    });
+  });
+
+  // Branch coverage: list fields reject values that are not arrays
+  it('rejects list values that are not arrays', () => {
+    const result = applyIntent(
+      emptyFilters,
+      readyIntent([change('keywordIds', 'set', 301)]),
+      0,
+    );
+
+    expect(result).toEqual({
+      status: 'rejected',
+      reason: 'invalid-value',
+      field: 'keywordIds',
+    });
+  });
+
   // Branch coverage: a stale revision rejects the intent
   it('rejects a stale revision', () => {
     const result = applyIntent(emptyFilters, readyIntent([change('minRating', 'set', 8)], 1), 2);
@@ -265,6 +338,25 @@ describe('applyIntent', () => {
     const result = applyIntent(
       filters,
       readyIntent([change('minRating', 'set', 7)]),
+      0,
+    );
+
+    expect(result).toEqual({ status: 'unchanged', reason: 'no-effective-change' });
+  });
+
+  // Branch coverage: unchanged id lists are compared element by element
+  it('reports unchanged id lists as no effective change', () => {
+    const filters: SearchFilters = SearchFiltersSchema.parse({
+      keywordIds: [301],
+      genreIds: [28],
+    });
+
+    const result = applyIntent(
+      filters,
+      readyIntent([
+        change('keywordIds', 'set', [301]),
+        change('genreIds', 'set', [28]),
+      ]),
       0,
     );
 

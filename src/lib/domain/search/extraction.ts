@@ -70,7 +70,8 @@ function readIdList(value: unknown): number[] | null {
  * listed ids, set and replace the entire list).
  * @param candidate Mutable candidate filters; never the caller's original object.
  * @param field The list field to modify.
- * @param operation The filter operation.
+ * @param operation The filter operation; the intent schema limits it to the
+ * four values handled here.
  * @param ids Validated ids from the change value.
  */
 function applyListChange(
@@ -79,24 +80,29 @@ function applyListChange(
   operation: FilterChange['operation'],
   ids: number[],
 ): void {
-  if (operation === 'set' || operation === 'replace') {
-    candidate[field] = [...ids];
-    return;
-  }
-  if (operation === 'add') {
-    const existing = new Set(candidate[field]);
-    const merged = [...candidate[field]];
-    for (const id of ids) {
-      if (!existing.has(id)) {
-        merged.push(id);
-        existing.add(id);
+  switch (operation) {
+    case 'set':
+    case 'replace':
+      candidate[field] = [...ids];
+      return;
+    case 'add': {
+      const existing = new Set(candidate[field]);
+      const merged = [...candidate[field]];
+      for (const id of ids) {
+        if (!existing.has(id)) {
+          merged.push(id);
+          existing.add(id);
+        }
       }
+      candidate[field] = merged;
+      return;
     }
-    candidate[field] = merged;
-    return;
+    case 'remove': {
+      const removed = new Set(ids);
+      candidate[field] = candidate[field].filter((id) => !removed.has(id));
+      return;
+    }
   }
-  const removed = new Set(ids);
-  candidate[field] = candidate[field].filter((id) => !removed.has(id));
 }
 
 /**
@@ -136,14 +142,6 @@ function applyScalarSet(candidate: SearchFilters, field: ScalarField, value: unk
  */
 export function applyChangeTo(candidate: SearchFilters, change: FilterChange): ChangeApplication {
   if (isListField(change.field)) {
-    if (
-      change.operation !== 'set' &&
-      change.operation !== 'replace' &&
-      change.operation !== 'add' &&
-      change.operation !== 'remove'
-    ) {
-      return { ok: false, reason: 'invalid-operation' };
-    }
     const ids = readIdList(change.value);
     if (ids === null) {
       return { ok: false, reason: 'invalid-value' };
