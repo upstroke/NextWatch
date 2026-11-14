@@ -144,9 +144,17 @@ WP 009 remains in progress. The completed work is recorded below in implementati
 - Updated `tests/unit/domain/search/apply-intent.spec.ts`, `clarification.spec.ts`, `year-range.spec.ts` and `filter-catalog.spec.ts` for the new state contract, preservation, atomic rejection, mode transitions, revision updates and the chat person-ID boundary.
 - After being asked to run tests, coverage, lint and typecheck, the user reported "alles grün" for this commit. This is user-reported successful validation, not assistant-executed validation. No numeric coverage result or successful assistant-run test-first red/green cycle is claimed.
 
+### Step 4: Initial search state
+
+- Implemented in commit `cfec84e3f24dd9cb9f8b59baedfc0972d1e80ad7` (`feat(search): create initial search state`).
+- Added `createInitialSearchState()` in `src/lib/domain/search/create-initial-search-state.ts`. It takes no parameters and returns a fresh `SearchState` with `mode: 'trending'`, revision `0`, default media scope and sorting, empty genre/keyword/person ID lists and empty pending person/keyword queries. Optional rating and year criteria are absent.
+- Each call creates independent state, filter and pending-query objects and arrays. The function performs no network requests, UI/store integration or restoration of existing search criteria.
+- Added `tests/unit/domain/search/create-initial-search-state.spec.ts` with two unit tests covering the initial values and independence between calls, including mutation isolation.
+- The user reported "alles grün" after this commit. This is user-reported successful validation, not assistant-executed validation; no numeric coverage result or assistant-run test-first red/green cycle is claimed.
+
 ### Remaining work and boundaries
 
-- Initialization and pending-query add/change/remove operations with their revision effects remain open.
+- Pending-query add/change/remove operations with their revision effects remain open.
 - ID-set normalization, mediatype compatibility and inactive return-value rules remain open; current list-order equality semantics are retained. Catalog entries establish neither ID provenance nor unverified TV person support or genre-ID compatibility.
 - A dedicated controlled transition for future resolution results is not implemented by the chat-intent extension; actual entity resolution remains separately unassigned and outside WP 009.
 - Store/UI integration, entity-query extraction (WP 011), network orchestration, Discover execution and the complete clarification workflow (WP 010) remain outside this implementation step.
