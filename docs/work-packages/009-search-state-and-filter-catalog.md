@@ -119,8 +119,12 @@ It describes how filters and pending entity queries are represented and preserve
 
 ## Execution status
 
-- Planned; these documentation changes do not start WP 009 implementation.
-- Entity-query state representation and preservation are explicitly assigned here; parser fields and extraction remain in WP 011.
-- Movie person-filter semantics are explicitly documented: a resolved person ID identifies the requested cast member; no additional role taxonomy is required.
-- User-approved mode, revision, clarification/error and ineffective-change feedback rules are documented above.
-- No concrete entity-query schema or runtime behavior is introduced by these documentation changes.
+- In progress: the user approved the implementation plan and starting step 1 on 2026-11-14.
+- Step 1 adds `src/lib/schemas/search-state.ts` with explicit mode, revision, active filters and separate pending person/keyword queries. Active filters extend the WP 008 schema with resolved `personIds`, preserving its year-range refinement.
+- Pending queries are trimmed, non-empty strings, limited to five persons and three keywords via the existing domain constants. Parsing does not resolve names or establish ID provenance.
+- Added `tests/unit/schemas/search-state.spec.ts` for defaults, separation and normalization of pending queries, inherited year-range validation and approved limits.
+- The existing WP 008 contracts and callers remain unchanged. The new state contract is not yet integrated with `applyIntent`.
+- Step 1 is a data contract only. Initialization, mode consistency, revision updates, query operations, ID-set normalization and the filter catalog remain for subsequent steps.
+- Store/UI integration, lookups, network orchestration and the complete clarification workflow are not implemented.
+- Tests, coverage, lint and typecheck have not been executed by the assistant. No successful validation or test-first red/green cycle is claimed.
+- WP 009 is not complete.
