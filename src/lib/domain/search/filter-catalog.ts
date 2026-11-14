@@ -4,6 +4,23 @@ import type { ActiveSearchFilters } from '@lib/schemas/search-state';
 
 export type CatalogFilterField = keyof ActiveSearchFilters;
 
+type ActiveFilterSchemas = typeof ActiveSearchFiltersSchema.shape;
+
+/**
+ * Describes one catalog entry.
+ * Number-array fields are lists; all other fields are scalars.
+ */
+type FilterDefinition<Field extends CatalogFilterField> = {
+  kind: ActiveSearchFilters[Field] extends number[] ? 'list' : 'scalar';
+  operations: readonly FilterOperation[];
+  valueSchema: ActiveFilterSchemas[Field];
+};
+
+/** Requires a matching catalog entry for every active filter field. */
+type SearchFilterCatalog = {
+  [Field in CatalogFilterField]-?: FilterDefinition<Field>;
+};
+
 const listOperations: readonly FilterOperation[] = ['set', 'replace', 'add', 'remove'];
 const scalarOperations: readonly FilterOperation[] = ['set', 'replace'];
 const optionalScalarOperations: readonly FilterOperation[] = ['set', 'replace', 'remove'];
@@ -58,13 +75,7 @@ export const SEARCH_FILTER_CATALOG = {
     operations: scalarOperations,
     valueSchema: ActiveSearchFiltersSchema.shape.sortBy,
   },
-} satisfies {
-  [Field in CatalogFilterField]-?: {
-    kind: ActiveSearchFilters[Field] extends number[] ? 'list' : 'scalar';
-    operations: readonly FilterOperation[];
-    valueSchema: (typeof ActiveSearchFiltersSchema.shape)[Field];
-  };
-};
+} satisfies SearchFilterCatalog;
 
 /** Checks whether a name is an own catalog field, excluding inherited object keys. */
 export function isCatalogFilterField(field: string): field is CatalogFilterField {
