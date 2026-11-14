@@ -28,7 +28,7 @@ It describes how filters and pending entity queries are represented and preserve
 
 ### Person filter semantics for movie searches
 
-- A request such as "Ich moechte einen Sci-Fi-Film mit Brad Pitt sehen" means a movie in the science-fiction genre featuring Brad Pitt as a cast member, not a movie involving him in any arbitrary production role.
+- A request such as "I am looking for a Sci-Fi movie with Brad Pitt" means a movie in the science-fiction genre featuring Brad Pitt as a cast member, not a movie involving him in any arbitrary production role.
 - The person criterion needs the TMDb `personId` obtained by resolving the name. The product contract does not introduce separate cast, crew or general-participation role fields for this requirement.
 - Before resolution, preserve "Brad Pitt" as a pending person query, separately from active resolved ID filters. Never guess the ID or treat the name as an ID.
 - The intended later flow is: movie criterion + science-fiction genre + pending person query -> person lookup -> resolved `personId` -> Movie Discover filtered by that cast ID and genre. This describes the required behavior, not functionality implemented by WP 009.
