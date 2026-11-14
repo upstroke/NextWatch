@@ -7,19 +7,26 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 ## Current project status
 
 - The active work package is
-  `docs/work-packages/008-search-intent-and-filter-application.md`.
+  `docs/work-packages/009-search-state-and-filter-catalog.md`.
+- Work package 008 is completed by user acceptance and merged into `main`
+  in commit `05c45d86430acb2e62e7395df8848de5ce8ed095`.
+- The working branch for work package 009 is
+  `feat/009-search-state-and-filter-catalog`, created from that `main` commit.
+- Before implementing work package 009, perform a targeted read-only review
+  of the existing search schemas, domain functions and tests on this branch.
+  Reuse the completed work package 008 implementation; do not rebuild it.
+- Document existing behavior with file references and distinguish between
+  available, partially available, missing and contradictory capabilities.
+- Read the work-package boundaries in work package 009. Pending entity-query
+  state belongs to work package 009; parser fields and extraction belong to
+  work package 011. Actual person/keyword resolution remains separately
+  unassigned and is not part of work package 009.
+- Prepare an implementation plan with affected files and obtain user approval
+  before implementation. This status update does not approve that plan.
 - The branch `feat/003-multi-step-search-orchestration` was discarded.
   Do not restore, reference or continue its architecture.
 - Do not treat “Task 003a” as an official work package. It was only a
   temporary label for restarting the search-flow work.
-- Before implementing work package 008, perform a read-only inventory of
-  the existing `main` implementation.
-- The inventory must document existing behavior with file references and
-  distinguish between available, partially available, missing and
-  contradictory capabilities.
-- Do not propose new endpoints, services, deletions, consolidations or
-  architecture changes until the inventory is complete and the user has
-  approved the resulting plan.
 
 ## Non-negotiables
 
