@@ -18,8 +18,7 @@ export type SearchFilterField = ListField | ScalarField;
 
 /** Outcome of applying a single intent change to the candidate filters. */
 export type ChangeApplication =
-  | { ok: true }
-  | { ok: false; reason: 'unknown-field' | 'invalid-operation' | 'invalid-value' };
+  { ok: true } | { ok: false; reason: 'unknown-field' | 'invalid-operation' | 'invalid-value' };
 
 /**
  * Checks whether a field name is contained in a field list without casting

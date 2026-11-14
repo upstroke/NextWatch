@@ -27,11 +27,7 @@ function readyIntent(changes: FilterChange[], baseRevision = 0): ChatIntent {
  * @param value Change value.
  * @returns A filter change for a chat intent.
  */
-function change(
-  field: string,
-  operation: FilterChange['operation'],
-  value: unknown,
-): FilterChange {
+function change(field: string, operation: FilterChange['operation'], value: unknown): FilterChange {
   return { field, operation, value };
 }
 
@@ -170,11 +166,7 @@ describe('applyIntent', () => {
 
   // Branch coverage: wrong value types reject the change before the schema
   it('rejects scalar values with the wrong type', () => {
-    const result = applyIntent(
-      emptyFilters,
-      readyIntent([change('mediaType', 'set', 42)]),
-      0,
-    );
+    const result = applyIntent(emptyFilters, readyIntent([change('mediaType', 'set', 42)]), 0);
 
     expect(result).toEqual({
       status: 'rejected',
@@ -185,11 +177,7 @@ describe('applyIntent', () => {
 
   // Branch coverage: list fields reject values that are not arrays
   it('rejects list values that are not arrays', () => {
-    const result = applyIntent(
-      emptyFilters,
-      readyIntent([change('keywordIds', 'set', 301)]),
-      0,
-    );
+    const result = applyIntent(emptyFilters, readyIntent([change('keywordIds', 'set', 301)]), 0);
 
     expect(result).toEqual({
       status: 'rejected',
@@ -207,11 +195,7 @@ describe('applyIntent', () => {
 
   // Branch coverage: unknown fields are rejected
   it('rejects unknown fields', () => {
-    const result = applyIntent(
-      emptyFilters,
-      readyIntent([change('director', 'set', 'Nolan')]),
-      0,
-    );
+    const result = applyIntent(emptyFilters, readyIntent([change('director', 'set', 'Nolan')]), 0);
 
     expect(result).toEqual({
       status: 'rejected',
@@ -222,11 +206,7 @@ describe('applyIntent', () => {
 
   // Branch coverage: add is not a valid operation for scalar fields
   it('rejects invalid operations for scalar fields', () => {
-    const result = applyIntent(
-      emptyFilters,
-      readyIntent([change('minRating', 'add', 8)]),
-      0,
-    );
+    const result = applyIntent(emptyFilters, readyIntent([change('minRating', 'add', 8)]), 0);
 
     expect(result).toEqual({
       status: 'rejected',
@@ -252,11 +232,7 @@ describe('applyIntent', () => {
 
   // Branch coverage: values that violate the schema reject the whole intent
   it('rejects values that violate the filter schema', () => {
-    const result = applyIntent(
-      emptyFilters,
-      readyIntent([change('minRating', 'set', 42)]),
-      0,
-    );
+    const result = applyIntent(emptyFilters, readyIntent([change('minRating', 'set', 42)]), 0);
 
     expect(result).toEqual({
       status: 'rejected',
@@ -321,11 +297,7 @@ describe('applyIntent', () => {
       { status: 'unsupported', baseRevision: 0, changes: [] },
       0,
     );
-    const error = applyIntent(
-      emptyFilters,
-      { status: 'error', baseRevision: 0, changes: [] },
-      0,
-    );
+    const error = applyIntent(emptyFilters, { status: 'error', baseRevision: 0, changes: [] }, 0);
 
     expect(unsupported).toEqual({ status: 'unchanged', reason: 'unsupported' });
     expect(error).toEqual({ status: 'unchanged', reason: 'error-status' });
@@ -335,11 +307,7 @@ describe('applyIntent', () => {
   it('reports ineffective changes as unchanged', () => {
     const filters: SearchFilters = SearchFiltersSchema.parse({ minRating: 7 });
 
-    const result = applyIntent(
-      filters,
-      readyIntent([change('minRating', 'set', 7)]),
-      0,
-    );
+    const result = applyIntent(filters, readyIntent([change('minRating', 'set', 7)]), 0);
 
     expect(result).toEqual({ status: 'unchanged', reason: 'no-effective-change' });
   });
@@ -353,10 +321,7 @@ describe('applyIntent', () => {
 
     const result = applyIntent(
       filters,
-      readyIntent([
-        change('keywordIds', 'set', [301]),
-        change('genreIds', 'set', [28]),
-      ]),
+      readyIntent([change('keywordIds', 'set', [301]), change('genreIds', 'set', [28])]),
       0,
     );
 
@@ -365,11 +330,7 @@ describe('applyIntent', () => {
 
   // Branch coverage: intents that fail the intent schema are rejected
   it('rejects intents that violate the intent schema', () => {
-    const result = applyIntent(
-      emptyFilters,
-      { status: 'ready', baseRevision: -1, changes: [] },
-      0,
-    );
+    const result = applyIntent(emptyFilters, { status: 'ready', baseRevision: -1, changes: [] }, 0);
 
     expect(result).toEqual({ status: 'rejected', reason: 'invalid-intent' });
   });

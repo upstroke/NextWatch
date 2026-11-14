@@ -10,17 +10,21 @@ export const FilterChangeSchema = z.object({
   value: z.unknown(),
 });
 
-const ClarificationSchema = z.object({
-  questionKey: z.string().trim().min(1),
-  options: z.array(z.string().trim().min(1)).min(1),
-}).strict();
+const ClarificationSchema = z
+  .object({
+    questionKey: z.string().trim().min(1),
+    options: z.array(z.string().trim().min(1)).min(1),
+  })
+  .strict();
 
 const IntentBaseSchema = z.object({
   baseRevision: z.number().int().nonnegative(),
-  evidence: z.object({
-    messageId: z.string().min(1),
-    excerpt: z.string().min(1),
-  }).optional(),
+  evidence: z
+    .object({
+      messageId: z.string().min(1),
+      excerpt: z.string().min(1),
+    })
+    .optional(),
 });
 
 export const ChatIntentSchema = z.discriminatedUnion('status', [
