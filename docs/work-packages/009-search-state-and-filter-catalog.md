@@ -1,56 +1,76 @@
 # Search state and filter catalog
 
-## Purpose
+## Specification
+
+### Purpose
 
 This work package defines the search state and the filter catalog used by the search flow.
 
-It describes how filters are represented, validated, combined and preserved across search steps.
+It describes how filters and pending entity queries are represented and preserved across search steps, and how filters are validated and combined.
 
-## Scope
+### Scope
 
 - Define the search state structure.
 - Define the filter catalog.
 - Define filter validation rules.
 - Define how filters are combined.
 - Define how existing filters are preserved.
+- Define how pending person and keyword queries are represented and preserved in the search state, separately from resolved TMDb IDs.
 - Prepare the search state for entity resolution and Discover execution.
 
-## Out of scope
+### Work-package boundaries
 
+- WP 008 validates and atomically applies structured filter changes. It does not extract or store unresolved entity queries.
+- WP 009 owns the state representation and preservation of pending person and keyword queries. It does not interpret natural language or perform TMDb lookups.
+- WP 011 defines parser fields and the extraction contract for entity queries. Its parser output must integrate with the state representation defined in WP 009 rather than introduce a competing state model.
+- Pending queries are not resolved IDs and must not be silently applied as active ID filters.
+- Actual person and keyword resolution remains outside this work package and still needs an explicit implementation assignment. This clarification does not assign resolution to WP 011.
+
+### Out of scope
+
+- Natural-language extraction and the entity-query parser contract (WP 011).
 - Entity resolution.
 - Discover execution.
 - Result presentation.
 - Automatic error recovery.
 - Full LLM implementation.
 
-## Inputs
+### Inputs
 
 - User request.
 - Existing search state.
 - Filter catalog.
 - Validation schemas.
 
-## Outputs
+### Outputs
 
-- Search state structure.
+- Search state structure, including pending entity queries.
 - Filter catalog.
 - Filter validation rules.
 - Filter combination rules.
 
-## Implementation tasks
+### Implementation tasks
 
 - Define the search state structure.
+- Define the representation and preservation rules for pending person and keyword queries.
 - Define the filter catalog.
 - Define filter validation rules.
 - Define filter combination rules.
 - Define rules for preserving existing filters.
 - Prepare the search state for later work packages.
 
-## Acceptance criteria
+### Acceptance criteria
 
 - The search state is clearly defined.
+- Pending person and keyword queries can be represented and preserved without being treated as resolved IDs or replacing existing active filters.
 - The filter catalog is clearly defined.
 - Filters can be validated.
 - Filters can be combined.
 - Existing filters are preserved.
 - The search state can be used by later work packages.
+
+## Execution status
+
+- Planned; this documentation change does not start WP 009 implementation.
+- Entity-query state representation and preservation are explicitly assigned here; parser fields and extraction remain in WP 011.
+- No concrete entity-query schema or runtime behavior is introduced by this clarification.

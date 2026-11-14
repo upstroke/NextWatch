@@ -4,20 +4,22 @@
 
 ### Purpose
 
-This work package defines how a user request becomes a validated search state.
+This work package defines how structured filter-change proposals become validated search filters.
 
-It describes how filters and entity queries are extracted, validated and applied before search execution.
+It describes how proposed filter values are validated and applied before search execution. Pending entity-query state belongs to [WP 009](009-search-state-and-filter-catalog.md#work-package-boundaries); parser fields and natural-language extraction belong to WP 011.
 
 ### Scope
 
-- Extract filters and entity queries from a user request.
-- Validate extracted values.
+- Accept structured filter changes through the search intent contract.
+- Validate proposed values and operations.
 - Apply valid filters to the search state.
 - Preserve existing filters when new input is incomplete or invalid.
-- Prepare a search state that can later be used for entity resolution and Discover execution.
+- Prepare validated filters for use by later work packages.
 
 ### Out of scope
 
+- Pending entity-query state representation and preservation (WP 009).
+- Parser fields and natural-language extraction (WP 011).
 - Entity resolution.
 - Discover execution.
 - Result presentation.
@@ -26,25 +28,25 @@ It describes how filters and entity queries are extracted, validated and applied
 
 ### Inputs
 
-- User request.
-- Existing search state.
-- Filter catalog.
+- Structured search intent.
+- Existing search filters and current revision.
+- Supported filter fields and operations.
 - Validation schemas.
 
 ### Outputs
 
-- Updated search state.
+- Updated search filters when changes are applied.
 - Validation result.
 - Pending clarification requirements.
 
 ### Implementation tasks
 
 - Define the search intent input contract.
-- Define filter extraction rules.
-- Validate extracted filters.
+- Define rules for applying structured filter changes.
+- Validate proposed filters.
 - Apply valid filters to the search state.
 - Preserve unchanged filters.
-- Return a clear state for incomplete or invalid input.
+- Return a clear result for incomplete or invalid input.
 
 ### Acceptance criteria
 
@@ -81,4 +83,5 @@ It describes how filters and entity queries are extracted, validated and applied
 - Year-range validation is implemented in `SearchFiltersSchema`. Added schema tests for supported and reversed ranges, and domain tests for atomic rejection, joint bound updates and bound removal.
 - Automated validation for these corrections has not been run: tests, coverage, lint and typecheck remain pending in a repository checkout.
 - The remote code search was incomplete; a complete caller audit remains unverified.
-- Entity-query transport, entity resolution and the WP 010 clarification workflow are not implemented by these corrections. Overall WP 008 completion is not asserted.
+- Entity-query state is assigned to WP 009; parser fields and extraction are assigned to WP 011. See the linked WP 009 boundaries. Actual entity resolution still needs an explicit implementation assignment.
+- These corrections do not implement the WP 010 clarification workflow. Overall WP 008 completion is not asserted.
