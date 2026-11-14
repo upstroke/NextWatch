@@ -119,12 +119,15 @@ It describes how filters and pending entity queries are represented and preserve
 
 ## Execution status
 
-- In progress: the user approved the implementation plan and starting step 1 on 2026-11-14.
-- Step 1 adds `src/lib/schemas/search-state.ts` with explicit mode, revision, active filters and separate pending person/keyword queries. Active filters extend the WP 008 schema with resolved `personIds`, preserving its year-range refinement.
-- Pending queries are trimmed, non-empty strings, limited to five persons and three keywords via the existing domain constants. Parsing does not resolve names or establish ID provenance.
-- Added `tests/unit/schemas/search-state.spec.ts` for defaults, separation and normalization of pending queries, inherited year-range validation and approved limits.
-- The existing WP 008 contracts and callers remain unchanged. The new state contract is not yet integrated with `applyIntent`.
-- Step 1 is a data contract only. Initialization, mode consistency, revision updates, query operations, ID-set normalization and the filter catalog remain for subsequent steps.
-- Store/UI integration, lookups, network orchestration and the complete clarification workflow are not implemented.
-- Tests, coverage, lint and typecheck have not been executed by the assistant. No successful validation or test-first red/green cycle is claimed.
+- In progress: steps 1 and 2 have been prepared within the approved implementation plan.
+- Step 1 defines `src/lib/schemas/search-state.ts`: explicit mode, revision, active filters with resolved `personIds`, and separate pending person/keyword queries. Pending queries use the existing five-person and three-keyword limits.
+- The user reported all tests green after step 1. This is a user report, not an assistant-executed validation; coverage, lint and typecheck were not separately confirmed.
+- Step 2 adds a versioned, typed catalog in `src/lib/domain/search/filter-catalog.ts` for all eight active filter fields. Definitions reuse the existing value schemas and list limits; whole-object year validation remains in the active-filter schema.
+- `extraction.ts` derives its legacy field types from `SearchFilters` and its runtime field classification from the catalog instead of maintaining separate field-name arrays. Existing application semantics remain unchanged.
+- Added `tests/unit/domain/search/filter-catalog.spec.ts` for catalog completeness, shared schema references, allowed operations, unknown/prototype fields and the legacy person-application boundary.
+- `personIds` is described by the catalog but is not yet accepted by the legacy `applyIntent`; complete state integration belongs to step 3.
+- Mediatype compatibility and inactive return-value rules remain undecided and are not asserted by catalog entries. No unverified TV person support or genre-ID compatibility is introduced.
+- Initialization, mode transitions, revision updates, pending-query operations and ID-set normalization remain for subsequent steps.
+- Store/UI integration, entity resolution, network orchestration and the complete clarification workflow remain outside this implementation step.
+- Tests, coverage, lint and typecheck for step 2 have not been executed by the assistant. No successful test-first red/green cycle is claimed.
 - WP 009 is not complete.

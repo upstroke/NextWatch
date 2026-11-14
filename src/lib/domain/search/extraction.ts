@@ -1,61 +1,36 @@
 import type { FilterChange } from '@lib/schemas/chat';
 import type { SearchFilters } from '@lib/schemas/search';
+import { getSearchFilterDefinition, supportsFilterOperation } from './filter-catalog';
 
-/** Filter fields that hold lists of TMDb ids. */
-const LIST_FIELDS = ['keywordIds', 'genreIds'] as const;
+type ListField = {
+  [Field in keyof SearchFilters]-?: SearchFilters[Field] extends number[] ? Field : never;
+}[keyof SearchFilters];
+type ScalarField = Exclude<keyof SearchFilters, ListField>;
+type OptionalScalarField = {
+  [Field in ScalarField]-?: undefined extends SearchFilters[Field] ? Field : never;
+}[ScalarField];
 
-/** Filter fields that hold a single scalar value. */
-const SCALAR_FIELDS = ['mediaType', 'minRating', 'minYear', 'maxYear', 'sortBy'] as const;
-
-/** Optional scalar fields; only these support the remove operation. */
-const OPTIONAL_SCALAR_FIELDS = ['minRating', 'minYear', 'maxYear'] as const;
-
-type ListField = (typeof LIST_FIELDS)[number];
-type ScalarField = (typeof SCALAR_FIELDS)[number];
-
-/** All search filter fields an intent change may target. */
-export type SearchFilterField = ListField | ScalarField;
+/** Filter fields supported by the existing WP 008 application contract. */
+export type SearchFilterField = keyof SearchFilters;
 
 /** Outcome of applying a single intent change to the candidate filters. */
 export type ChangeApplication =
   { ok: true } | { ok: false; reason: 'unknown-field' | 'invalid-operation' | 'invalid-value' };
 
 /**
- * Checks whether a field name is contained in a field list without casting
- * the literal tuple types.
- * @param fields Known field names.
- * @param field The intent change field name.
- * @returns True when the field is contained in the list.
- */
-function containsField(fields: readonly string[], field: string): boolean {
-  return fields.includes(field);
-}
-
-/**
- * Checks whether a field is a list field (keyword or genre ids).
- * @param field The intent change field name.
- * @returns True when the field holds a list of ids.
+ * Uses catalog classification for legacy list fields. Resolved person IDs
+ * remain outside the WP 008 contract until state integration in step 3.
  */
 function isListField(field: string): field is ListField {
-  return containsField(LIST_FIELDS, field);
+  return field !== 'personIds' && getSearchFilterDefinition(field)?.kind === 'list';
 }
 
-/**
- * Checks whether a field is a scalar filter field.
- * @param field The intent change field name.
- * @returns True when the field holds a single value.
- */
 function isScalarField(field: string): field is ScalarField {
-  return containsField(SCALAR_FIELDS, field);
+  return getSearchFilterDefinition(field)?.kind === 'scalar';
 }
 
-/**
- * Checks whether a field is an optional scalar field.
- * @param field The intent change field name.
- * @returns True when the field is optional and scalar.
- */
-function isOptionalScalarField(field: string): field is (typeof OPTIONAL_SCALAR_FIELDS)[number] {
-  return containsField(OPTIONAL_SCALAR_FIELDS, field);
+function isOptionalScalarField(field: string): field is OptionalScalarField {
+  return isScalarField(field) && supportsFilterOperation(field, 'remove');
 }
 
 /**
