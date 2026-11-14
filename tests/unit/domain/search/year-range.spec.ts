@@ -11,10 +11,17 @@ describe('year range intent application', () => {
     const filters = SearchFiltersSchema.parse({ minYear: 2000, maxYear: 2020, minRating: 7 });
     const snapshot = SearchFiltersSchema.parse(filters);
 
-    expect(applyIntent(filters, {
-      status: 'ready', baseRevision: 0,
-      changes: [{ field: 'minRating', operation: 'set', value: 8 }, yearChange],
-    }, 0)).toEqual({ status: 'rejected', reason: 'invalid-value', field: 'maxYear' });
+    expect(
+      applyIntent(
+        filters,
+        {
+          status: 'ready',
+          baseRevision: 0,
+          changes: [{ field: 'minRating', operation: 'set', value: 8 }, yearChange],
+        },
+        0,
+      ),
+    ).toEqual({ status: 'rejected', reason: 'invalid-value', field: 'maxYear' });
     expect(filters).toEqual(snapshot);
   });
 
@@ -32,22 +39,38 @@ describe('year range intent application', () => {
     const filters = SearchFiltersSchema.parse({ minYear: 2000, maxYear: 2020 });
     const snapshot = SearchFiltersSchema.parse(filters);
 
-    expect(applyIntent(filters, {
-      status: 'ready', baseRevision: 0, changes: [first, second],
-    }, 0)).toMatchObject({ status: 'applied', filters: { minYear: 2030, maxYear: 2040 } });
+    expect(
+      applyIntent(
+        filters,
+        {
+          status: 'ready',
+          baseRevision: 0,
+          changes: [first, second],
+        },
+        0,
+      ),
+    ).toMatchObject({ status: 'applied', filters: { minYear: 2030, maxYear: 2040 } });
     expect(filters).toEqual(snapshot);
   });
 
   // Statement coverage: removing either bound preserves the other and opens the range.
   it.each(['minYear', 'maxYear'])('removes %s to produce an open range', (field) => {
     const filters = SearchFiltersSchema.parse({ minYear: 2000, maxYear: 2020 });
-    const result = applyIntent(filters, {
-      status: 'ready', baseRevision: 0, changes: [{ field, operation: 'remove', value: undefined }],
-    }, 0);
+    const result = applyIntent(
+      filters,
+      {
+        status: 'ready',
+        baseRevision: 0,
+        changes: [{ field, operation: 'remove', value: undefined }],
+      },
+      0,
+    );
 
     expect(result.status).toBe('applied');
     if (result.status !== 'applied') throw new Error('Expected an applied intent');
     expect(result.filters).not.toHaveProperty(field);
-    expect(result.filters).toMatchObject(field === 'minYear' ? { maxYear: 2020 } : { minYear: 2000 });
+    expect(result.filters).toMatchObject(
+      field === 'minYear' ? { maxYear: 2020 } : { minYear: 2000 },
+    );
   });
 });
