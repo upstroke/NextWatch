@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FilterOperation } from '@lib/schemas/chat';
-import { SearchFiltersSchema } from '@lib/schemas/search';
-import { ActiveSearchFiltersSchema } from '@lib/schemas/search-state';
+import { ActiveSearchFiltersSchema, SearchStateSchema } from '@lib/schemas/search-state';
 import {
   SEARCH_FILTER_CATALOG,
   getSearchFilterDefinition,
@@ -25,8 +24,7 @@ describe('search filter catalog', () => {
 
   // Branch coverage: only own fields are recognized, not prototype properties.
   it.each(['director', 'constructor', '__proto__', 'toString'])(
-    'rejects the unknown field %s',
-    (field) => {
+    'rejects the unknown field %s', (field) => {
       expect(isCatalogFilterField(field)).toBe(false);
       expect(getSearchFilterDefinition(field)).toBeUndefined();
       expect(supportsFilterOperation(field, 'set')).toBe(false);
@@ -37,9 +35,7 @@ describe('search filter catalog', () => {
   it.each(['genreIds', 'keywordIds', 'personIds'])('describes list field %s', (field) => {
     expect(isCatalogFilterField(field)).toBe(true);
     expect(getSearchFilterDefinition(field)?.kind).toBe('list');
-    for (const operation of operations) {
-      expect(supportsFilterOperation(field, operation)).toBe(true);
-    }
+    for (const operation of operations) expect(supportsFilterOperation(field, operation)).toBe(true);
   });
 
   // Branch coverage: required scalar fields cannot be removed or appended to.
@@ -59,21 +55,21 @@ describe('search filter catalog', () => {
     expect(supportsFilterOperation(field, 'add')).toBe(false);
   });
 
-  // Branch coverage: catalog metadata does not silently enable person application in WP 008.
-  it('preserves the legacy application boundary until state integration', () => {
-    const filters = SearchFiltersSchema.parse({ genreIds: [878] });
-    const snapshot = SearchFiltersSchema.parse(filters);
-    expect(
-      applyIntent(
-        filters,
-        {
-          status: 'ready',
-          baseRevision: 0,
-          changes: [{ field: 'personIds', operation: 'add', value: [501] }],
-        },
-        0,
-      ),
-    ).toEqual({ status: 'rejected', reason: 'unknown-field', field: 'personIds' });
-    expect(filters).toEqual(snapshot);
+  // Branch coverage: catalog support does not authorize person-ID changes from chat intents.
+  it.each(operations)('rejects person-ID operation %s from a chat intent atomically', (operation) => {
+    const state = SearchStateSchema.parse({
+      mode: 'discover', revision: 3,
+      filters: { genreIds: [878], personIds: [501] },
+      pendingQueries: { personQueries: ['Brad Pitt'] },
+    });
+    const snapshot = structuredClone(state);
+    expect(applyIntent(state, {
+      status: 'ready', baseRevision: 3,
+      changes: [
+        { field: 'genreIds', operation: 'add', value: [28] },
+        { field: 'personIds', operation, value: [502] },
+      ],
+    })).toEqual({ status: 'rejected', reason: 'unknown-field', field: 'personIds' });
+    expect(state).toEqual(snapshot);
   });
 });
