@@ -5,7 +5,7 @@ export const MediaTypeSchema = z.enum(['movie', 'tv', 'all']);
 
 export type MediaType = z.infer<typeof MediaTypeSchema>;
 
-export const SearchSortSchema = z.enum(['popularity.desc', 'voteaverage.desc']);
+export const SearchSortSchema = z.enum(['popularity.desc', 'vote_average.desc']);
 
 export type SearchSort = z.infer<typeof SearchSortSchema>;
 

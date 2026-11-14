@@ -14,7 +14,7 @@ describe('SearchSortSchema', () => {
   // Statement coverage: accepts supported sort values
   it('accepts supported sort values', () => {
     expect(SearchSortSchema.parse('popularity.desc')).toBe('popularity.desc');
-    expect(SearchSortSchema.parse('voteaverage.desc')).toBe('voteaverage.desc');
+    expect(SearchSortSchema.parse('vote_average.desc')).toBe('vote_average.desc');
   });
 });
 
@@ -38,16 +38,16 @@ describe('SearchFiltersSchema', () => {
       minRating: 7.5,
       minYear: 2000,
       maxYear: 2026,
-      sortBy: 'voteaverage.desc',
+      sortBy: 'vote_average.desc',
     };
 
     expect(SearchFiltersSchema.parse(filters)).toEqual(filters);
   });
 
-  // Branch coverage: limits keyword ids to five entries
-  it('limits keyword ids to five entries', () => {
+  // Branch coverage: limits keyword ids to three entries
+  it('limits keyword ids to three entries', () => {
     const filters = {
-      keywordIds: [1, 2, 3, 4, 5, 6],
+      keywordIds: [1, 2, 3, 4],
     };
 
     expect(() => SearchFiltersSchema.parse(filters)).toThrow();
