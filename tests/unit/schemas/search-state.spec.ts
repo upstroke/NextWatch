@@ -55,7 +55,8 @@ describe('SearchStateSchema', () => {
   // Branch coverage: extending active filters retains the existing cross-field year rule.
   it('rejects reversed years in the extended active filters', () => {
     const result = SearchStateSchema.safeParse({
-      mode: 'discover', revision: 1,
+      mode: 'discover',
+      revision: 1,
       filters: { minYear: 2020, maxYear: 2000, personIds: [501] },
     });
 
@@ -71,9 +72,14 @@ describe('SearchStateSchema', () => {
     { personQueries: ['   '], keywordQueries: [] },
     { personQueries: [], keywordQueries: ['   '] },
   ])('rejects a blank pending query: %j', (pendingQueries) => {
-    expect(SearchStateSchema.safeParse({
-      mode: 'discover', revision: 1, filters: {}, pendingQueries,
-    }).success).toBe(false);
+    expect(
+      SearchStateSchema.safeParse({
+        mode: 'discover',
+        revision: 1,
+        filters: {},
+        pendingQueries,
+      }).success,
+    ).toBe(false);
   });
 
   // Branch coverage: pending-query limits match the approved person and keyword bounds.
@@ -83,7 +89,9 @@ describe('SearchStateSchema', () => {
   ])('enforces the $field limit without altering the input', ({ field, limit }) => {
     const queries = Array.from({ length: limit }, (_, index) => `query-${index}`);
     const input = {
-      mode: 'discover', revision: 1, filters: {},
+      mode: 'discover',
+      revision: 1,
+      filters: {},
       pendingQueries: { [field]: queries },
     };
 
@@ -102,8 +110,11 @@ describe('SearchStateSchema', () => {
     const input = { mode: 'discover', revision: 1, filters: { personIds: ids } };
 
     expect(SearchStateSchema.safeParse(input).success).toBe(true);
-    expect(SearchStateSchema.safeParse({
-      ...input, filters: { personIds: [...ids, MAX_PERSON_IDS + 1] },
-    }).success).toBe(false);
+    expect(
+      SearchStateSchema.safeParse({
+        ...input,
+        filters: { personIds: [...ids, MAX_PERSON_IDS + 1] },
+      }).success,
+    ).toBe(false);
   });
 });
