@@ -63,10 +63,17 @@ describe('search filter catalog', () => {
   it('preserves the legacy application boundary until state integration', () => {
     const filters = SearchFiltersSchema.parse({ genreIds: [878] });
     const snapshot = SearchFiltersSchema.parse(filters);
-    expect(applyIntent(filters, {
-      status: 'ready', baseRevision: 0,
-      changes: [{ field: 'personIds', operation: 'add', value: [501] }],
-    }, 0)).toEqual({ status: 'rejected', reason: 'unknown-field', field: 'personIds' });
+    expect(
+      applyIntent(
+        filters,
+        {
+          status: 'ready',
+          baseRevision: 0,
+          changes: [{ field: 'personIds', operation: 'add', value: [501] }],
+        },
+        0,
+      ),
+    ).toEqual({ status: 'rejected', reason: 'unknown-field', field: 'personIds' });
     expect(filters).toEqual(snapshot);
   });
 });
