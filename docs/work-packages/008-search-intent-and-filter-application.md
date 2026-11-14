@@ -77,11 +77,14 @@ It describes how proposed filter values are validated and applied before search 
 
 ## Execution status
 
+- Status: completed by explicit user acceptance on 2026-11-14, within the clarified scope above.
+- Accepted branch: `feat/008-search-intent-and-filter-application`; implementation and test correction through `0e057d0`, scope clarification in `06e02a4`.
 - Filter application exists in `src/lib/domain/search/`.
 - The chat schema and clarification result contract enforce status-dependent payloads; the revision guard applies to all valid statuses.
 - Focused schema and domain tests cover clarification payloads, normalization, revision handling and state preservation.
-- Year-range validation is implemented in `SearchFiltersSchema`. Added schema tests for supported and reversed ranges, and domain tests for atomic rejection, joint bound updates and bound removal.
-- Automated validation for these corrections has not been run: tests, coverage, lint and typecheck remain pending in a repository checkout.
-- The remote code search was incomplete; a complete caller audit remains unverified.
+- Year-range validation is implemented in `SearchFiltersSchema`. Schema tests cover supported and reversed ranges; domain tests cover atomic rejection, joint bound updates and bound removal.
+- Validation evidence: after the test correction, the user reported "alles gruen" on 2026-11-14. The assistant did not execute the checks; individual command outputs and a coverage percentage were not supplied in this conversation.
+- Review limitation retained at acceptance: the remote code search was incomplete and a complete caller audit was not independently verified. This completion entry does not claim that audit was performed.
 - Entity-query state is assigned to WP 009; parser fields and extraction are assigned to WP 011. See the linked WP 009 boundaries. Actual entity resolution still needs an explicit implementation assignment.
-- These corrections do not implement the WP 010 clarification workflow. Overall WP 008 completion is not asserted.
+- The WP 010 clarification workflow remains outside this completed scope.
+- Completion records user acceptance on the feature branch; it does not record or authorize a merge, deployment or implementation start of WP 009.
