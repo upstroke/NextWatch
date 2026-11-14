@@ -119,15 +119,35 @@ It describes how filters and pending entity queries are represented and preserve
 
 ## Execution status
 
-- In progress: steps 1 and 2 have been prepared within the approved implementation plan.
-- Step 1 defines `src/lib/schemas/search-state.ts`: explicit mode, revision, active filters with resolved `personIds`, and separate pending person/keyword queries. Pending queries use the existing five-person and three-keyword limits.
-- The user reported all tests green after step 1. This is a user report, not an assistant-executed validation; coverage, lint and typecheck were not separately confirmed.
-- Step 2 adds a versioned, typed catalog in `src/lib/domain/search/filter-catalog.ts` for all eight active filter fields. Definitions reuse the existing value schemas and list limits; whole-object year validation remains in the active-filter schema.
-- `extraction.ts` derives its legacy field types from `SearchFilters` and its runtime field classification from the catalog instead of maintaining separate field-name arrays. Existing application semantics remain unchanged.
-- Added `tests/unit/domain/search/filter-catalog.spec.ts` for catalog completeness, shared schema references, allowed operations, unknown/prototype fields and the legacy person-application boundary.
-- `personIds` is described by the catalog but is not yet accepted by the legacy `applyIntent`; complete state integration belongs to step 3.
-- Mediatype compatibility and inactive return-value rules remain undecided and are not asserted by catalog entries. No unverified TV person support or genre-ID compatibility is introduced.
-- Initialization, mode transitions, revision updates, pending-query operations and ID-set normalization remain for subsequent steps.
-- Store/UI integration, entity resolution, network orchestration and the complete clarification workflow remain outside this implementation step.
-- Tests, coverage, lint and typecheck for step 2 have not been executed by the assistant. No successful test-first red/green cycle is claimed.
+WP 009 remains in progress. The completed work is recorded below in implementation order; the remaining scope is listed separately.
+
+### Step 1: Search-state contract
+
+- Defined `src/lib/schemas/search-state.ts`: explicit mode, revision, active filters with resolved `personIds`, and separate pending person/keyword queries. Pending queries use the existing five-person and three-keyword limits.
+- The user reported all tests green after step 1. This was a user report, not assistant-executed validation; coverage, lint and typecheck were not separately confirmed at that point.
+
+### Step 2: Filter catalog
+
+- Added a versioned, typed catalog in `src/lib/domain/search/filter-catalog.ts` for all eight active filter fields. Definitions reuse existing value schemas and list limits; whole-object year validation remains in the active-filter schema.
+- `extraction.ts` derives its legacy field types from `SearchFilters` and its runtime field classification from the catalog instead of maintaining separate field-name arrays.
+- Added `tests/unit/domain/search/filter-catalog.spec.ts` for completeness, shared schema references, allowed operations, unknown/prototype fields and the person-application boundary.
+- Commit `75ac43c` improves readability by naming the local catalog types rather than nesting the full type in `satisfies`.
+
+### Step 3: Apply chat intents to the complete search state
+
+- Implemented in commit `b944c1ee37432e042bbd297bac24788214847701` (`feat(search): apply chat intents to complete search state`).
+- Decision: extend the existing `applyIntent` rather than add an outer state function duplicating intent acceptance decisions. Intent validation, revision checking and atomic acceptance already belonged to this function. The existing individual-filter application logic remains reused in `extraction.ts`.
+- `applyIntent(state, intent)` now accepts `SearchState` instead of separate filters and revision. An applied outcome returns the complete new state under `state`; non-applied outcomes leave the caller's original state authoritative.
+- Effective accepted filter changes increment revision exactly once. Invalid, stale, clarification, unsupported, error-status and ineffective intents preserve the original state, mode and revision.
+- Effective changes derive the mode from the resulting active filters and preserved pending queries. Default `mediaType: 'all'` and `sortBy: 'popularity.desc'` alone are not individual criteria. Non-default media type or sorting, optional scalar criteria, nonempty active ID lists or pending queries keep `discover`; removing the final criterion returns to `trending`.
+- Existing resolved `personIds` and pending person/keyword queries are preserved. Catalog support does not authorize person-ID changes from chat intents: these remain rejected. This step neither extracts pending queries nor performs entity resolution or accepts resolution results.
+- Updated `tests/unit/domain/search/apply-intent.spec.ts`, `clarification.spec.ts`, `year-range.spec.ts` and `filter-catalog.spec.ts` for the new state contract, preservation, atomic rejection, mode transitions, revision updates and the chat person-ID boundary.
+- After being asked to run tests, coverage, lint and typecheck, the user reported "alles grün" for this commit. This is user-reported successful validation, not assistant-executed validation. No numeric coverage result or successful assistant-run test-first red/green cycle is claimed.
+
+### Remaining work and boundaries
+
+- Initialization and pending-query add/change/remove operations with their revision effects remain open.
+- ID-set normalization, mediatype compatibility and inactive return-value rules remain open; current list-order equality semantics are retained. Catalog entries establish neither ID provenance nor unverified TV person support or genre-ID compatibility.
+- A dedicated controlled transition for future resolution results is not implemented by the chat-intent extension; actual entity resolution remains separately unassigned and outside WP 009.
+- Store/UI integration, entity-query extraction (WP 011), network orchestration, Discover execution and the complete clarification workflow (WP 010) remain outside this implementation step.
 - WP 009 is not complete.
