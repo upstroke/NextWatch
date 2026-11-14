@@ -19,6 +19,10 @@ export const SearchFiltersSchema = z
     maxYear: z.number().int().min(1900).max(2100).optional(),
     sortBy: SearchSortSchema.default('popularity.desc'),
   })
-  .strict();
+  .strict()
+  .refine(
+    ({ minYear, maxYear }) => minYear === undefined || maxYear === undefined || maxYear >= minYear,
+    { message: 'maxYear must be greater than or equal to minYear', path: ['maxYear'] },
+  );
 
 export type SearchFilters = z.infer<typeof SearchFiltersSchema>;
