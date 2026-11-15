@@ -138,69 +138,71 @@ It describes how filters and pending entity queries are represented and preserve
 
 ## Execution status
 
-WP 009 remains in progress. The completed work is recorded below in implementation order; the remaining scope is listed separately.
+WP 009 remains open for completion of the repository-wide reference inventory and final acceptance. The current domain implementation is substantially ahead of the previously recorded remaining-work list. This status replaces that stale list without claiming an exhaustive repository audit or assistant-executed automated validation. The Specification is unchanged by this status reconciliation.
 
-### Step 1: Search-state contract
+### Historical implementation milestones
 
-- Defined `src/lib/schemas/search-state.ts`: explicit mode, revision, active filters with resolved `personIds`, and separate pending person/keyword queries. Pending queries use the existing five-person and three-keyword limits.
-- The user reported all tests green after step 1. This was a user report, not assistant-executed validation; coverage, lint and typecheck were not separately confirmed at that point.
+- Initial state contract: `src/lib/schemas/search-state.ts` introduced mode, revision, filters and pending queries. The user reported tests green; coverage, lint and typecheck were not separately confirmed at that stage.
+- Filter catalog: `src/lib/domain/search/filter-catalog.ts` reuses schemas and domain limits for the technical filter fields. `extraction.ts` derives field classifications from this catalog. Commit `75ac43c` named catalog types for readability. Tests cover completeness, operations, schema reuse, unknown/prototype fields and the person-change boundary.
+- Commit `b944c1ee37432e042bbd297bac24788214847701` extended the existing `applyIntent` to the complete SearchState rather than add a duplicate acceptance layer. The reused WP 008 filter application, atomic rejection, one revision increment per effective acceptance and state-preserving non-applied outcomes remain the architectural basis. The user reported tests, coverage, lint and typecheck green at that stage; this was not assistant-executed validation.
+- Commit `cfec84e3f24dd9cb9f8b59baedfc0972d1e80ad7` added `createInitialSearchState()` and two independence/default tests. The user reported successful local validation, not an assistant-run test-first cycle.
+- Commit `efeb58a` recorded the approved person-search requirements. The subsequent scope alignment assigned provider resolution to WP 014 and execution to WP 012; the temporary separate requirements document was later consolidated into the work packages.
+- Commit `6e67d6d` introduced accepted ID/name records and `SearchState.people`; `b273b5e` migrated schema tests. Legacy stored `filters.personIds` was rejected rather than silently discarded or enriched with invented names.
+- Commit `e031361` migrated intent application to stored-filter validation and preserved accepted people. Commit `f1f7221` migrated initialization and the four affected domain test files, and added technical filter projection with four tests. These were incremental commits requested by the user, including temporarily incompatible schema-only stages.
+- Commit `83c4311` documented that migration. Subsequent read-only review found further existing structured-pending, person-acceptance, ID-set and genre-compatibility implementation; the old descriptions of these as absent were no longer accurate.
+- Commit `26aefe9` consolidated requirements into the work packages and recorded the user's then-available test report. Commit `7d64270` aligned follow-up packages with the inspected domain interfaces and execution boundaries.
 
-### Step 2: Filter catalog
+### Current state and pending-query implementation
 
-- Added a versioned, typed catalog in `src/lib/domain/search/filter-catalog.ts` for all eight active filter fields. Definitions reuse existing value schemas and list limits; whole-object year validation remains in the active-filter schema.
-- `extraction.ts` derives its legacy field types from `SearchFilters` and its runtime field classification from the catalog instead of maintaining separate field-name arrays.
-- Added `tests/unit/domain/search/filter-catalog.spec.ts` for completeness, shared schema references, allowed operations, unknown/prototype fields and the person-application boundary.
-- Commit `75ac43c` improves readability by naming the local catalog types rather than nesting the full type in `satisfies`.
+Reviewed at code snapshot `26aefe9` and the documentation successor `7d64270`:
 
-### Step 3: Apply chat intents to the complete search state
+- `src/lib/schemas/search-state.ts` stores accepted people as unique ID/name records; technical person IDs remain derived. Names and pending query text are trimmed; legacy stored person-ID lists and bare pending strings are not the current contract.
+- `PendingPersonQuerySchema` uses application-owned `ref`, query text and explicit add/replace context; replacement includes `targetPersonId`. `PendingKeywordQuerySchema` uses reference and query text. Pending references are unique across entity kinds.
+- Shared person capacity counts accepted people plus pending additions; replacements target existing people and do not reserve another accepted-person slot. Replacement targets must exist and have at most one pending replacement. Active keyword IDs and pending keyword additions share the existing keyword limit.
+- `src/lib/schemas/search-transition.ts` defines `PendingQueryCommandSchema` and `PersonAcceptanceSchema`. Person acceptance carries a request reference, source revision and ID/name record. Structural validation is not evidence of provider provenance or candidate membership.
+- `applyPendingQueryCommand()` in `src/lib/domain/search/pending-operations.ts` already implements add/change/remove for both pending kinds. Changes address stable references; normalized ineffective changes preserve revision. Invalid, stale, occupied or wrong-kind references are rejected without mutation.
+- `acceptResolvedPerson()` already applies a trusted resolution outcome atomically. It validates reference/revision association, removes the matching request and adds or replaces the person while preserving unrelated criteria. Duplicate additions remove the pending request without duplicating identity. Replacement A to already accepted B removes A and leaves B once. Existing accepted names are retained for existing identities.
+- Both transition paths validate the resulting complete state, derive mode and advance revision exactly once for effective acceptance. They perform no lookup, extraction, network orchestration or search.
+- `src/lib/domain/search/get-search-mode.ts` derives trending/discover from effective filters, accepted people and pending requests. Initial defaults alone produce trending. Discover mode does not authorize execution.
 
-- Implemented in commit `b944c1ee37432e042bbd297bac24788214847701` (`feat(search): apply chat intents to complete search state`).
-- Decision: extend the existing `applyIntent` rather than add an outer state function duplicating intent acceptance decisions. Intent validation, revision checking and atomic acceptance already belonged to this function. The existing individual-filter application logic remains reused in `extraction.ts`.
-- `applyIntent(state, intent)` now accepts `SearchState` instead of separate filters and revision. An applied outcome returns the complete new state under `state`; non-applied outcomes leave the caller's original state authoritative.
-- Effective accepted filter changes increment revision exactly once. Invalid, stale, clarification, unsupported, error-status and ineffective intents preserve the original state, mode and revision.
-- Effective changes derive the mode from the resulting active filters and preserved pending queries. Default `mediaType: 'all'` and `sortBy: 'popularity.desc'` alone are not individual criteria. Non-default media type or sorting, optional scalar criteria, nonempty active ID lists or pending queries keep `discover`; removing the final criterion returns to `trending`.
-- Existing resolved `personIds` and pending person/keyword queries are preserved. Catalog support does not authorize person-ID changes from chat intents: these remain rejected. This step neither extracts pending queries nor performs entity resolution or accepts resolution results.
-- Updated `tests/unit/domain/search/apply-intent.spec.ts`, `clarification.spec.ts`, `year-range.spec.ts` and `filter-catalog.spec.ts` for the new state contract, preservation, atomic rejection, mode transitions, revision updates and the chat person-ID boundary.
-- After being asked to run tests, coverage, lint and typecheck, the user reported "alles grün" for this commit. This is user-reported successful validation, not assistant-executed validation. No numeric coverage result or successful assistant-run test-first red/green cycle is claimed.
+### Filter semantics and inactive genre values
 
-### Step 4: Initial search state
+- `src/lib/schemas/search.ts` normalizes genre/keyword ID sets before enforcing their unique-count limits and retains first-occurrence order. `applyIntent()` compares effective ID sets rather than treating repetition or reordering alone as changed criteria. Unchanged sets keep their stored order when another criterion changes.
+- `src/lib/domain/search/genre-compatibility.ts` reconstructs the complete genre wish, partitions known compatible/incompatible IDs for media changes and remembers inactive values with positions. Shared IDs are retained; no substitute genre ID is invented.
+- Media changes with desired genres require complete application-supplied Movie/TV catalogs. Missing, malformed and non-covering catalogs yield distinct rejections rather than fabricated incompatibility. `src/lib/schemas/genre-catalogs.ts` validates structure; the supplying boundary must establish actual retrieval/completeness.
+- Returning to a compatible media type restores remembered values. Explicit replace/remove operations address the complete wish so discarded inactive values do not reappear. Active and inactive values share a unique bounded genre wish.
+- `applyIntent()` validates the resulting complete state, preserving shared pending limits, accepted people and unrelated requests. It returns optional media-change facts for later consumers, not translated messages or executed searches. Chat intents still cannot edit accepted people or technical person IDs.
+- `deriveActiveSearchFilters()` creates independent technical filter data from accepted state, omitting pending requests and inactive genre metadata. It neither resolves entities nor checks execution readiness, provider compatibility or the full domain-to-Discover field mapping.
 
-- Implemented in commit `cfec84e3f24dd9cb9f8b59baedfc0972d1e80ad7` (`feat(search): create initial search state`).
-- Added `createInitialSearchState()` in `src/lib/domain/search/create-initial-search-state.ts`. It takes no parameters and returns a fresh `SearchState` with `mode: 'trending'`, revision `0`, default media scope and sorting, empty genre/keyword/person ID lists and empty pending person/keyword queries. Optional rating and year criteria are absent.
-- Each call creates independent state, filter and pending-query objects and arrays. The function performs no network requests, UI/store integration or restoration of existing search criteria.
-- Added `tests/unit/domain/search/create-initial-search-state.spec.ts` with two unit tests covering the initial values and independence between calls, including mutation isolation.
-- The user reported "alles grün" after this commit. This is user-reported successful validation, not assistant-executed validation; no numeric coverage result or assistant-run test-first red/green cycle is claimed.
+### Review evidence and acceptance mapping
 
-### Approved scope alignment: 2026-11-15
+- State representation and legacy rejection: `tests/unit/schemas/search-state.spec.ts` covers defaults, referenced-query normalization, ID/name preservation, limits, duplicate identities, equal names with distinct IDs, blank labels, year constraints and rejected legacy ID storage.
+- Pending preservation, stable reference changes, mode/revision and controlled person replacement: `tests/unit/domain/search/pending-operations.spec.ts` covers additions/changes/removals for both entity kinds, ineffective changes, stale outcomes, wrong-kind/occupied references, shared limits, invalid targets, atomic acceptance, duplicate IDs and mutation isolation.
+- ID-set validation/equality: `tests/unit/domain/search/id-set-semantics.spec.ts` covers normalization before limits, ineffective reordered sets, effective changes and stored-order preservation.
+- Media changes and inactive values: `tests/unit/domain/search/genre-compatibility.spec.ts` covers shared genres, deactivation/restoration with positions, explicit removal/replacement, missing/invalid/non-covering catalogs, per-media scopes and complete-wish limits.
+- Intent application and state preservation: `tests/unit/domain/search/apply-intent.spec.ts` covers atomic acceptance/rejection, deep preservation of people/pending records, people-only discover mode, pending criteria, combined keyword capacity and ineffective outcomes.
+- Clarification/error separation and stale statuses: `tests/unit/domain/search/clarification.spec.ts`. Technical catalog versus chat authorization: `tests/unit/domain/search/filter-catalog.spec.ts`. Independent defaults and technical projections: `create-initial-search-state.spec.ts` and `derive-active-search-filters.spec.ts`.
+- The inspected code/test paths support the domain acceptance areas above. The read-only review has not identified a proven functional correction to make within that inspected scope; no speculative production changes or duplicate implementations were introduced. This is not proof that every repository file or every possible edge case has been reviewed.
 
-- Recorded the approved person-search contract in commit `efeb58a`. This documentation alignment assigns provider resolution to WP 014 and execution to WP 012.
-- Extended the specification for accepted ID/name records, stable pending references, replacements and controlled acceptance. These extensions are not implemented by steps 1-4; their historical descriptions remain unchanged.
-- No application code was changed and no tests, coverage, lint or typecheck were run for this documentation alignment.
+### Caller and execution-boundary review
 
-### Step 5: Accepted-person state migration and technical filter projection
+- The checked domain producers/consumers use `people` and referenced pending records, not a separately stored `SearchState.filters.personIds`. `app/app.vue` is a rendering shell and does not consume search state.
+- Checked Movie/TV Discover routes in `server/api/tmdb/discover/` parse `DiscoverQuerySchema` and `DiscoverFiltersSchema` and call the existing Discover service. They do not deserialize the WP 009 domain SearchState.
+- Checked `server/services/tmdb/discover.ts`, `discover-params.ts`, `search.ts`, `detail.ts` and `watch-providers.ts` use their service-specific filters, query text or entity IDs, not the migrated stored state. Numeric person-ID filters in Discover contracts are valid technical inputs, not duplicate person-name storage to remove.
+- Domain years use `minYear`/`maxYear`; the existing service contract uses `yearFrom`/`yearTo`. The explicit adapter and readiness check are assigned to WP 012.
+- The existing Discover parameter builder emits `with_cast` for nonempty person IDs without a media-type guard. This is not verified TV person support; WP 012 explicitly owns guarding/specializing execution and the separate credits path before integration.
+- This is a direct, scoped inspection of the named files and their contracts, not an exhaustive repository-wide reference search. Remaining API routes, service/helper/mapping modules, test fixtures and integration references have not all been read end-to-end. No absence claim is based solely on directory listings or default-branch search results.
 
-- Commit `6e67d6d` added `AcceptedPersonSchema` and `SearchState.people` in `src/lib/schemas/search-state.ts`. Accepted people carry a positive integer ID and trimmed nonempty display name; the existing person limit and unique-ID rule are enforced. Different IDs may share a name. This validates structure, not provider identity or acting participation.
-- Stored `SearchState.filters` now uses `SearchFiltersSchema` without `personIds`. Legacy `filters.personIds` payloads are rejected rather than silently discarded or enriched with invented names. `ActiveSearchFiltersSchema` remains the technical filter contract, not an independently stored person-ID list.
-- Commit `b273b5e` migrated `tests/unit/schemas/search-state.spec.ts` for defaults, identity/name preservation, trimming, person limits, duplicate IDs, equal names with distinct IDs, blank names and legacy-payload rejection; pending-query and year-range checks remain covered by test definitions.
-- Commit `e031361` migrated `src/lib/domain/search/apply-intent.ts` to stored-filter validation. Accepted people participate in mode decisions and retain IDs/names. Applied outcomes copy the people list and its records; non-applied outcomes preserve the original state. Chat intents still cannot change people or derived person IDs, and no resolution is performed.
-- Commit `f1f7221` migrated `src/lib/domain/search/create-initial-search-state.ts` to `people: []` and updated the four domain test files `create-initial-search-state.spec.ts`, `apply-intent.spec.ts`, `clarification.spec.ts` and `filter-catalog.spec.ts` under `tests/unit/domain/search/`. Tests include people-only discover mode, identity/name preservation, mutation isolation and atomic rejection of chat changes to `people` or `personIds`.
-- The same commit added `src/lib/domain/search/derive-active-search-filters.ts`. `deriveActiveSearchFilters(state)` projects a previously validated state into technical filters, deriving person IDs only from accepted people and copying all ID arrays. It preserves existing list order, applies no pending queries, performs no network requests and neither checks execution readiness nor authorizes a search.
-- Added four tests in `tests/unit/domain/search/derive-active-search-filters.spec.ts` for initial projection, populated projection, pending-only exclusion and independent objects/arrays with mutation isolation. Compatibility with the technical filter schema is asserted; no provider mediatype compatibility is implied.
-- Commits were made incrementally at the user's request, including temporarily incompatible schema-only stages. The targeted Search-domain caller review and listed migrations do not establish a complete repository-wide caller inventory.
-- Tests, coverage, lint and typecheck were not executed by the assistant for these migration commits. After the initial migration-status documentation, the user reported that tests pass for the discussed migrated state. This is user-reported test validation only; coverage, lint and typecheck were not separately confirmed. No numeric coverage result or executed assistant-run test-first red/green cycle is claimed.
+### Validation report
 
-### Documentation consolidation: 2026-11-15
+- On 2026-11-15 the user reported all tests green and subsequently explicitly confirmed coverage, lint and typecheck for the implementation completed so far. These are user-reported successful local checks, not assistant-executed validation.
+- No exact numeric coverage value, command output, precise local HEAD or local working-tree cleanliness was supplied or independently verified. The report must not be represented as a certified CI result or a successful assistant-run test-first red/green cycle.
+- The assistant performed read-only repository/code/test review for this reconciliation and did not run tests, coverage, lint or typecheck. No new application code is introduced by this documentation update.
 
-- Made pending-reference identity, replacement semantics and unrelated-query preservation explicit in this specification. Related packages now use direct WP references instead of depending on the separate person-search requirements document.
-- This is documentation clarification, not implementation of pending-query transitions or provider resolution.
-- No application code was changed and no automated validation was executed for this documentation update.
+### Remaining closure work and follow-up boundaries
 
-### Remaining work and boundaries
-
-- Complete the repository-wide caller/reference review and remaining validation of the migrated state through `f1f7221`; address concrete compatibility findings. Tests are user-reported green; coverage, lint and typecheck remain unconfirmed.
-- Pending queries still use string lists. Stable pending references, add/change/remove operations, replacement targets, combined accepted/pending limit enforcement and controlled resolution acceptance/replacement with revision effects remain open.
-- Accepted-person duplicate IDs are rejected structurally; transition-level deduplication during resolution acceptance is not implemented yet.
-- ID-set normalization, mediatype compatibility and inactive return-value rules remain open; current list-order equality semantics are retained until explicitly changed and tested. Catalog entries establish neither ID provenance nor provider execution capabilities or genre-ID compatibility.
-- Provider person and keyword resolution is assigned to WP 014, not implemented in WP 009.
-- Store/UI integration, entity-query extraction (WP 011), network orchestration, search execution (WP 012) and the complete clarification workflow (WP 010) remain outside this implementation step.
-- WP 009 is not complete.
+- Finish the repository-wide caller/reference inventory or explicitly obtain acceptance of the documented narrower review scope before marking WP 009 closed. Inspect any remaining references directly and correct only concrete WP 009 findings.
+- The current review does not justify keeping structured pending operations, controlled person acceptance, ID-set semantics or inactive genre handling listed as unimplemented; they already exist as described above.
+- Reconcile any concrete findings from the remaining inventory, obtain fresh validation for any resulting code changes, then record final acceptance. WP 009 is not closed by this status update.
+- WP 010 owns the complete clarification workflow and candidate selection interaction. WP 011 owns parser extraction and its validated application adapter. WP 014 owns identity lookup/provenance/candidate validation and resolution coordination. A controlled keyword-resolution acceptance integration remains explicitly to be designed before its implementation; this is not claimed as an existing person-acceptance feature.
+- WP 012 owns domain-to-service adaptation, readiness, provider execution, Movie/TV person routing, acting-role eligibility and result completeness. Store/UI work, provider calls and full asynchronous orchestration have not been moved into WP 009 to claim product completion.
