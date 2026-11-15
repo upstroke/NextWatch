@@ -44,12 +44,15 @@ describe('person clarification outcomes', () => {
   });
 
   // Branch coverage: no-match cannot hide a candidate list or masquerade as a provider failure.
-  it.each([{ candidates: [] }, { candidates: [{ id: 503, name: 'Example person' }] }, { error: 'timeout' }])(
-    'rejects mixed no-match data: %j',
-    (extra) => {
-      expect(PersonNoMatchClarificationSchema.safeParse({ ...noMatch(), ...extra }).success).toBe(false);
-    },
-  );
+  it.each([
+    { candidates: [] },
+    { candidates: [{ id: 503, name: 'Example person' }] },
+    { error: 'timeout' },
+  ])('rejects mixed no-match data: %j', (extra) => {
+    expect(PersonNoMatchClarificationSchema.safeParse({ ...noMatch(), ...extra }).success).toBe(
+      false,
+    );
+  });
 
   // Statement coverage: technical failures carry only sanitized request context, not a semantic question.
   it('keeps technical failure separate from both semantic question kinds', () => {
@@ -59,12 +62,15 @@ describe('person clarification outcomes', () => {
   });
 
   // Branch coverage: technical feedback cannot leak raw provider errors or carry a selectable question.
-  it.each([{ error: { message: 'Provider internals' } }, { clarificationRef: 'question-1' }, { candidates: [] }])(
-    'rejects unsafe or semantic technical-feedback data: %j',
-    (extra) => {
-      expect(PersonResolutionErrorSchema.safeParse({ ...resolutionError(), ...extra }).success).toBe(false);
-    },
-  );
+  it.each([
+    { error: { message: 'Provider internals' } },
+    { clarificationRef: 'question-1' },
+    { candidates: [] },
+  ])('rejects unsafe or semantic technical-feedback data: %j', (extra) => {
+    expect(PersonResolutionErrorSchema.safeParse({ ...resolutionError(), ...extra }).success).toBe(
+      false,
+    );
+  });
 });
 
 describe('person clarification follow-up actions', () => {
@@ -82,7 +88,8 @@ describe('person clarification follow-up actions', () => {
   // Branch coverage: whitespace normalization must not turn an unusable hint into an actionable correction.
   it('rejects a blank refinement after trimming', () => {
     expect(
-      PersonClarificationActionSchema.safeParse({ ...binding(), action: 'refine', text: '   ' }).success,
+      PersonClarificationActionSchema.safeParse({ ...binding(), action: 'refine', text: '   ' })
+        .success,
     ).toBe(false);
   });
 
@@ -104,7 +111,8 @@ describe('person clarification follow-up actions', () => {
     { changes: [{ field: 'minRating', operation: 'set', value: 8 }] },
   ])('rejects state-changing data in a follow-up action: %j', (extra) => {
     expect(
-      PersonClarificationActionSchema.safeParse({ ...binding(), action: 'remove', ...extra }).success,
+      PersonClarificationActionSchema.safeParse({ ...binding(), action: 'remove', ...extra })
+        .success,
     ).toBe(false);
   });
 
@@ -117,7 +125,11 @@ describe('person clarification follow-up actions', () => {
   // Statement coverage: the combined contract also accepts a descriptive correction without a person ID.
   it('accepts a refinement response without an identity', () => {
     expect(
-      PersonClarificationResponseSchema.parse({ ...binding(), action: 'refine', text: ' Example hint ' }),
+      PersonClarificationResponseSchema.parse({
+        ...binding(),
+        action: 'refine',
+        text: ' Example hint ',
+      }),
     ).toEqual({ ...binding(), action: 'refine', text: 'Example hint' });
   });
 

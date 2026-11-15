@@ -86,12 +86,18 @@ describe('person selection validation', () => {
   });
 
   // Branch coverage: malformed or duplicate-candidate stored questions fail closed before answer association.
-  it.each([{}, { ...question(), candidates: [{ id: 502, name: 'A' }, { id: 502, name: 'B' }] }])(
-    'rejects an invalid active question: %j',
-    (activeQuestion) => {
-      expectRejection(populatedState(), activeQuestion, answer(), 'invalid-clarification');
+  it.each([
+    {},
+    {
+      ...question(),
+      candidates: [
+        { id: 502, name: 'A' },
+        { id: 502, name: 'B' },
+      ],
     },
-  );
+  ])('rejects an invalid active question: %j', (activeQuestion) => {
+    expectRejection(populatedState(), activeQuestion, answer(), 'invalid-clarification');
+  });
 
   // Branch coverage: malformed or overposted answers are rejected at the untrusted input boundary.
   it.each([{}, { ...answer(), person: { id: 503, name: 'Injected name' } }])(
@@ -121,7 +127,12 @@ describe('person selection validation', () => {
   it.each([{ clarificationRef: 'previous-group' }, { ref: 'other' }])(
     'rejects a mismatched answer binding: %j',
     (binding) => {
-      expectRejection(populatedState(), question(), { ...answer(), ...binding }, 'question-mismatch');
+      expectRejection(
+        populatedState(),
+        question(),
+        { ...answer(), ...binding },
+        'question-mismatch',
+      );
     },
   );
 
@@ -137,7 +148,12 @@ describe('person selection validation', () => {
 
   // Branch coverage: neither an arbitrary ID nor an already accepted but unoffered ID is a valid selection.
   it.each([999, 501])('rejects unoffered candidate %i', (personId) => {
-    expectRejection(populatedState(), question(), { ...answer(), personId }, 'candidate-not-offered');
+    expectRejection(
+      populatedState(),
+      question(),
+      { ...answer(), personId },
+      'candidate-not-offered',
+    );
   });
 
   // Statement coverage: returned candidate data is isolated from the stored question and the accepted state.

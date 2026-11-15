@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  PersonSelectionAnswerSchema,
-  PersonSelectionClarificationSchema,
-} from './clarification';
+import { PersonSelectionAnswerSchema, PersonSelectionClarificationSchema } from './clarification';
 
 const questionBinding = PersonSelectionAnswerSchema.omit({ personId: true });
 
@@ -42,9 +39,7 @@ export type PersonResolutionError = z.infer<typeof PersonResolutionErrorSchema>;
  * hasMore for more-candidates). No state transition or provider lookup occurs here.
  */
 export const PersonClarificationActionSchema = z.discriminatedUnion('action', [
-  questionBinding
-    .extend({ action: z.literal('refine'), text: z.string().trim().min(1) })
-    .strict(),
+  questionBinding.extend({ action: z.literal('refine'), text: z.string().trim().min(1) }).strict(),
   questionBinding.extend({ action: z.literal('more-candidates') }).strict(),
   questionBinding.extend({ action: z.literal('remove') }).strict(),
   questionBinding.extend({ action: z.literal('discard-change') }).strict(),

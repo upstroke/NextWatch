@@ -79,15 +79,21 @@ describe('person clarification follow-up processing', () => {
         revision: 5,
         pendingQueries: {
           ...state.pendingQueries,
-          personQueries: state.pendingQueries.personQueries.filter((request) => request.ref !== 'p'),
+          personQueries: state.pendingQueries.personQueries.filter(
+            (request) => request.ref !== 'p',
+          ),
         },
       },
     });
     expect({ state, activeQuestion, input }).toEqual(snapshot);
     if (result.status !== 'applied') throw new Error('Expected an applied removal');
     result.state.filters.genreIds.push(28);
-    result.state.people.forEach((person) => { person.name = 'Changed'; });
-    result.state.pendingQueries.personQueries.forEach((request) => { request.query = 'Changed'; });
+    result.state.people.forEach((person) => {
+      person.name = 'Changed';
+    });
+    result.state.pendingQueries.personQueries.forEach((request) => {
+      request.query = 'Changed';
+    });
     expect({ state, activeQuestion, input }).toEqual(snapshot);
   });
 
@@ -135,7 +141,12 @@ describe('person clarification follow-up processing', () => {
   it.each([question('person-no-match'), question('person-selection', false)])(
     'rejects unavailable candidate navigation: %j',
     (activeQuestion) => {
-      expectRejection(populatedState(), activeQuestion, action('more-candidates'), 'action-unavailable');
+      expectRejection(
+        populatedState(),
+        activeQuestion,
+        action('more-candidates'),
+        'action-unavailable',
+      );
     },
   );
 
@@ -158,10 +169,21 @@ describe('person clarification follow-up processing', () => {
   });
 
   // Branch coverage: every action rejects stale questions, stale answers and non-current revision pairs.
-  it.each(['refine', 'more-candidates', 'remove', 'discard-change'] satisfies PersonClarificationAction['action'][])(
+  it.each([
+    'refine',
+    'more-candidates',
+    'remove',
+    'discard-change',
+  ] satisfies PersonClarificationAction['action'][])(
     'enforces current revisions for %s',
     (kind) => {
-      for (const [questionRevision, actionRevision] of [[3, 4], [4, 3], [3, 3], [5, 4], [4, 5]]) {
+      for (const [questionRevision, actionRevision] of [
+        [3, 4],
+        [4, 3],
+        [3, 3],
+        [5, 4],
+        [4, 5],
+      ]) {
         expectRejection(
           populatedState(),
           { ...question(), sourceRevision: questionRevision },
