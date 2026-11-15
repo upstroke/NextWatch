@@ -26,6 +26,12 @@ export const PersonResolutionErrorSchema = questionBinding
   .strict();
 export type PersonResolutionError = z.infer<typeof PersonResolutionErrorSchema>;
 
+/** A bound descriptive hint, not an accepted identity or an applied pending correction. */
+export const PersonRefinementActionSchema = questionBinding
+  .extend({ action: z.literal('refine'), text: z.string().trim().min(1) })
+  .strict();
+export type PersonRefinementAction = z.infer<typeof PersonRefinementActionSchema>;
+
 /**
  * Untrusted follow-up actions, bound to an application-owned question and revision.
  * refine.text is an unparsed hint/correction, not a competing pending-request model.
@@ -39,7 +45,7 @@ export type PersonResolutionError = z.infer<typeof PersonResolutionErrorSchema>;
  * hasMore for more-candidates). No state transition or provider lookup occurs here.
  */
 export const PersonClarificationActionSchema = z.discriminatedUnion('action', [
-  questionBinding.extend({ action: z.literal('refine'), text: z.string().trim().min(1) }).strict(),
+  PersonRefinementActionSchema,
   questionBinding.extend({ action: z.literal('more-candidates') }).strict(),
   questionBinding.extend({ action: z.literal('remove') }).strict(),
   questionBinding.extend({ action: z.literal('discard-change') }).strict(),
