@@ -56,10 +56,9 @@ export const SearchStateSchema = z
     people: z
       .array(AcceptedPersonSchema)
       .max(MAX_PERSON_IDS)
-      .refine(
-        (people) => new Set(people.map((person) => person.id)).size === people.length,
-        { message: 'Accepted person IDs must be unique' },
-      )
+      .refine((people) => new Set(people.map((person) => person.id)).size === people.length, {
+        message: 'Accepted person IDs must be unique',
+      })
       .default([]),
     pendingQueries: PendingEntityQueriesSchema.default(() => ({
       personQueries: [],

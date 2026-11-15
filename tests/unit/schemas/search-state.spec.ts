@@ -73,9 +73,14 @@ describe('SearchStateSchema', () => {
     { personQueries: ['   '], keywordQueries: [] },
     { personQueries: [], keywordQueries: ['   '] },
   ])('rejects a blank pending query: %j', (pendingQueries) => {
-    expect(SearchStateSchema.safeParse({
-      mode: 'discover', revision: 1, filters: {}, pendingQueries,
-    }).success).toBe(false);
+    expect(
+      SearchStateSchema.safeParse({
+        mode: 'discover',
+        revision: 1,
+        filters: {},
+        pendingQueries,
+      }).success,
+    ).toBe(false);
   });
 
   // Branch coverage: the existing separate pending-query bounds remain enforced.
@@ -85,79 +90,109 @@ describe('SearchStateSchema', () => {
   ])('enforces the $field limit without altering the input', ({ field, limit }) => {
     const queries = Array.from({ length: limit }, (_, index) => `query-${index}`);
     const input = {
-      mode: 'discover', revision: 1, filters: {},
+      mode: 'discover',
+      revision: 1,
+      filters: {},
       pendingQueries: { [field]: queries },
     };
     const snapshot = structuredClone(input);
 
     expect(SearchStateSchema.safeParse(input).success).toBe(true);
-    expect(SearchStateSchema.safeParse({
-      ...input,
-      pendingQueries: { [field]: [...queries, 'extra-query'] },
-    }).success).toBe(false);
+    expect(
+      SearchStateSchema.safeParse({
+        ...input,
+        pendingQueries: { [field]: [...queries, 'extra-query'] },
+      }).success,
+    ).toBe(false);
     expect(input).toEqual(snapshot);
   });
 
   // Branch coverage: accepted ID/name records retain the existing person-domain bound.
   it('enforces the accepted-person limit without altering the input', () => {
     const people = Array.from({ length: MAX_PERSON_IDS }, (_, index) => ({
-      id: index + 1, name: `Example person ${index + 1}`,
+      id: index + 1,
+      name: `Example person ${index + 1}`,
     }));
     const input = { mode: 'discover', revision: 1, filters: {}, people };
     const snapshot = structuredClone(input);
 
     expect(SearchStateSchema.safeParse(input).success).toBe(true);
-    expect(SearchStateSchema.safeParse({
-      ...input,
-      people: [...people, { id: MAX_PERSON_IDS + 1, name: 'Extra person' }],
-    }).success).toBe(false);
+    expect(
+      SearchStateSchema.safeParse({
+        ...input,
+        people: [...people, { id: MAX_PERSON_IDS + 1, name: 'Extra person' }],
+      }).success,
+    ).toBe(false);
     expect(input).toEqual(snapshot);
   });
 
   // Branch coverage: identity uniqueness depends on provider ID, not display-name spelling.
   it('rejects repeated person IDs even when their names differ', () => {
     const input = {
-      mode: 'discover', revision: 1, filters: {},
-      people: [{ id: 501, name: 'Example person' }, { id: 501, name: 'Other spelling' }],
+      mode: 'discover',
+      revision: 1,
+      filters: {},
+      people: [
+        { id: 501, name: 'Example person' },
+        { id: 501, name: 'Other spelling' },
+      ],
     };
     const snapshot = structuredClone(input);
     const result = SearchStateSchema.safeParse(input);
 
     expect(result.success).toBe(false);
     if (result.success) throw new Error('Expected duplicate person IDs to be rejected');
-    expect(result.error.issues).toContainEqual(expect.objectContaining({
-      path: ['people'], message: 'Accepted person IDs must be unique',
-    }));
+    expect(result.error.issues).toContainEqual(
+      expect.objectContaining({
+        path: ['people'],
+        message: 'Accepted person IDs must be unique',
+      }),
+    );
     expect(input).toEqual(snapshot);
   });
 
   // Branch coverage: distinct people may legitimately share a display name.
   it('preserves distinct IDs with the same display name', () => {
-    const people = [{ id: 501, name: 'Example person' }, { id: 502, name: 'Example person' }];
-    expect(SearchStateSchema.parse({
-      mode: 'discover', revision: 1, filters: {}, people,
-    }).people).toEqual(people);
+    const people = [
+      { id: 501, name: 'Example person' },
+      { id: 502, name: 'Example person' },
+    ];
+    expect(
+      SearchStateSchema.parse({
+        mode: 'discover',
+        revision: 1,
+        filters: {},
+        people,
+      }).people,
+    ).toEqual(people);
   });
 
   // Branch coverage: normalization must not leave accepted people without a usable label.
   it('rejects an accepted display name that becomes blank after trimming', () => {
     const result = SearchStateSchema.safeParse({
-      mode: 'discover', revision: 1, filters: {},
+      mode: 'discover',
+      revision: 1,
+      filters: {},
       people: [{ id: 501, name: '   ' }],
     });
 
     expect(result.success).toBe(false);
     if (result.success) throw new Error('Expected a blank display name to be rejected');
-    expect(result.error.issues).toContainEqual(expect.objectContaining({
-      path: ['people', 0, 'name'],
-    }));
+    expect(result.error.issues).toContainEqual(
+      expect.objectContaining({
+        path: ['people', 0, 'name'],
+      }),
+    );
   });
 
   // Branch coverage: legacy ID lists are rejected even alongside valid accepted-person records.
   it.each([{ personIds: [] }, { personIds: [501] }])(
-    'rejects legacy person-ID storage instead of silently dropping it: %j', (filters) => {
+    'rejects legacy person-ID storage instead of silently dropping it: %j',
+    (filters) => {
       const input = {
-        mode: 'discover', revision: 1, filters,
+        mode: 'discover',
+        revision: 1,
+        filters,
         people: [{ id: 501, name: 'Example person' }],
       };
       const snapshot = structuredClone(input);
@@ -165,9 +200,13 @@ describe('SearchStateSchema', () => {
 
       expect(result.success).toBe(false);
       if (result.success) throw new Error('Expected legacy person-ID storage to be rejected');
-      expect(result.error.issues).toContainEqual(expect.objectContaining({
-        code: 'unrecognized_keys', path: ['filters'], keys: ['personIds'],
-      }));
+      expect(result.error.issues).toContainEqual(
+        expect.objectContaining({
+          code: 'unrecognized_keys',
+          path: ['filters'],
+          keys: ['personIds'],
+        }),
+      );
       expect(input).toEqual(snapshot);
     },
   );

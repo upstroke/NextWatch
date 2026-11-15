@@ -5,13 +5,21 @@ import { deriveActiveSearchFilters } from '@lib/domain/search/derive-active-sear
 
 function populatedState() {
   return SearchStateSchema.parse({
-    mode: 'discover', revision: 7,
+    mode: 'discover',
+    revision: 7,
     filters: {
-      mediaType: 'tv', sortBy: 'vote_average.desc',
-      genreIds: [878, 28], keywordIds: [301],
-      minRating: 7, minYear: 2000, maxYear: 2020,
+      mediaType: 'tv',
+      sortBy: 'vote_average.desc',
+      genreIds: [878, 28],
+      keywordIds: [301],
+      minRating: 7,
+      minYear: 2000,
+      maxYear: 2020,
     },
-    people: [{ id: 502, name: 'Second person' }, { id: 501, name: 'First person' }],
+    people: [
+      { id: 502, name: 'Second person' },
+      { id: 501, name: 'First person' },
+    ],
     pendingQueries: { personQueries: ['Unresolved person'], keywordQueries: ['space'] },
   });
 }
@@ -32,9 +40,14 @@ describe('deriveActiveSearchFilters', () => {
     const snapshot = structuredClone(state);
     const result = deriveActiveSearchFilters(state);
     expect(result).toEqual({
-      mediaType: 'tv', sortBy: 'vote_average.desc',
-      genreIds: [878, 28], keywordIds: [301], personIds: [502, 501],
-      minRating: 7, minYear: 2000, maxYear: 2020,
+      mediaType: 'tv',
+      sortBy: 'vote_average.desc',
+      genreIds: [878, 28],
+      keywordIds: [301],
+      personIds: [502, 501],
+      minRating: 7,
+      minYear: 2000,
+      maxYear: 2020,
     });
     expect(ActiveSearchFiltersSchema.parse(result)).toEqual(result);
     expect(state).toEqual(snapshot);
@@ -44,12 +57,17 @@ describe('deriveActiveSearchFilters', () => {
   // Statement coverage: pending-only names and terms never become active ID filters.
   it('does not convert pending-only criteria into IDs', () => {
     const state = SearchStateSchema.parse({
-      mode: 'discover', revision: 1, filters: {},
+      mode: 'discover',
+      revision: 1,
+      filters: {},
       pendingQueries: { personQueries: ['Unresolved person'], keywordQueries: ['space'] },
     });
     expect(deriveActiveSearchFilters(state)).toEqual({
-      mediaType: 'all', sortBy: 'popularity.desc',
-      genreIds: [], keywordIds: [], personIds: [],
+      mediaType: 'all',
+      sortBy: 'popularity.desc',
+      genreIds: [],
+      keywordIds: [],
+      personIds: [],
     });
   });
 

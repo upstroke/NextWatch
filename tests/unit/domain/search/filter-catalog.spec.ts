@@ -24,7 +24,8 @@ describe('search filter catalog', () => {
 
   // Branch coverage: only own fields are recognized, not prototype properties or person-state records.
   it.each(['director', 'people', 'constructor', '__proto__', 'toString'])(
-    'rejects the unknown field %s', (field) => {
+    'rejects the unknown field %s',
+    (field) => {
       expect(isCatalogFilterField(field)).toBe(false);
       expect(getSearchFilterDefinition(field)).toBeUndefined();
       expect(supportsFilterOperation(field, 'set')).toBe(false);
@@ -35,7 +36,8 @@ describe('search filter catalog', () => {
   it.each(['genreIds', 'keywordIds', 'personIds'])('describes list field %s', (field) => {
     expect(isCatalogFilterField(field)).toBe(true);
     expect(getSearchFilterDefinition(field)?.kind).toBe('list');
-    for (const operation of operations) expect(supportsFilterOperation(field, operation)).toBe(true);
+    for (const operation of operations)
+      expect(supportsFilterOperation(field, operation)).toBe(true);
   });
 
   // Branch coverage: required scalar fields cannot be removed or appended to.
@@ -59,20 +61,24 @@ describe('search filter catalog', () => {
   it.each(operations)('rejects person changes for operation %s atomically', (operation) => {
     for (const field of ['personIds', 'people']) {
       const state = SearchStateSchema.parse({
-        mode: 'discover', revision: 3,
+        mode: 'discover',
+        revision: 3,
         filters: { genreIds: [878] },
         people: [{ id: 501, name: 'Example person' }],
         pendingQueries: { personQueries: ['Another person'] },
       });
       const snapshot = structuredClone(state);
       const value = field === 'personIds' ? [502] : [{ id: 502, name: 'Other person' }];
-      expect(applyIntent(state, {
-        status: 'ready', baseRevision: 3,
-        changes: [
-          { field: 'genreIds', operation: 'add', value: [28] },
-          { field, operation, value },
-        ],
-      })).toEqual({ status: 'rejected', reason: 'unknown-field', field });
+      expect(
+        applyIntent(state, {
+          status: 'ready',
+          baseRevision: 3,
+          changes: [
+            { field: 'genreIds', operation: 'add', value: [28] },
+            { field, operation, value },
+          ],
+        }),
+      ).toEqual({ status: 'rejected', reason: 'unknown-field', field });
       expect(state).toEqual(snapshot);
     }
   });

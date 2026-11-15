@@ -4,7 +4,8 @@ import { SearchStateSchema } from '@lib/schemas/search-state';
 
 function populatedState() {
   return SearchStateSchema.parse({
-    mode: 'discover', revision: 0,
+    mode: 'discover',
+    revision: 0,
     filters: { minYear: 2000, maxYear: 2020, minRating: 7 },
   });
 }
@@ -17,10 +18,13 @@ describe('year range intent application', () => {
   ])('rejects an incompatible $field update atomically', (yearChange) => {
     const state = populatedState();
     const snapshot = structuredClone(state);
-    expect(applyIntent(state, {
-      status: 'ready', baseRevision: 0,
-      changes: [{ field: 'minRating', operation: 'set', value: 8 }, yearChange],
-    })).toEqual({ status: 'rejected', reason: 'invalid-value', field: 'maxYear' });
+    expect(
+      applyIntent(state, {
+        status: 'ready',
+        baseRevision: 0,
+        changes: [{ field: 'minRating', operation: 'set', value: 8 }, yearChange],
+      }),
+    ).toEqual({ status: 'rejected', reason: 'invalid-value', field: 'maxYear' });
     expect(state).toEqual(snapshot);
   });
 
@@ -37,18 +41,27 @@ describe('year range intent application', () => {
   ])('moves both bounds in one intent: %j', (first, second) => {
     const state = populatedState();
     const snapshot = structuredClone(state);
-    expect(applyIntent(state, {
-      status: 'ready', baseRevision: 0, changes: [first, second],
-    })).toMatchObject({ status: 'applied', state: {
-      revision: 1, filters: { minYear: 2030, maxYear: 2040 },
-    } });
+    expect(
+      applyIntent(state, {
+        status: 'ready',
+        baseRevision: 0,
+        changes: [first, second],
+      }),
+    ).toMatchObject({
+      status: 'applied',
+      state: {
+        revision: 1,
+        filters: { minYear: 2030, maxYear: 2040 },
+      },
+    });
     expect(state).toEqual(snapshot);
   });
 
   // Statement coverage: removing either bound preserves the other and opens the range.
   it.each(['minYear', 'maxYear'])('removes %s to produce an open range', (field) => {
     const result = applyIntent(populatedState(), {
-      status: 'ready', baseRevision: 0,
+      status: 'ready',
+      baseRevision: 0,
       changes: [{ field, operation: 'remove', value: undefined }],
     });
     expect(result.status).toBe('applied');
