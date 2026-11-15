@@ -55,6 +55,9 @@ Inputs: user request, existing WP 009 state, filter catalog, validation schemas 
 - This is a documentation-only scope update. No implementation ownership is transferred out of WP 009 to avoid its acceptance criteria.
 - No tests, coverage, lint or typecheck were run for this update.
 - Recorded the user-approved functional decisions below on 2026-11-15. All ten questionnaire points are decided; the existing Specification section is unchanged. This records requirements, not implemented or validated behavior. No application code or configuration was changed, and no tests, coverage, lint or typecheck were run for this documentation update.
+- Implemented separate person-clarification candidate/title limits and the person-selection schemas in `f60a278`; added schema unit tests in `0ee0dea`. These contracts cover offered groups, answer bindings, optional title enrichment and unique candidate IDs, not a complete clarification workflow.
+- On 2026-11-15 the user reported the schema/test step fully green locally: tests, coverage meeting the agreed minimum of 80% statements, lint and typecheck. The assistant did not execute these checks. This validation report applies to that earlier step, not to subsequent domain changes.
+- Added `validatePersonSelection()` and its domain unit tests in this update. It checks the active question, current revision, pending-person association and offered-set membership without mutation or identity acceptance. A successful result is not proof of provider provenance; WP 014 validation and WP 009 acceptance remain separate. No tests, coverage, lint or typecheck were run by the assistant for this new step; local validation is pending. The Specification section remains unchanged.
 
 ## Approved functional decisions
 
