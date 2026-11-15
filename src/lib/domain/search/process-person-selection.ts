@@ -73,12 +73,19 @@ export function processPersonSelection(
   }
   const request = state.pendingQueries.personQueries.find((entry) => entry.ref === selected.ref);
   if (!request) {
-    return { status: 'processed', session, outcome: { status: 'rejected', reason: 'unknown-request' } };
+    return {
+      status: 'processed',
+      session,
+      outcome: { status: 'rejected', reason: 'unknown-request' },
+    };
   }
 
   let resolution: unknown;
   try {
-    resolution = validateIdentity({ selection: structuredClone(selected), request: { ...request } });
+    resolution = validateIdentity({
+      selection: structuredClone(selected),
+      request: { ...request },
+    });
   } catch {
     return {
       status: 'processed',
@@ -88,14 +95,22 @@ export function processPersonSelection(
   }
   const acceptance = PersonAcceptanceSchema.safeParse(resolution);
   if (!acceptance.success) {
-    return { status: 'processed', session, outcome: { status: 'rejected', reason: 'invalid-resolution' } };
+    return {
+      status: 'processed',
+      session,
+      outcome: { status: 'rejected', reason: 'invalid-resolution' },
+    };
   }
   if (
     acceptance.data.ref !== selected.ref ||
     acceptance.data.sourceRevision !== selected.sourceRevision ||
     acceptance.data.person.id !== selected.candidate.id
   ) {
-    return { status: 'processed', session, outcome: { status: 'rejected', reason: 'resolution-mismatch' } };
+    return {
+      status: 'processed',
+      session,
+      outcome: { status: 'rejected', reason: 'resolution-mismatch' },
+    };
   }
 
   const outcome = acceptResolvedPerson(state, acceptance.data);

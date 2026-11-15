@@ -9,34 +9,60 @@ import { validatePersonSelection } from '@lib/domain/search/validate-person-sele
 import { SearchStateSchema } from '@lib/schemas/search-state';
 
 function setup(operation: 'add' | 'replace' = 'add') {
-  const request = operation === 'add'
-    ? { ref: 'p', query: 'Original name', operation }
-    : { ref: 'p', query: 'Original name', operation, targetPersonId: 501 };
+  const request =
+    operation === 'add'
+      ? { ref: 'p', query: 'Original name', operation }
+      : { ref: 'p', query: 'Original name', operation, targetPersonId: 501 };
   const state = SearchStateSchema.parse({
-    mode: 'discover', revision: 4,
+    mode: 'discover',
+    revision: 4,
     filters: { genreIds: [878], minRating: 7 },
-    people: [{ id: 501, name: 'Accepted A' }, { id: 502, name: 'Accepted B' }],
+    people: [
+      { id: 501, name: 'Accepted A' },
+      { id: 502, name: 'Accepted B' },
+    ],
     pendingQueries: {
       personQueries: [request, { ref: 'other', query: 'Other person', operation: 'add' }],
       keywordQueries: [{ ref: 'k', query: 'space' }],
     },
   });
-  const opened = offerPersonClarification(state, {}, {
-    kind: 'person-selection', ref: 'p', sourceRevision: 4,
-    candidates: [{ id: 503, name: 'Old candidate' }], hasMore: true,
-  });
+  const opened = offerPersonClarification(
+    state,
+    {},
+    {
+      kind: 'person-selection',
+      ref: 'p',
+      sourceRevision: 4,
+      candidates: [{ id: 503, name: 'Old candidate' }],
+      hasMore: true,
+    },
+  );
   if (opened.status !== 'active') throw new Error('Expected an active question');
   const refined = processPersonClarificationAction(state, opened.session, {
-    clarificationRef: 'person-question-1', ref: 'p', sourceRevision: 4,
-    action: 'refine', text: 'The person from Example movie',
+    clarificationRef: 'person-question-1',
+    ref: 'p',
+    sourceRevision: 4,
+    action: 'refine',
+    text: 'The person from Example movie',
   });
-  if (refined.status !== 'processed' || refined.outcome.status !== 'follow-up' || refined.outcome.action.action !== 'refine') {
+  if (
+    refined.status !== 'processed' ||
+    refined.outcome.status !== 'follow-up' ||
+    refined.outcome.action.action !== 'refine'
+  ) {
     throw new Error('Expected an authorized refinement');
   }
   return {
-    state, session: refined.session, oldSession: opened.session,
+    state,
+    session: refined.session,
+    oldSession: opened.session,
     context: { action: refined.outcome.action, request: refined.outcome.request },
-    correction: { clarificationRef: 'person-question-1', ref: 'p', sourceRevision: 4, query: ' Corrected name ' },
+    correction: {
+      clarificationRef: 'person-question-1',
+      ref: 'p',
+      sourceRevision: 4,
+      query: ' Corrected name ',
+    },
   };
 }
 
@@ -55,28 +81,41 @@ describe('bound person correction acceptance', () => {
       expect(result).toEqual({
         status: 'applied',
         state: {
-          ...fixture.state, revision: 5,
+          ...fixture.state,
+          revision: 5,
           pendingQueries: {
             ...fixture.state.pendingQueries,
             personQueries: fixture.state.pendingQueries.personQueries.map((request) =>
-              request.ref === 'p' ? { ...request, query: 'Corrected name' } : request),
+              request.ref === 'p' ? { ...request, query: 'Corrected name' } : request,
+            ),
           },
         },
       });
       expect(fixture).toEqual(snapshot);
       if (result.status !== 'applied') throw new Error('Expected a correction');
       expect(reconcilePersonClarification(result.state, fixture.session)).toMatchObject({
-        status: 'needs-question', session: { sequence: 1, activeQuestion: null },
+        status: 'needs-question',
+        session: { sequence: 1, activeQuestion: null },
         request: { ref: 'p', query: 'Corrected name', operation },
       });
-      expect(validatePersonSelection(result.state, fixture.oldSession.activeQuestion, {
-        clarificationRef: 'person-question-1', ref: 'p', sourceRevision: 4, personId: 503,
-      })).toEqual({ status: 'rejected', reason: 'stale-revision' });
-      expect(applyPersonCorrection(result.state, fixture.session, fixture.context, fixture.correction)).toEqual({
-        status: 'rejected', reason: 'stale-revision',
+      expect(
+        validatePersonSelection(result.state, fixture.oldSession.activeQuestion, {
+          clarificationRef: 'person-question-1',
+          ref: 'p',
+          sourceRevision: 4,
+          personId: 503,
+        }),
+      ).toEqual({ status: 'rejected', reason: 'stale-revision' });
+      expect(
+        applyPersonCorrection(result.state, fixture.session, fixture.context, fixture.correction),
+      ).toEqual({
+        status: 'rejected',
+        reason: 'stale-revision',
       });
       result.state.filters.genreIds.push(28);
-      result.state.people.forEach((person) => { person.name = 'Changed'; });
+      result.state.people.forEach((person) => {
+        person.name = 'Changed';
+      });
       expect(fixture).toEqual(snapshot);
     },
   );
@@ -98,9 +137,12 @@ describe('bound person correction acceptance', () => {
       const fixture = setup('replace');
       const input = { ...fixture.correction, ...extra };
       const snapshot = structuredClone({ fixture, input });
-      expect(applyPersonCorrection(fixture.state, fixture.session, fixture.context, input)).toEqual({
-        status: 'rejected', reason: 'invalid-correction',
-      });
+      expect(applyPersonCorrection(fixture.state, fixture.session, fixture.context, input)).toEqual(
+        {
+          status: 'rejected',
+          reason: 'invalid-correction',
+        },
+      );
       expect({ fixture, input }).toEqual(snapshot);
     },
   );
@@ -110,8 +152,14 @@ describe('bound person correction acceptance', () => {
     'rejects an unrelated parser response: %j',
     (extra) => {
       const fixture = setup();
-      expect(applyPersonCorrection(fixture.state, fixture.session, fixture.context, { ...fixture.correction, ...extra })).toEqual({
-        status: 'rejected', reason: 'refinement-mismatch',
+      expect(
+        applyPersonCorrection(fixture.state, fixture.session, fixture.context, {
+          ...fixture.correction,
+          ...extra,
+        }),
+      ).toEqual({
+        status: 'rejected',
+        reason: 'refinement-mismatch',
       });
     },
   );
@@ -122,16 +170,22 @@ describe('bound person correction acceptance', () => {
     { sequence: 2, activeQuestion: null },
   ])('rejects an obsolete refinement sequence: %j', (session) => {
     const fixture = setup();
-    expect(applyPersonCorrection(fixture.state, session, fixture.context, fixture.correction)).toEqual({
-      status: 'rejected', reason: 'obsolete-refinement',
+    expect(
+      applyPersonCorrection(fixture.state, session, fixture.context, fixture.correction),
+    ).toEqual({
+      status: 'rejected',
+      reason: 'obsolete-refinement',
     });
   });
 
   // Branch coverage: a still-active question is not evidence that its refinement has been authorized and consumed.
   it('rejects correction before the visible question was closed', () => {
     const fixture = setup();
-    expect(applyPersonCorrection(fixture.state, fixture.oldSession, fixture.context, fixture.correction)).toEqual({
-      status: 'rejected', reason: 'obsolete-refinement',
+    expect(
+      applyPersonCorrection(fixture.state, fixture.oldSession, fixture.context, fixture.correction),
+    ).toEqual({
+      status: 'rejected',
+      reason: 'obsolete-refinement',
     });
   });
 
@@ -154,24 +208,48 @@ describe('bound person correction acceptance', () => {
   // Branch coverage: malformed sessions, unauthorized follow-ups and blank parser output fail closed.
   it('rejects invalid boundary data before applying a pending command', () => {
     const fixture = setup();
-    expect(applyPersonCorrection(fixture.state, { sequence: -1 }, fixture.context, fixture.correction)).toEqual({
-      status: 'rejected', reason: 'invalid-session',
+    expect(
+      applyPersonCorrection(fixture.state, { sequence: -1 }, fixture.context, fixture.correction),
+    ).toEqual({
+      status: 'rejected',
+      reason: 'invalid-session',
     });
-    expect(applyPersonCorrection(fixture.state, fixture.session, {
-      ...fixture.context, action: { ...fixture.context.action, ref: 'other' },
-    }, fixture.correction)).toEqual({ status: 'rejected', reason: 'invalid-context' });
-    expect(applyPersonCorrection(fixture.state, fixture.session, {
-      ...fixture.context, action: { ...fixture.context.action, action: 'more-candidates' },
-    }, fixture.correction)).toEqual({ status: 'rejected', reason: 'invalid-context' });
-    expect(applyPersonCorrection(fixture.state, fixture.session, fixture.context, {
-      ...fixture.correction, query: '   ',
-    })).toEqual({ status: 'rejected', reason: 'invalid-correction' });
+    expect(
+      applyPersonCorrection(
+        fixture.state,
+        fixture.session,
+        {
+          ...fixture.context,
+          action: { ...fixture.context.action, ref: 'other' },
+        },
+        fixture.correction,
+      ),
+    ).toEqual({ status: 'rejected', reason: 'invalid-context' });
+    expect(
+      applyPersonCorrection(
+        fixture.state,
+        fixture.session,
+        {
+          ...fixture.context,
+          action: { ...fixture.context.action, action: 'more-candidates' },
+        },
+        fixture.correction,
+      ),
+    ).toEqual({ status: 'rejected', reason: 'invalid-context' });
+    expect(
+      applyPersonCorrection(fixture.state, fixture.session, fixture.context, {
+        ...fixture.correction,
+        query: '   ',
+      }),
+    ).toEqual({ status: 'rejected', reason: 'invalid-correction' });
   });
 
   // Branch coverage: removed person requests cannot be recreated from their former refinement context.
   it('rejects correction of a removed request', () => {
     const fixture = setup();
-    fixture.state.pendingQueries.personQueries = fixture.state.pendingQueries.personQueries.filter((request) => request.ref !== 'p');
+    fixture.state.pendingQueries.personQueries = fixture.state.pendingQueries.personQueries.filter(
+      (request) => request.ref !== 'p',
+    );
     expect(apply(fixture)).toEqual({ status: 'rejected', reason: 'unknown-request' });
   });
 
@@ -186,12 +264,19 @@ describe('bound person correction acceptance', () => {
     targetPersonId?: number;
   }[])('rejects changed request context: %j', (testCase) => {
     const fixture = setup(testCase.capturedOperation);
-    fixture.state.pendingQueries.personQueries = fixture.state.pendingQueries.personQueries.map((request) => {
-      if (request.ref !== 'p') return request;
-      return testCase.currentOperation === 'add'
-        ? { ref: 'p', query: 'Original name', operation: 'add' }
-        : { ref: 'p', query: 'Original name', operation: 'replace', targetPersonId: testCase.targetPersonId ?? 501 };
-    });
+    fixture.state.pendingQueries.personQueries = fixture.state.pendingQueries.personQueries.map(
+      (request) => {
+        if (request.ref !== 'p') return request;
+        return testCase.currentOperation === 'add'
+          ? { ref: 'p', query: 'Original name', operation: 'add' }
+          : {
+              ref: 'p',
+              query: 'Original name',
+              operation: 'replace',
+              targetPersonId: testCase.targetPersonId ?? 501,
+            };
+      },
+    );
     const snapshot = structuredClone(fixture);
     expect(apply(fixture)).toEqual({ status: 'rejected', reason: 'request-changed' });
     expect(fixture).toEqual(snapshot);

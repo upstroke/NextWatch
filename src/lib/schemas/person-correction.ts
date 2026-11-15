@@ -13,7 +13,10 @@ export const PersonRefinementContextSchema = z
 export type PersonRefinementContext = z.infer<typeof PersonRefinementContextSchema>;
 
 /** Parsed correction text only; request operation and replacement target remain application-owned. */
-export const PersonCorrectionSchema = PersonRefinementActionSchema.omit({ action: true, text: true })
+export const PersonCorrectionSchema = PersonRefinementActionSchema.omit({
+  action: true,
+  text: true,
+})
   .extend({ query: PendingPersonQuerySchema.options[0].shape.query })
   .strict();
 export type PersonCorrection = z.infer<typeof PersonCorrectionSchema>;
