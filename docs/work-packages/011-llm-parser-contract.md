@@ -4,7 +4,7 @@
 
 ### Purpose
 
-Define validated parser input/output for LLM-assisted extraction of filters and entity queries. Follow the approved [person search contract](../person-search-contract.md) and the WP 009 state-application contract rather than introducing a second state model.
+Define validated parser input/output for LLM-assisted extraction of filters and entity queries. Follow the [WP 009 state-application contract](009-search-state-and-filter-catalog.md) and [WP 012 participation semantics](012-search-execution-and-discover.md#scope) rather than introducing a second state model.
 
 ### Scope
 
@@ -36,5 +36,6 @@ Inputs: user request, existing search state, filter catalog and validation schem
 ## Execution status
 
 - Specification aligned on 2026-11-15; actual entity resolution is explicitly assigned to WP 014.
+- Replaced the separate requirements-document reference with direct state-contract and participation-semantics links.
 - Documentation-only update, not a claim of parser implementation.
 - No tests, coverage, lint or typecheck were run for this update.

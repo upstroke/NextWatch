@@ -4,7 +4,7 @@
 
 ### Purpose
 
-Resolve unresolved person names and keyword terms to validated TMDb identities without confusing identity lookup with movie/series search. Follow the approved [person search contract](../person-search-contract.md).
+Resolve unresolved person names and keyword terms to validated TMDb identities without confusing identity lookup with movie/series search. Use the [WP 009 state contract](009-search-state-and-filter-catalog.md) and [WP 010 clarification contract](010-clarification-and-guardrails.md); [WP 012](012-search-execution-and-discover.md) owns final title execution and participation eligibility.
 
 ### Ownership and dependencies
 
@@ -60,6 +60,7 @@ Resolve unresolved person names and keyword terms to validated TMDb identities w
 ## Execution status
 
 - Assigned on 2026-11-15 as the dedicated owner for person and keyword resolution.
+- Replaced the separate requirements-document reference with direct state, clarification and execution links.
 - Planned, not implemented. This package does not authorize starting resolution code while WP 009 remains the active implementation package.
 - Uniqueness rules, candidate bounds, missing-title fallback, keyword matching policy and concrete provider-contract gaps remain implementation-design tasks.
 - No tests, coverage, lint or typecheck were run for this documentation step.

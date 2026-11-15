@@ -4,7 +4,7 @@
 
 ### Purpose
 
-Define clarification and guardrails for ambiguous, incomplete or invalid requests without silently changing accepted search criteria. Follow the approved [person search contract](../person-search-contract.md).
+Define clarification and guardrails for ambiguous, incomplete or invalid requests without silently changing accepted search criteria. Use the state and transition contract in [WP 009](009-search-state-and-filter-catalog.md) and the resolution outcomes in [WP 014](014-entity-resolution.md).
 
 ### Scope and boundaries
 
@@ -12,6 +12,7 @@ Define clarification and guardrails for ambiguous, incomplete or invalid request
 - Consume unique, ambiguous and no-match entity outcomes from [WP 014](014-entity-resolution.md); do not perform provider lookups here.
 - Associate candidate selections with a stable WP 009 pending-request reference and source revision. Reject stale or unrelated selections; validate membership in the offered candidate set.
 - For ambiguous people, present candidate names and available known movie/series titles with media type. No profile image is required. Define candidate count and a missing-title fallback before implementation.
+- Apply the [WP 014 candidate-enrichment rule](014-entity-resolution.md#scope): known titles are identity-selection aids, not a complete filmography or final search results.
 - Do not select the highest-ranked candidate merely to avoid a question.
 - For no match, request correction or explicit removal of the condition; do not silently drop a person. Distinguish provider failures from no-match outcomes.
 - Preserve independently accepted people, unrelated criteria and pending replacements. A question or candidate retrieval alone does not change criteria or revision.
@@ -39,5 +40,6 @@ Inputs: user request, existing WP 009 state, filter catalog, validation schemas 
 ## Execution status
 
 - Specification aligned with the approved person-search requirements on 2026-11-15.
+- Replaced the separate requirements-document reference with direct WP links and explicitly linked the selection-aid versus filmography distinction.
 - This is a documentation-only scope update, not a claim of implemented clarification behavior.
 - No tests, coverage, lint or typecheck were run for this update.
