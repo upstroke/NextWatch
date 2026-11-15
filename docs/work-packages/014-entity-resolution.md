@@ -1,0 +1,65 @@
+# Person and keyword entity resolution
+
+## Specification
+
+### Purpose
+
+Resolve unresolved person names and keyword terms to validated TMDb identities without confusing identity lookup with movie/series search. Follow the approved [person search contract](../person-search-contract.md).
+
+### Ownership and dependencies
+
+- This package explicitly owns server-side person and keyword resolution previously left unassigned.
+- WP 009 owns the domain state and pure acceptance transitions. WP 010 owns clarification and selection workflow. WP 011 owns text extraction. WP 012 owns movie/series execution and acting-role eligibility.
+- Implement after the required WP 009 state contracts and WP 010/011 interface contracts are available, and before live unresolved-entity integration in WP 012. The numeric identifier does not imply execution after WP 012; retain existing package numbers.
+- Contracts may be developed with synthetic fixtures, without prematurely implementing later UI or execution work.
+
+### Scope
+
+- Search people and keywords through injected server-side TMDb transports. Reuse existing search contracts where suitable; verify concrete gaps before adding adapters.
+- Validate provider responses and map person candidates to provider ID and display name. Carry stable pending-request reference and source revision throughout resolution.
+- Define explicit unique, ambiguous and no-match outcomes. A successful response with no match differs from technical failure, malformed response and incomplete candidate retrieval.
+- Define a conservative, tested uniqueness policy before implementation. Do not treat rank/popularity or a truncated first page as proof of identity.
+- Provide available known movie/series titles with media type as person-selection aids; no profile image is required. These titles are not a complete filmography or final results.
+- Pass ambiguous/no-match outcomes to WP 010. Preserve unrelated accepted people and criteria; never drop unresolved conditions to enable execution.
+- Validate user selection against the offered candidate set and its request/revision association. Do not accept arbitrary model-generated or stale IDs.
+- Produce validated acceptance input for the pure WP 009 transition. That transition owns atomic pending removal, accepted-person addition/replacement, deduplication, limits and revision increment.
+- Define keyword candidate mapping, ambiguity/no-match policy and validated ID acceptance explicitly. Reuse WP 009 pending/active keyword state and limits; do not guess IDs or automatically copy person-specific selection rules. Specify any necessary keyword acceptance-transition extension in WP 009 before integration.
+- Define bounded candidate retrieval/enrichment, timeouts, rate-limit handling and incomplete outcomes. Do not hide truncation as no match or unique match.
+
+### Out of scope
+
+- Natural-language extraction (WP 011).
+- UI rendering and the complete clarification interaction (WP 010).
+- Filmography execution, TV-credit intersection, provider filtering and acting-role classification for final results (WP 012).
+- Direct mutation of active filters, automatic search relaxation and full LLM implementation.
+
+### Inputs
+
+- Validated pending person/keyword request with stable reference and source revision.
+- Explicit person addition/replacement context from WP 009.
+- Validated selection context when clarification was necessary.
+- Injected server-side provider dependencies.
+
+### Outputs
+
+- Validated unique, ambiguous or no-match person/keyword outcomes.
+- Person candidate IDs, names and available distinguishing movie/series titles.
+- Validated identity-acceptance inputs bound to the original request and revision.
+- Explicit technical-error or incomplete-resolution status.
+
+### Implementation tasks and acceptance criteria
+
+- Review existing provider search schemas, services and fixtures before adding code.
+- Define and test response mapping, uniqueness policy and complete-versus-incomplete candidate handling.
+- Support independent resolution of multiple names without changing the requested AND condition.
+- Test ambiguous/no-match behavior, candidate membership, stale selection and request association.
+- Test person replacement integration and keyword acceptance against WP 009 without duplicating its domain decisions.
+- Keep lookup and candidate enrichment server-side, credential-safe and transport-injected.
+- Test with synthetic fixtures and mocked external boundaries; report actual validation separately from plans.
+
+## Execution status
+
+- Assigned on 2026-11-15 as the dedicated owner for person and keyword resolution.
+- Planned, not implemented. This package does not authorize starting resolution code while WP 009 remains the active implementation package.
+- Uniqueness rules, candidate bounds, missing-title fallback, keyword matching policy and concrete provider-contract gaps remain implementation-design tasks.
+- No tests, coverage, lint or typecheck were run for this documentation step.

@@ -16,23 +16,30 @@ It describes how filters and pending entity queries are represented and preserve
 - Define how filters are combined.
 - Define how existing filters are preserved.
 - Define how pending person and keyword queries are represented and preserved in the search state, separately from resolved TMDb IDs.
-- Prepare the search state for entity resolution and Discover execution.
+- Prepare the search state for entity resolution and search execution.
 
 ### Work-package boundaries
 
+- The approved [person search contract](../person-search-contract.md) supplies the person-state and product requirements. The specification extensions below were approved on 2026-11-15; they are not claims of implemented behavior.
 - WP 008 validates and atomically applies structured filter changes. It does not extract or store unresolved entity queries.
-- WP 009 owns the state representation and preservation of pending person and keyword queries. It does not interpret natural language or perform TMDb lookups.
-- WP 011 defines parser fields and the extraction contract for entity queries. Its parser output must integrate with the state representation defined in WP 009 rather than introduce a competing state model.
+- WP 009 owns pending-query state, accepted-person representation and pure controlled transitions. It does not interpret natural language or perform TMDb lookups.
+- [WP 010](010-clarification-and-guardrails.md) owns clarification and selection workflow contracts; candidate lists are not active filters.
+- [WP 011](011-llm-parser-contract.md) owns extraction and must integrate with the WP 009 state model.
+- [WP 014](014-entity-resolution.md) owns actual server-side person and keyword resolution. Resolution is not assigned to WP 011.
+- [WP 012](012-search-execution-and-discover.md) owns search execution, including credits-based TV execution.
 - Pending queries are not resolved IDs and must not be silently applied as active ID filters.
-- Actual person and keyword resolution remains outside this work package and still needs an explicit implementation assignment. This clarification does not assign resolution to WP 011.
 
-### Person filter semantics for movie searches
+### Person criteria and accepted-person state
 
-- A request such as "I am looking for a Sci-Fi movie with Brad Pitt" means a movie in the science-fiction genre featuring Brad Pitt as a cast member, not a movie involving him in any arbitrary production role.
-- The person criterion needs the TMDb `personId` obtained by resolving the name. The product contract does not introduce separate cast, crew or general-participation role fields for this requirement.
-- Before resolution, preserve "Brad Pitt" as a pending person query, separately from active resolved ID filters. Never guess the ID or treat the name as an ID.
-- The intended later flow is: movie criterion + science-fiction genre + pending person query -> person lookup -> resolved `personId` -> Movie Discover filtered by that cast ID and genre. This describes the required behavior, not functionality implemented by WP 009.
-- Name extraction belongs to WP 011. Person resolution and Discover execution remain outside WP 009. This movie example does not establish TV person-filter support or expand the scope to crew searches.
+- Support person criteria for movies and TV series according to the person search contract. Only acting roles qualify; crew work and appearances as oneself do not. WP 012 must verify participation semantics, not assume cast membership alone proves an acting role.
+- Multiple people joined by AND must participate in the same title. For TV this means the same series, not necessarily the same episode. Without an explicit media type, both movies and series are eligible.
+- Represent accepted people as ID/name records and derive technical person-ID filters from this single source of truth. Migrate the existing filter contract and all callers together; do not maintain independently editable ID and name lists.
+- Give pending person requests stable internal references. Distinguish additions from replacements; a replacement references its accepted target, which remains accepted until atomic replacement.
+- Preserve the existing person and keyword limits. Define enforcement across accepted people and pending additions, including replacement and duplicate cases, before implementation.
+- Accepting a validated resolution atomically removes the matching pending request and adds or replaces the accepted person. Deduplicate by person ID; do not leave obsolete pending requests or silently alter the requested AND meaning.
+- Match resolution acceptance to the pending reference and source revision. Reject stale results and preserve unrelated criteria. Person-ID changes from chat intents remain prohibited.
+- WP 009 consumes validated resolution outcomes through a controlled transition; it neither looks up identities nor retrieves titles. Candidate lists remain in resolution/clarification state with explicit request and revision association.
+- A request such as a science-fiction movie featuring Brad Pitt preserves the unresolved name until resolution and later uses the accepted identity as an acting-participation criterion. This describes required behavior, not a completed search feature.
 
 ### Search mode
 
@@ -40,17 +47,20 @@ It describes how filters and pending entity queries are represented and preserve
 - Once a valid search is initiated, the mode is `discover`; Trending is not used to execute an individual search.
 - Removing all individual search criteria returns the mode to `trending`.
 - Invalid requests and ineffective changes do not change the search mode.
-- These rules define state transitions only. They do not authorize Discover execution or page-initialization UI work in WP 009.
+- `discover` denotes criteria-based search, not a guarantee of calling one particular provider endpoint.
+- Required unresolved people block execution of the new complete search. WP 012 enforces execution readiness; previous results must not be presented as results of that unresolved request.
+- These rules define state transitions and contracts only. They do not authorize search execution or page-initialization UI work in WP 009.
 
 ### Revision and stale responses
 
 - The revision identifies the current accepted domain search state.
 - Increase the revision when an actual domain search-state change is accepted, including adding, changing or removing a pending person or keyword query.
-- Typing in an input draft does not change domain search state or its revision; only acceptance into that state counts.
+- An effective controlled resolution acceptance increments revision exactly once, including atomic pending removal and accepted-person addition or replacement.
+- Typing in an input draft, retrieving candidates and displaying clarification do not change criteria or revision.
 - Invalid and ineffective changes preserve the existing search state and revision.
-- Responses based on an outdated revision must not be applied to the current state.
+- Responses and selections based on an outdated revision must not be applied to the current state.
 - Example: Sci-Fi filters are at revision 4. Accepting the pending query "Brad Pitt" creates revision 5. Replacing it with "Tom Cruise" creates revision 6. A late response for the Brad Pitt query at revision 5 must not overwrite revision 6.
-- This specifies the revision contract for later asynchronous consumers; it does not implement person lookups or network orchestration in WP 009.
+- This specifies the contract for asynchronous consumers; it does not implement lookups or network orchestration in WP 009.
 
 ### Clarification and error outcomes
 
@@ -70,8 +80,8 @@ It describes how filters and pending entity queries are represented and preserve
 ### Out of scope
 
 - Natural-language extraction and the entity-query parser contract (WP 011).
-- Entity resolution.
-- Discover execution.
+- Provider entity resolution (WP 014).
+- Search execution, including Discover and credits retrieval (WP 012).
 - Result presentation.
 - Automatic error recovery.
 - Full LLM implementation.
@@ -82,18 +92,22 @@ It describes how filters and pending entity queries are represented and preserve
 - Existing search state.
 - Filter catalog.
 - Validation schemas.
+- Validated resolution outcomes for controlled domain acceptance.
 
 ### Outputs
 
-- Search state structure, including pending entity queries.
+- Search state structure, including pending entity queries and accepted-person records.
 - Filter catalog.
 - Filter validation rules.
 - Filter combination rules.
+- Pure controlled state-transition outcomes.
 
 ### Implementation tasks
 
 - Define the search state structure.
 - Define the representation and preservation rules for pending person and keyword queries.
+- Migrate accepted-person state, derived technical IDs and affected callers together.
+- Implement pending-query add/change/remove and controlled person acceptance/replacement with stable references, deduplication and limit enforcement.
 - Define search-mode transitions and revision updates according to the rules above.
 - Define domain outcomes for clarification, errors and ineffective changes without implementing their UI or the full clarification workflow.
 - Define the filter catalog.
@@ -106,8 +120,10 @@ It describes how filters and pending entity queries are represented and preserve
 
 - The search state is clearly defined.
 - Pending person and keyword queries can be represented and preserved without being treated as resolved IDs or replacing existing active filters.
+- Accepted people retain ID and display name with one source of truth for derived technical filters.
+- Pending-person references and replacement targets are stable; controlled acceptance is atomic, revision-guarded, deduplicated and limit-checked.
 - Initial entry without criteria uses Trending, a valid search uses Discover, and removing all individual search criteria returns to Trending.
-- Accepted domain-state changes, including pending-query changes, increase the revision; input drafts, invalid requests and ineffective changes do not.
+- Accepted domain-state changes, including pending-query changes, increase the revision; input drafts, candidate retrieval, clarification display, invalid requests and ineffective changes do not.
 - Outdated responses cannot overwrite the current search state.
 - Semantic clarification preserves search criteria and revision; technical failures remain distinguishable errors.
 - Ineffective changes return an unchanged outcome without requesting another search or claiming new search results.
@@ -152,10 +168,16 @@ WP 009 remains in progress. The completed work is recorded below in implementati
 - Added `tests/unit/domain/search/create-initial-search-state.spec.ts` with two unit tests covering the initial values and independence between calls, including mutation isolation.
 - The user reported "alles grün" after this commit. This is user-reported successful validation, not assistant-executed validation; no numeric coverage result or assistant-run test-first red/green cycle is claimed.
 
+### Approved scope alignment: 2026-11-15
+
+- Recorded the approved person-search contract in commit `efeb58a`. This documentation alignment assigns provider resolution to WP 014 and execution to WP 012.
+- Extended the specification for accepted ID/name records, stable pending references, replacements and controlled acceptance. These extensions are not implemented by steps 1-4; their historical descriptions remain unchanged.
+- No application code was changed and no tests, coverage, lint or typecheck were run for this documentation alignment.
+
 ### Remaining work and boundaries
 
-- Pending-query add/change/remove operations with their revision effects remain open.
-- ID-set normalization, mediatype compatibility and inactive return-value rules remain open; current list-order equality semantics are retained. Catalog entries establish neither ID provenance nor unverified TV person support or genre-ID compatibility.
-- A dedicated controlled transition for future resolution results is not implemented by the chat-intent extension; actual entity resolution remains separately unassigned and outside WP 009.
-- Store/UI integration, entity-query extraction (WP 011), network orchestration, Discover execution and the complete clarification workflow (WP 010) remain outside this implementation step.
+- Migrate accepted-person representation and all callers; implement stable pending references, add/change/remove operations, limit enforcement, deduplication and controlled resolution acceptance/replacement with revision effects.
+- ID-set normalization, mediatype compatibility and inactive return-value rules remain open; current list-order equality semantics are retained until explicitly changed and tested. Catalog entries establish neither ID provenance nor provider execution capabilities or genre-ID compatibility.
+- Provider person and keyword resolution is assigned to WP 014, not implemented in WP 009.
+- Store/UI integration, entity-query extraction (WP 011), network orchestration, search execution (WP 012) and the complete clarification workflow (WP 010) remain outside this implementation step.
 - WP 009 is not complete.

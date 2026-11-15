@@ -1,54 +1,43 @@
 # Clarification and guardrails
 
-## Purpose
+## Specification
 
-This work package defines when clarification is required and which guardrails protect the search flow.
+### Purpose
 
-It describes how ambiguous or incomplete input is handled without silently changing the existing search state.
+Define clarification and guardrails for ambiguous, incomplete or invalid requests without silently changing accepted search criteria. Follow the approved [person search contract](../person-search-contract.md).
 
-## Scope
+### Scope and boundaries
 
-- Define when clarification is required.
-- Define clarification states.
-- Define guardrails for invalid or incomplete input.
-- Define how existing filters are preserved.
-- Prepare the search state for entity resolution and Discover execution.
+- Define clarification states, pending clarification requirements and preservation rules.
+- Consume unique, ambiguous and no-match entity outcomes from [WP 014](014-entity-resolution.md); do not perform provider lookups here.
+- Associate candidate selections with a stable WP 009 pending-request reference and source revision. Reject stale or unrelated selections; validate membership in the offered candidate set.
+- For ambiguous people, present candidate names and available known movie/series titles with media type. No profile image is required. Define candidate count and a missing-title fallback before implementation.
+- Do not select the highest-ranked candidate merely to avoid a question.
+- For no match, request correction or explicit removal of the condition; do not silently drop a person. Distinguish provider failures from no-match outcomes.
+- Preserve independently accepted people, unrelated criteria and pending replacements. A question or candidate retrieval alone does not change criteria or revision.
+- Route accepted selections through WP 014 validation and the pure WP 009 acceptance transition. Do not mutate active IDs directly.
+- Preserve the complete requested AND condition. Required unresolved people block execution of the new search in WP 012.
 
-## Out of scope
+### Out of scope
 
-- Entity resolution.
-- Discover execution.
-- Result presentation.
-- Automatic error recovery.
-- Full LLM implementation.
+- Provider entity resolution (WP 014).
+- Search execution (WP 012).
+- Result rendering, automatic error recovery and full LLM implementation.
 
-## Inputs
+### Inputs and outputs
 
-- User request.
-- Existing search state.
-- Filter catalog.
-- Validation schemas.
+Inputs: user request, existing WP 009 state, filter catalog, validation schemas and WP 014 resolution outcomes. Outputs: clarification states, guardrail outcomes, pending clarification requirements and accepted selections for controlled state application.
 
-## Outputs
+### Implementation tasks and acceptance criteria
 
-- Clarification states.
-- Guardrail rules.
-- Updated search state.
-- Pending clarification requirements.
+- Define clarification states and guardrails for ambiguous, incomplete and invalid input.
+- Preserve existing filters and revision unless an effective criteria transition is accepted through WP 009.
+- Define candidate presentation and selection contracts, no-match correction/removal and safe stale-selection rejection.
+- Test preservation, invalid selection, no-match versus technical error and independent handling of multiple people.
+- Prepare contracts using synthetic outcomes before WP 014 exists; live resolution integration depends on WP 014.
 
-## Implementation tasks
+## Execution status
 
-- Define clarification states.
-- Define guardrail rules.
-- Define rules for preserving existing filters.
-- Define rules for incomplete input.
-- Define rules for invalid input.
-- Prepare the search state for later work packages.
-
-## Acceptance criteria
-
-- Ambiguous input leads to clarification.
-- Incomplete input does not silently change the search state.
-- Invalid input does not silently change the search state.
-- Existing filters are preserved.
-- The search state can be used by later work packages.
+- Specification aligned with the approved person-search requirements on 2026-11-15.
+- This is a documentation-only scope update, not a claim of implemented clarification behavior.
+- No tests, coverage, lint or typecheck were run for this update.
