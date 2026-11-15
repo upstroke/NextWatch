@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DiscoverQuerySchema } from '@lib/schemas/discover-query';
+import { MAX_KEYWORD_IDS } from '@lib/config/domain';
 
 describe('Discover query schema', () => {
   // Statement coverage: converts comma-separated genre IDs into a numeric array
@@ -127,9 +128,13 @@ describe('Discover query schema', () => {
     expect(() => DiscoverQuerySchema.parse({ personIds: '1,2,3,4,5,6' })).toThrow();
   });
 
-  // Branch coverage: rejects more than five keyword IDs
-  it('rejects more than five keyword IDs', () => {
-    expect(() => DiscoverQuerySchema.parse({ keywordIds: '1,2,3,4,5,6' })).toThrow();
+  // Branch coverage: rejects a keyword list exactly one entry beyond the configured limit
+  it('rejects a keyword list exactly one entry beyond the configured limit', () => {
+    const keywordIds = Array.from({ length: MAX_KEYWORD_IDS + 1 }, (_, index) => index + 1).join(
+      ',',
+    );
+
+    expect(() => DiscoverQuerySchema.parse({ keywordIds })).toThrow();
   });
 
   // Branch coverage: rejects ratings outside the supported range
