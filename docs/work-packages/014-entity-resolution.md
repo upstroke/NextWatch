@@ -26,6 +26,16 @@ Resolve unresolved person names and keyword terms to validated TMDb identities w
 - Define keyword candidate mapping, ambiguity/no-match policy and validated ID acceptance explicitly. Reuse WP 009 pending/active keyword state and limits; do not guess IDs or automatically copy person-specific selection rules. Specify any necessary keyword acceptance-transition extension in WP 009 before integration.
 - Define bounded candidate retrieval/enrichment, timeouts, rate-limit handling and incomplete outcomes. Do not hide truncation as no match or unique match.
 
+### Integration with existing WP 009 code
+
+- Reuse structured `PendingPersonQuerySchema`, `PendingKeywordQuerySchema` and accepted-person records from `src/lib/schemas/search-state.ts`; do not recreate pending state as unreferenced strings.
+- `PersonAcceptanceSchema` in `src/lib/schemas/search-transition.ts` already defines `ref`, `sourceRevision` and an ID/name `person`. Produce that input only after provider identity and candidate membership are established. Structural parsing alone is not provenance validation.
+- Reuse `acceptResolvedPerson()` from `src/lib/domain/search/pending-operations.ts`. Do not duplicate its stale-revision guard, matching-request lookup, atomic pending removal, addition/replacement, existing-name retention or ID deduplication.
+- Existing acceptance treats an addition resolving to an accepted ID as effective pending removal. Replacing A with already accepted B removes A and retains B once. Respect these domain decisions rather than introducing a second conflicting policy.
+- Reuse `applyPendingQueryCommand()` for pending-request corrections/removals. Candidate retrieval and selection workflow must not increment criteria revision merely by showing a question.
+- Bind each lookup to its request and revision. If another accepted transition makes the result stale, do not bypass the revision guard or merely relabel the result with a newer revision; define safe re-resolution/revalidation coordination.
+- Keyword lookup remains assigned here, but a controlled keyword-resolution acceptance operation has not been verified in the inspected WP 009 code. Before implementation, specify the missing integration contract and obtain approval for any required domain extension; do not apply keyword IDs through an unguarded side channel.
+
 ### Out of scope
 
 - Natural-language extraction (WP 011).
@@ -54,6 +64,7 @@ Resolve unresolved person names and keyword terms to validated TMDb identities w
 - Support independent resolution of multiple names without changing the requested AND condition.
 - Test ambiguous/no-match behavior, candidate membership, stale selection and request association.
 - Test person replacement integration and keyword acceptance against WP 009 without duplicating its domain decisions.
+- Test coordination of multiple resolution results against the existing global revision guard; never apply stale identities by rewriting their source revision.
 - Keep lookup and candidate enrichment server-side, credential-safe and transport-injected.
 - Test with synthetic fixtures and mocked external boundaries; report actual validation separately from plans.
 
@@ -61,6 +72,7 @@ Resolve unresolved person names and keyword terms to validated TMDb identities w
 
 - Assigned on 2026-11-15 as the dedicated owner for person and keyword resolution.
 - Replaced the separate requirements-document reference with direct state, clarification and execution links.
+- Read-only review at `26aefe9` found existing pure person acceptance and pending operations; this package must integrate them rather than implement a competing state machine. This finding does not establish provider resolution or full WP 009 completion.
 - Planned, not implemented. This package does not authorize starting resolution code while WP 009 remains the active implementation package.
-- Uniqueness rules, candidate bounds, missing-title fallback, keyword matching policy and concrete provider-contract gaps remain implementation-design tasks.
+- Uniqueness rules, candidate bounds, missing-title fallback, keyword acceptance integration, multi-result coordination and concrete provider-contract gaps remain implementation-design tasks.
 - No tests, coverage, lint or typecheck were run for this documentation step.

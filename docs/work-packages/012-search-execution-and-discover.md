@@ -30,6 +30,17 @@ Turn validated criteria into provider searches and return results with explicit 
 - A local processing budget is not a provider result limit. Absence of a documented credits maximum is not a completeness guarantee.
 - Return results tied to the source revision. Do not apply outdated responses; prior visible results are not results of a pending new request.
 
+### Existing boundaries and required execution adapter
+
+- Reuse `deriveActiveSearchFilters()` in `src/lib/domain/search/derive-active-search-filters.ts` for technical ID projection. It derives person IDs from `state.people` and excludes pending queries and inactive genres. It is not an execution-readiness check, provider request or complete Discover adapter.
+- Keep `SearchState.filters`, `ActiveSearchFilters` and `DiscoverFilters` distinct. Existing server services accept `DiscoverFilters` from `src/lib/schemas/discover.ts`, not stored search state. Technical `personIds` in that service contract are not legacy duplicate storage to remove.
+- Implement and test an explicit mapping from domain `minYear`/`maxYear` to service `yearFrom`/`yearTo`, preserving absent/open bounds and all supported criteria. Route `mediaType` through execution planning; do not pass the projection blindly into a schema that can discard unmatched fields.
+- Existing `server/services/tmdb/discover-params.ts` emits `with_cast` whenever its input has person IDs, without a media-type guard. Do not treat this as TV person support. Guard or specialize execution paths before live person integration and test that unsupported TV cast filtering is never silently sent as an equivalent search.
+- Verify concrete provider behavior before implementing the TV credits path and acting-only eligibility. Movie cast filtering alone does not establish acting-only participation either.
+- Reuse WP 009 genre compatibility and inactive-return handling. Inactive genres are retained wishes, not active provider filters; do not restore them by bypassing domain transitions. Complete catalog acquisition and network orchestration must remain outside the pure WP 009 functions.
+- Define readiness for all required unresolved entity criteria, including keyword queries, before execution; pending requests must not disappear merely because the technical projection omits them.
+- Preserve a source revision through all requests and enrichment. A domain mode of `discover` is not by itself permission to execute.
+
 ### Out of scope
 
 - Entity resolution and candidate enrichment for identity selection (WP 014).
@@ -43,6 +54,8 @@ Inputs: validated WP 009 search state, resolved identities, filter catalog and v
 
 - Map validated state to movie and TV execution paths without losing criteria.
 - Use validated resolved IDs and retain ID/name associations for meaningful state.
+- Test the domain-to-service adapter for year-name translation, open bounds, supported filters, media routing and exclusion of pending/inactive values.
+- Test Movie/TV person routing explicitly; no unsupported cast parameter may masquerade as a valid TV person condition.
 - Enforce shared acting participation for all requested people.
 - Test unresolved blocking, role exclusions, intersection/deduplication, additional filters, stale responses, bounded work and incomplete-versus-empty outcomes.
 - Record source-backed provider assumptions and their verification date; distinguish provider behavior from local execution budgets.
@@ -54,4 +67,6 @@ Inputs: validated WP 009 search state, resolved identities, filter catalog and v
 - Scope expanded on 2026-11-15 from Discover-only execution to include the approved person-search requirements and credits-based TV planning.
 - Live resolution dependency explicitly assigned to WP 014; no provider execution is implemented by this documentation change.
 - Replaced the separate requirements-document reference with direct WP links and clarified role eligibility, media-type preservation and source-backed API-limit policy.
+- Read-only review at `26aefe9` identified the existing technical projection, distinct year-field contracts and unguarded cast-parameter mapping. This package explicitly owns their execution integration; the documentation does not fix or certify that code.
+- These are execution-boundary tasks, not a transfer of unfinished WP 009 domain acceptance criteria. WP 009 still requires its own complete review and validation.
 - No tests, coverage, lint or typecheck were run for this update.
