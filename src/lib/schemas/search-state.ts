@@ -24,12 +24,14 @@ const pendingText = z.string().trim().min(1);
 /** Application-owned reference and unresolved name with explicit addition or replacement context. */
 export const PendingPersonQuerySchema = z.discriminatedUnion('operation', [
   z.object({ ref: pendingReference, query: pendingText, operation: z.literal('add') }).strict(),
-  z.object({
-    ref: pendingReference,
-    query: pendingText,
-    operation: z.literal('replace'),
-    targetPersonId: AcceptedPersonSchema.shape.id,
-  }).strict(),
+  z
+    .object({
+      ref: pendingReference,
+      query: pendingText,
+      operation: z.literal('replace'),
+      targetPersonId: AcceptedPersonSchema.shape.id,
+    })
+    .strict(),
 ]);
 export type PendingPersonQuery = z.infer<typeof PendingPersonQuerySchema>;
 
@@ -51,7 +53,11 @@ export const PendingEntityQueriesSchema = z
     for (const field of ['personQueries', 'keywordQueries'] satisfies (keyof typeof pending)[]) {
       pending[field].forEach((request, index) => {
         if (references.has(request.ref)) {
-          context.addIssue({ code: 'custom', path: [field, index, 'ref'], message: 'Pending references must be unique' });
+          context.addIssue({
+            code: 'custom',
+            path: [field, index, 'ref'],
+            message: 'Pending references must be unique',
+          });
         }
         references.add(request.ref);
       });
@@ -82,27 +88,53 @@ export const SearchStateSchema = z
     mode: SearchModeSchema,
     revision: z.number().int().nonnegative(),
     filters: SearchFiltersSchema,
-    people: z.array(AcceptedPersonSchema).max(MAX_PERSON_IDS)
+    people: z
+      .array(AcceptedPersonSchema)
+      .max(MAX_PERSON_IDS)
       .refine((people) => new Set(people.map((person) => person.id)).size === people.length, {
         message: 'Accepted person IDs must be unique',
-      }).default([]),
-    pendingQueries: PendingEntityQueriesSchema.default(() => ({ personQueries: [], keywordQueries: [] })),
+      })
+      .default([]),
+    pendingQueries: PendingEntityQueriesSchema.default(() => ({
+      personQueries: [],
+      keywordQueries: [],
+    })),
   })
   .strict()
   .superRefine((state, context) => {
-    const additions = state.pendingQueries.personQueries.filter((request) => request.operation === 'add');
+    const additions = state.pendingQueries.personQueries.filter(
+      (request) => request.operation === 'add',
+    );
     if (state.people.length + additions.length > MAX_PERSON_IDS) {
-      context.addIssue({ code: 'custom', path: ['pendingQueries', 'personQueries'], message: 'Accepted people and pending additions exceed the person limit' });
+      context.addIssue({
+        code: 'custom',
+        path: ['pendingQueries', 'personQueries'],
+        message: 'Accepted people and pending additions exceed the person limit',
+      });
     }
-    if (state.filters.keywordIds.length + state.pendingQueries.keywordQueries.length > MAX_KEYWORD_IDS) {
-      context.addIssue({ code: 'custom', path: ['pendingQueries', 'keywordQueries'], message: 'Active keywords and pending additions exceed the keyword limit' });
+    if (
+      state.filters.keywordIds.length + state.pendingQueries.keywordQueries.length >
+      MAX_KEYWORD_IDS
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['pendingQueries', 'keywordQueries'],
+        message: 'Active keywords and pending additions exceed the keyword limit',
+      });
     }
     const acceptedIds = new Set(state.people.map((person) => person.id));
     const replacementTargets = new Set<number>();
     state.pendingQueries.personQueries.forEach((request, index) => {
       if (request.operation !== 'replace') return;
-      if (!acceptedIds.has(request.targetPersonId) || replacementTargets.has(request.targetPersonId)) {
-        context.addIssue({ code: 'custom', path: ['pendingQueries', 'personQueries', index, 'targetPersonId'], message: 'Replacement target must exist and have only one pending replacement' });
+      if (
+        !acceptedIds.has(request.targetPersonId) ||
+        replacementTargets.has(request.targetPersonId)
+      ) {
+        context.addIssue({
+          code: 'custom',
+          path: ['pendingQueries', 'personQueries', index, 'targetPersonId'],
+          message: 'Replacement target must exist and have only one pending replacement',
+        });
       }
       replacementTargets.add(request.targetPersonId);
     });

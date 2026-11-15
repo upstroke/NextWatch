@@ -65,8 +65,17 @@ describe('pending-query state contract', () => {
 
   // Branch coverage: one reference cannot identify different pending requests, including across kinds.
   it.each([
-    { personQueries: [personAddition(), personAddition('person-1', 'Other person')], keywordQueries: [] },
-    { personQueries: [], keywordQueries: [{ ref: 'same', query: 'space' }, { ref: 'same', query: 'time travel' }] },
+    {
+      personQueries: [personAddition(), personAddition('person-1', 'Other person')],
+      keywordQueries: [],
+    },
+    {
+      personQueries: [],
+      keywordQueries: [
+        { ref: 'same', query: 'space' },
+        { ref: 'same', query: 'time travel' },
+      ],
+    },
     { personQueries: [personAddition('same')], keywordQueries: [{ ref: 'same', query: 'space' }] },
   ])('rejects duplicate pending references: %j', (pendingQueries) => {
     expect(SearchStateSchema.safeParse({ ...stateInput(), pendingQueries }).success).toBe(false);
@@ -161,7 +170,10 @@ describe('pending-query state contract', () => {
         ...input,
         pendingQueries: {
           ...input.pendingQueries,
-          keywordQueries: [...input.pendingQueries.keywordQueries, { ref: 'extra', query: 'time travel' }],
+          keywordQueries: [
+            ...input.pendingQueries.keywordQueries,
+            { ref: 'extra', query: 'time travel' },
+          ],
         },
       }).success,
     ).toBe(false);

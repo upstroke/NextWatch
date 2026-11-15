@@ -6,9 +6,13 @@ describe('createInitialSearchState', () => {
   // Statement coverage: initial entry satisfies the contract without invented criteria.
   it('creates a valid initial trending state with no people or pending queries', () => {
     const state = createInitialSearchState();
-    expect(state).toEqual({ mode: 'trending', revision: 0,
+    expect(state).toEqual({
+      mode: 'trending',
+      revision: 0,
       filters: { mediaType: 'all', sortBy: 'popularity.desc', genreIds: [], keywordIds: [] },
-      people: [], pendingQueries: { personQueries: [], keywordQueries: [] } });
+      people: [],
+      pendingQueries: { personQueries: [], keywordQueries: [] },
+    });
     expect(SearchStateSchema.parse(state)).toEqual(state);
   });
   // Statement coverage: independent searches share no mutable state or criteria lists.
@@ -24,10 +28,17 @@ describe('createInitialSearchState', () => {
     expect(first.filters.keywordIds).not.toBe(second.filters.keywordIds);
     expect(first.pendingQueries.personQueries).not.toBe(second.pendingQueries.personQueries);
     expect(first.pendingQueries.keywordQueries).not.toBe(second.pendingQueries.keywordQueries);
-    first.mode = 'discover'; first.revision = 1; first.filters.mediaType = 'movie';
-    first.filters.genreIds.push(878); first.filters.keywordIds.push(301);
+    first.mode = 'discover';
+    first.revision = 1;
+    first.filters.mediaType = 'movie';
+    first.filters.genreIds.push(878);
+    first.filters.keywordIds.push(301);
     first.people.push({ id: 501, name: 'Example person' });
-    first.pendingQueries.personQueries.push({ ref: 'p', query: 'Another person', operation: 'add' });
+    first.pendingQueries.personQueries.push({
+      ref: 'p',
+      query: 'Another person',
+      operation: 'add',
+    });
     first.pendingQueries.keywordQueries.push({ ref: 'k', query: 'space' });
     expect(second).toEqual(snapshot);
   });
