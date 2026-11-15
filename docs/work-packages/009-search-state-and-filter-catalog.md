@@ -135,7 +135,7 @@ It describes how filters and pending entity queries are represented and preserve
 
 ## Execution status
 
-WP 009 remains in progress. The completed work is recorded below in implementation order; the remaining scope is listed separately.
+WP 009 remains in progress. Steps 1-5 record historical implementation checkpoints; the current validation reports and completion findings below supersede their earlier pending-status statements.
 
 ### Step 1: Search-state contract
 
@@ -186,12 +186,45 @@ WP 009 remains in progress. The completed work is recorded below in implementati
 - Commits were made incrementally at the user's request, including temporarily incompatible schema-only stages. The targeted Search-domain caller review and listed migrations do not establish a complete repository-wide caller inventory.
 - Validation pending: tests, coverage, lint and typecheck were not executed by the assistant for these migration commits, and no user-reported validation result has been received for the final state through `f1f7221`. No green test run, numeric coverage result or executed test-first red/green cycle is claimed.
 
+### Step 6: Referenced pending requests and shared limits
+
+- Commit `79bb3f8` added `tests/unit/schemas/pending-query-state.spec.ts`. The user supplied an actual failing test report: the old schema rejected referenced objects and accepted legacy strings. This was a user-executed red run, not assistant-executed validation.
+- Commit `7fd0790` documented the user-approved deduplication rule in `src/lib/schemas/search-state.ts`. Identity is determined by person ID, not display name. Replacing A with already accepted B removes A and the matching pending replacement, leaving B once; this is not a conflict.
+- Commit `05a37a2` migrated pending strings to referenced records and migrated six existing test files. Person requests distinguish additions from replacements with accepted targets; references are unique across person and keyword requests.
+- Accepted people plus pending person additions share the person limit. Replacements use their existing target's slot. Active keyword IDs plus pending keyword additions share the keyword limit. The state rejects missing replacement targets and multiple pending replacements for the same target.
+- `applyIntent` now validates the complete candidate state, so active keyword changes cannot consume slots already reserved by pending requests. The migration also preserves independence of nested pending records.
+
+### Step 7: Controlled pending and person transitions
+
+- Commit `48581e3` added `src/lib/schemas/search-transition.ts`, `src/lib/domain/search/pending-operations.ts`, `src/lib/domain/search/get-search-mode.ts` and one focused test file, `tests/unit/domain/search/pending-operations.spec.ts`. Existing test files were not changed in this step.
+- `applyPendingQueryCommand` validates add/change/remove commands for both entity kinds, checks the base revision and request association, preserves references on changes and rejects occupied references on additions. Ineffective changes preserve the original state and revision.
+- `acceptResolvedPerson` checks the pending reference and source revision, then atomically removes that pending request and adds or replaces the accepted identity. It applies the approved ID-based deduplication rule, retains an already accepted identity's existing display name and preserves unrelated criteria.
+- Effective transitions increment revision exactly once and validate the entire resulting state, including shared limits. `getSearchMode` is shared with `applyIntent`; no transition performs lookups, starts execution or authorizes a provider request.
+- The acceptance boundary validates structure and state association, not provider provenance or membership in an offered candidate set. Those checks remain assigned to WP 014 and its integration with WP 010.
+
+### Current validation reports: 2026-11-15
+
+- After the controlled-transition commit, the user reported all tests green. The user subsequently explicitly confirmed that the preceding migration was also green. These reports supersede the earlier test-pending statements for the migration and transition work.
+- These are user-reported test results, not assistant-executed checks. No numerical coverage result or current successful lint/typecheck result was separately supplied for this final state. No assistant-executed green run is claimed.
+- The completion review inspected remote commit `1966fc9a7693517978d430a7b40748f1b7f2c660` on `feat/009-search-state-and-filter-catalog`. Remote inspection does not establish local working-tree cleanliness or the absence of unpushed changes.
+
+### Completion review: references and remaining state rules
+
+- The verified Search-domain trace is: `search-state.ts` supplies stored state and derived technical-filter types; `search-transition.ts` reuses those contracts for command/acceptance inputs; `apply-intent.ts` and `pending-operations.ts` accept candidate state through whole-state validation; `get-search-mode.ts` derives mode; `create-initial-search-state.ts` constructs empty state; `derive-active-search-filters.ts` derives person IDs exclusively from accepted people.
+- `filter-catalog.ts` describes technical active-filter capabilities; `extraction.ts` applies ordinary chat filter changes and excludes person-ID changes. The existing `domain/search/index.ts` re-exports extraction and intent application; no new barrel-export requirement is introduced.
+- The inspected Discover boundary remains separate: `src/lib/schemas/discover.ts`, `server/api/tmdb/discover/movie.get.ts`, `server/api/tmdb/discover/tv.get.ts`, `server/services/tmdb/discover.ts` and `discover-params.ts` consume `DiscoverFilters`, not stored `SearchState`. Their technical `personIds` are not a second independently editable person list inside the domain state. State-to-execution integration remains WP 012.
+- `app/app.vue` is still a rendering shell without search-state callers. Directory listings were inspected for root, app, src, server and tests. These listings and the targeted file trace do not establish an exhaustive repository-wide absence of legacy references. That final negative-reference proof remains open; no complete inventory is claimed.
+- ID-list semantics are explicitly recorded, not silently changed: `applyIntent.filtersEqual` compares genre/keyword lists by order; `extraction.ts` deduplicates added IDs but copies set/replace input without whole-list deduplication. Changing this to canonical ID-set equality or normalization remains an unresolved WP 009 rule, not an approved cleanup.
+- Domain mediatype compatibility remains unresolved. The catalog explicitly makes no compatibility or provider-capability claim. Retaining filter values across a media-type change is current behavior, not proof that their IDs are compatible. Provider execution capabilities belong to WP 012; domain compatibility must not be silently delegated there.
+- Inactive return values are not represented by `SearchStateSchema`. Pending unresolved queries are not inactive return values. No activation, deactivation or restoration rule has been implemented or approved by this completion review; the earlier open item remains open rather than being marked complete or silently deferred.
+- Documentation reference finding: `docs/person-search-contract.md`, linked by this specification, is absent from the inspected `docs/` listing and could not be retrieved directly at the review commit. The approved contract must be located or its repository reference repaired before relying on it for additional state-rule decisions. It was not recreated from conversation history.
+
 ### Remaining work and boundaries
 
-- Complete the repository-wide caller/reference review and validate the migrated state through `f1f7221`; address any concrete compatibility findings. The listed state, intent, initialization and test migrations are committed but not yet validated.
-- Pending queries still use string lists. Stable pending references, add/change/remove operations, replacement targets, combined accepted/pending limit enforcement and controlled resolution acceptance/replacement with revision effects remain open.
-- Accepted-person duplicate IDs are rejected structurally; transition-level deduplication during resolution acceptance is not implemented yet.
-- ID-set normalization, mediatype compatibility and inactive return-value rules remain open; current list-order equality semantics are retained until explicitly changed and tested. Catalog entries establish neither ID provenance nor provider execution capabilities or genre-ID compatibility.
-- Provider person and keyword resolution is assigned to WP 014, not implemented in WP 009.
-- Store/UI integration, entity-query extraction (WP 011), network orchestration, search execution (WP 012) and the complete clarification workflow (WP 010) remain outside this implementation step.
-- WP 009 is not complete.
+- Finish the exhaustive caller/reference proof beyond the targeted trace above and address only concrete compatibility findings.
+- Locate the referenced approved person-search contract or explicitly repair its documentation reference.
+- Resolve and implement, or obtain explicit acceptance of the intended handling of, ID-set semantics, domain mediatype compatibility and inactive return values. Recording existing behavior here is not approval to leave a required rule unimplemented or to move it to a later package.
+- Confirm current coverage, lint and typecheck results separately from the user's green test reports.
+- Follow up stale explanatory wording where a transition is still described as forthcoming; do not change runtime behavior as incidental documentation cleanup.
+- Provider person and keyword resolution remains WP 014. Store/UI integration, entity-query extraction (WP 011), search execution (WP 012) and the complete clarification workflow (WP 010) remain outside WP 009.
+- WP 009 is not complete. This documentation update does not change the specification or authorize new runtime behavior.
