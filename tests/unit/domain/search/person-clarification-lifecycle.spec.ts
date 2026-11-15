@@ -51,7 +51,10 @@ describe('sequential person clarification lifecycle', () => {
   it('initializes an empty session and identifies the first pending person without mutation', () => {
     const searchState = state();
     const snapshot = structuredClone(searchState);
-    expect(PersonClarificationSessionSchema.parse({})).toEqual({ sequence: 0, activeQuestion: null });
+    expect(PersonClarificationSessionSchema.parse({})).toEqual({
+      sequence: 0,
+      activeQuestion: null,
+    });
     const result = reconcilePersonClarification(searchState, {});
     expect(result).toEqual({
       status: 'needs-question',
@@ -97,11 +100,15 @@ describe('sequential person clarification lifecycle', () => {
     const searchState = state();
     const first = open(searchState);
     const snapshot = structuredClone({ searchState, first });
-    const second = open(searchState, first, { ...offer(), candidates: [{ id: 504, name: 'Next candidate' }] });
+    const second = open(searchState, first, {
+      ...offer(),
+      candidates: [{ id: 504, name: 'Next candidate' }],
+    });
     expect(second.sequence).toBe(2);
     expect(second.activeQuestion?.clarificationRef).toBe('person-question-2');
     expect(validatePersonSelection(searchState, second.activeQuestion, answer())).toEqual({
-      status: 'rejected', reason: 'question-mismatch',
+      status: 'rejected',
+      reason: 'question-mismatch',
     });
     expect({ searchState, first }).toEqual(snapshot);
   });
@@ -117,7 +124,10 @@ describe('sequential person clarification lifecycle', () => {
       session: { sequence: 1, activeQuestion: null },
       request: changed.pendingQueries.personQueries[0],
     });
-    expect(offerPersonClarification(changed, session, offer())).toEqual({ status: 'rejected', reason: 'stale-revision' });
+    expect(offerPersonClarification(changed, session, offer())).toEqual({
+      status: 'rejected',
+      reason: 'stale-revision',
+    });
     const refreshed = open(changed, session, offer('p', 5));
     expect(refreshed.activeQuestion?.sourceRevision).toBe(5);
     expect(refreshed.activeQuestion?.clarificationRef).toBe('person-question-2');
@@ -139,14 +149,20 @@ describe('sequential person clarification lifecycle', () => {
     if (accepted.status !== 'applied') throw new Error('Expected synthetic trusted acceptance');
     expect(accepted.state.revision).toBe(5);
     expect(accepted.state.filters).toEqual(searchState.filters);
-    expect(accepted.state.pendingQueries.keywordQueries).toEqual(searchState.pendingQueries.keywordQueries);
+    expect(accepted.state.pendingQueries.keywordQueries).toEqual(
+      searchState.pendingQueries.keywordQueries,
+    );
     expect(reconcilePersonClarification(accepted.state, session)).toEqual({
       status: 'needs-question',
       session: { sequence: 1, activeQuestion: null },
       request: accepted.state.pendingQueries.personQueries[0],
     });
     const next = open(accepted.state, session, offer('other', 5));
-    expect(next.activeQuestion).toMatchObject({ ref: 'other', sourceRevision: 5, clarificationRef: 'person-question-2' });
+    expect(next.activeQuestion).toMatchObject({
+      ref: 'other',
+      sourceRevision: 5,
+      clarificationRef: 'person-question-2',
+    });
     expect({ searchState, session }).toEqual(snapshot);
   });
 
@@ -159,7 +175,10 @@ describe('sequential person clarification lifecycle', () => {
     const searchState = state();
     const session = open(searchState);
     const snapshot = structuredClone({ searchState, session });
-    expect(offerPersonClarification(searchState, session, offer(ref))).toEqual({ status: 'rejected', reason });
+    expect(offerPersonClarification(searchState, session, offer(ref))).toEqual({
+      status: 'rejected',
+      reason,
+    });
     expect({ searchState, session }).toEqual(snapshot);
   });
 
@@ -177,26 +196,37 @@ describe('sequential person clarification lifecycle', () => {
   });
 
   // Branch coverage: provider errors and client-supplied question references are not fresh semantic offers.
-  it.each([{}, { kind: 'person-resolution-error', ref: 'p', sourceRevision: 4 }, { ...offer(), clarificationRef: 'injected' }])(
-    'rejects an invalid offer: %j',
-    (input) => {
-      expect(offerPersonClarification(state(), {}, input)).toEqual({ status: 'rejected', reason: 'invalid-offer' });
-    },
-  );
+  it.each([
+    {},
+    { kind: 'person-resolution-error', ref: 'p', sourceRevision: 4 },
+    { ...offer(), clarificationRef: 'injected' },
+  ])('rejects an invalid offer: %j', (input) => {
+    expect(offerPersonClarification(state(), {}, input)).toEqual({
+      status: 'rejected',
+      reason: 'invalid-offer',
+    });
+  });
 
   // Branch coverage: the session counter must not wrap and accidentally reuse a retired reference.
   it('rejects issuing a question after sequence exhaustion', () => {
     const session = { sequence: Number.MAX_SAFE_INTEGER, activeQuestion: null };
-    expect(offerPersonClarification(state(), session, offer())).toEqual({ status: 'rejected', reason: 'sequence-exhausted' });
+    expect(offerPersonClarification(state(), session, offer())).toEqual({
+      status: 'rejected',
+      reason: 'sequence-exhausted',
+    });
   });
 
   // Statement coverage: person completion retires the question but does not claim unresolved keywords are executable.
   it('reports only person completion and preserves the issued sequence', () => {
     const searchState = state();
     const session = open(searchState);
-    const completed = { ...searchState, pendingQueries: { ...searchState.pendingQueries, personQueries: [] } };
+    const completed = {
+      ...searchState,
+      pendingQueries: { ...searchState.pendingQueries, personQueries: [] },
+    };
     expect(reconcilePersonClarification(completed, session)).toEqual({
-      status: 'complete', session: { sequence: 1, activeQuestion: null },
+      status: 'complete',
+      session: { sequence: 1, activeQuestion: null },
     });
     expect(completed.pendingQueries.keywordQueries).toEqual([{ ref: 'k', query: 'space' }]);
   });
@@ -207,7 +237,12 @@ describe('sequential person clarification lifecycle', () => {
     (extra) => {
       const searchState = state();
       const session = open(searchState);
-      const input = { clarificationRef: 'person-question-1', ref: 'p', sourceRevision: 4, ...extra };
+      const input = {
+        clarificationRef: 'person-question-1',
+        ref: 'p',
+        sourceRevision: 4,
+        ...extra,
+      };
       const snapshot = structuredClone({ searchState, session, input });
       const result = processPersonClarificationAction(searchState, session, input);
       if (result.status !== 'processed') throw new Error('Expected processed action');
@@ -215,7 +250,8 @@ describe('sequential person clarification lifecycle', () => {
       expect(result.session).toEqual({ sequence: 1, activeQuestion: null });
       const replay = processPersonClarificationAction(searchState, result.session, input);
       expect(replay).toEqual({
-        status: 'processed', session: result.session,
+        status: 'processed',
+        session: result.session,
         outcome: { status: 'rejected', reason: 'no-active-clarification' },
       });
       expect({ searchState, session, input }).toEqual(snapshot);
@@ -223,30 +259,43 @@ describe('sequential person clarification lifecycle', () => {
   );
 
   // Statement coverage: explicit removal/discard closes the question and lets the next person be prepared at the new revision.
-  it.each(['remove', 'discard-change'])('retires the question after %s through the real transition', (action) => {
-    const searchState = state();
-    const session = open(searchState);
-    const snapshot = structuredClone({ searchState, session });
-    const result = processPersonClarificationAction(searchState, session, {
-      clarificationRef: 'person-question-1', ref: 'p', sourceRevision: 4, action,
-    });
-    if (result.status !== 'processed' || result.outcome.status !== 'applied') throw new Error('Expected removal');
-    expect(result.session).toEqual({ sequence: 1, activeQuestion: null });
-    expect(result.outcome.state.people).toEqual(searchState.people);
-    const next = reconcilePersonClarification(result.outcome.state, result.session);
-    expect(next.status).toBe('needs-question');
-    expect(open(result.outcome.state, result.session, offer('other', 5)).sequence).toBe(2);
-    expect({ searchState, session }).toEqual(snapshot);
-  });
+  it.each(['remove', 'discard-change'])(
+    'retires the question after %s through the real transition',
+    (action) => {
+      const searchState = state();
+      const session = open(searchState);
+      const snapshot = structuredClone({ searchState, session });
+      const result = processPersonClarificationAction(searchState, session, {
+        clarificationRef: 'person-question-1',
+        ref: 'p',
+        sourceRevision: 4,
+        action,
+      });
+      if (result.status !== 'processed' || result.outcome.status !== 'applied')
+        throw new Error('Expected removal');
+      expect(result.session).toEqual({ sequence: 1, activeQuestion: null });
+      expect(result.outcome.state.people).toEqual(searchState.people);
+      const next = reconcilePersonClarification(result.outcome.state, result.session);
+      expect(next.status).toBe('needs-question');
+      expect(open(result.outcome.state, result.session, offer('other', 5)).sequence).toBe(2);
+      expect({ searchState, session }).toEqual(snapshot);
+    },
+  );
 
   // Branch coverage: a rejected current answer must not destroy a valid active question.
   it('keeps the current question after a mismatched action', () => {
     const searchState = state();
     const session = open(searchState);
-    expect(processPersonClarificationAction(searchState, session, {
-      clarificationRef: 'wrong-group', ref: 'p', sourceRevision: 4, action: 'remove',
-    })).toEqual({
-      status: 'processed', session,
+    expect(
+      processPersonClarificationAction(searchState, session, {
+        clarificationRef: 'wrong-group',
+        ref: 'p',
+        sourceRevision: 4,
+        action: 'remove',
+      }),
+    ).toEqual({
+      status: 'processed',
+      session,
       outcome: { status: 'rejected', reason: 'question-mismatch' },
     });
   });
@@ -257,10 +306,16 @@ describe('sequential person clarification lifecycle', () => {
     const session = open(searchState);
     const changed = { ...searchState, revision: 5 };
     const snapshot = structuredClone({ changed, session });
-    expect(processPersonClarificationAction(changed, session, {
-      clarificationRef: 'person-question-1', ref: 'p', sourceRevision: 4, action: 'remove',
-    })).toEqual({
-      status: 'processed', session: { sequence: 1, activeQuestion: null },
+    expect(
+      processPersonClarificationAction(changed, session, {
+        clarificationRef: 'person-question-1',
+        ref: 'p',
+        sourceRevision: 4,
+        action: 'remove',
+      }),
+    ).toEqual({
+      status: 'processed',
+      session: { sequence: 1, activeQuestion: null },
       outcome: { status: 'rejected', reason: 'no-active-clarification' },
     });
     expect({ changed, session }).toEqual(snapshot);
