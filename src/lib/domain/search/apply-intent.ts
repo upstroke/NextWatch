@@ -25,7 +25,12 @@ export type ApplyIntentResult =
       field?: string;
     };
 
-/** Compares stored filters without changing existing ID-list ordering semantics. */
+/** Compares schema-normalized, unique ID lists without assigning meaning to order. */
+function idSetsEqual(a: number[], b: number[]): boolean {
+  return a.length === b.length && a.every((id) => b.includes(id));
+}
+
+/** Compares effective filter criteria, not the presentation order of ID lists. */
 function filtersEqual(a: SearchFilters, b: SearchFilters): boolean {
   return (
     a.mediaType === b.mediaType &&
@@ -33,16 +38,16 @@ function filtersEqual(a: SearchFilters, b: SearchFilters): boolean {
     a.minRating === b.minRating &&
     a.minYear === b.minYear &&
     a.maxYear === b.maxYear &&
-    a.keywordIds.length === b.keywordIds.length &&
-    a.keywordIds.every((id, index) => id === b.keywordIds[index]) &&
-    a.genreIds.length === b.genreIds.length &&
-    a.genreIds.every((id, index) => id === b.genreIds[index])
+    idSetsEqual(a.keywordIds, b.keywordIds) &&
+    idSetsEqual(a.genreIds, b.genreIds)
   );
 }
 
 /**
  * Validates a chat intent and atomically applies supported filter changes.
  * Only effective accepted changes update mode and increment revision once.
+ * Genre/keyword order and duplicate IDs are not effective criteria changes.
+ * Unchanged ID sets retain their existing order even when another filter changes.
  * Accepted people and referenced pending requests are preserved, not resolved.
  * Whole-state validation prevents active filter changes from consuming slots
  * already reserved by pending requests. Applied states share no mutable records
@@ -84,6 +89,14 @@ export function applyIntent(state: SearchState, intent: unknown): ApplyIntentRes
   }
   if (filtersEqual(state.filters, validated.data))
     return { status: 'unchanged', reason: 'no-effective-change' };
+
+  // Preserve presentation order for unchanged sets in an otherwise effective intent.
+  if (idSetsEqual(state.filters.keywordIds, validated.data.keywordIds)) {
+    validated.data.keywordIds = [...state.filters.keywordIds];
+  }
+  if (idSetsEqual(state.filters.genreIds, validated.data.genreIds)) {
+    validated.data.genreIds = [...state.filters.genreIds];
+  }
 
   const nextState = SearchStateSchema.safeParse({
     ...state,
