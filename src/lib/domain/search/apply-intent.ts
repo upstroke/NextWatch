@@ -5,6 +5,7 @@ import type { SearchFilters } from '@lib/schemas/search';
 import { SearchStateSchema } from '@lib/schemas/search-state';
 import type { SearchState } from '@lib/schemas/search-state';
 import { applyChangeTo } from './extraction';
+import { getSearchMode } from './get-search-mode';
 
 type Clarification = Extract<ChatIntent, { status: 'needs_clarification' }>['clarification'];
 
@@ -21,14 +22,6 @@ function filtersEqual(a: SearchFilters, b: SearchFilters): boolean {
     a.minRating === b.minRating && a.minYear === b.minYear && a.maxYear === b.maxYear &&
     a.keywordIds.length === b.keywordIds.length && a.keywordIds.every((id, index) => id === b.keywordIds[index]) &&
     a.genreIds.length === b.genreIds.length && a.genreIds.every((id, index) => id === b.genreIds[index]);
-}
-
-/** Default media scope and popularity sorting alone are not individual criteria. */
-function hasSearchCriteria(filters: SearchFilters, people: SearchState['people'], pending: SearchState['pendingQueries']) {
-  return filters.mediaType !== 'all' || filters.sortBy !== 'popularity.desc' ||
-    filters.minRating !== undefined || filters.minYear !== undefined || filters.maxYear !== undefined ||
-    filters.genreIds.length > 0 || filters.keywordIds.length > 0 || people.length > 0 ||
-    pending.personQueries.length > 0 || pending.keywordQueries.length > 0;
 }
 
 /**
@@ -67,7 +60,7 @@ export function applyIntent(state: SearchState, intent: unknown): ApplyIntentRes
   const nextState = SearchStateSchema.safeParse({
     ...state,
     filters: validated.data,
-    mode: hasSearchCriteria(validated.data, state.people, state.pendingQueries) ? 'discover' : 'trending',
+    mode: getSearchMode({ ...state, filters: validated.data }),
     revision: state.revision + 1,
   });
   if (!nextState.success) return { status: 'rejected', reason: 'invalid-value' };
