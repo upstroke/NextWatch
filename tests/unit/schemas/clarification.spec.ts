@@ -88,9 +88,9 @@ describe('person clarification candidates', () => {
       title: `Title ${index + 1}`,
       mediaType: 'movie',
     }));
-    expect(
-      PersonClarificationCandidateSchema.safeParse({ ...candidate(), knownFor }).success,
-    ).toBe(false);
+    expect(PersonClarificationCandidateSchema.safeParse({ ...candidate(), knownFor }).success).toBe(
+      false,
+    );
   });
 });
 
@@ -163,10 +163,10 @@ describe('person selection answers', () => {
   });
 
   // Branch coverage: selection answers cannot smuggle filter changes or an accepted identity record.
-  it.each([{ changes: [{ field: 'minRating', operation: 'set', value: 8 }] }, { person: candidate() }])(
-    'rejects state-changing data outside the selection contract: %j',
-    (extra) => {
-      expect(PersonSelectionAnswerSchema.safeParse({ ...answer(), ...extra }).success).toBe(false);
-    },
-  );
+  it.each([
+    { changes: [{ field: 'minRating', operation: 'set', value: 8 }] },
+    { person: candidate() },
+  ])('rejects state-changing data outside the selection contract: %j', (extra) => {
+    expect(PersonSelectionAnswerSchema.safeParse({ ...answer(), ...extra }).success).toBe(false);
+  });
 });

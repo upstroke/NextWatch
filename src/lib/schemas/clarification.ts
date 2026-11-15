@@ -47,9 +47,13 @@ export const PersonSelectionClarificationSchema = z
       .array(PersonClarificationCandidateSchema)
       .min(1)
       .max(MAX_PERSON_CLARIFICATION_CANDIDATES)
-      .refine((candidates) => new Set(candidates.map((candidate) => candidate.id)).size === candidates.length, {
-        message: 'Person clarification candidate IDs must be unique',
-      }),
+      .refine(
+        (candidates) =>
+          new Set(candidates.map((candidate) => candidate.id)).size === candidates.length,
+        {
+          message: 'Person clarification candidate IDs must be unique',
+        },
+      ),
     hasMore: z.boolean(),
   })
   .strict();
