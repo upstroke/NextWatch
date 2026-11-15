@@ -16,12 +16,13 @@ function change(field: string, operation: FilterChange['operation'], value: unkn
 }
 
 describe('applyIntent', () => {
-  // Statement coverage: accepted changes preserve unrelated state and increment revision once.
-  it('applies changes to complete state without mutating the original', () => {
+  // Statement coverage: accepted filter changes preserve people and pending queries with mutation isolation.
+  it('applies changes to complete state without mutating or sharing accepted people', () => {
     const original = SearchStateSchema.parse({
       mode: 'discover', revision: 4,
-      filters: { mediaType: 'movie', genreIds: [878], personIds: [501], minRating: 7 },
-      pendingQueries: { personQueries: ['Brad Pitt'], keywordQueries: ['space'] },
+      filters: { mediaType: 'movie', genreIds: [878], minRating: 7 },
+      people: [{ id: 501, name: 'Example person' }, { id: 502, name: 'Second person' }],
+      pendingQueries: { personQueries: ['Another person'], keywordQueries: ['space'] },
     });
     const snapshot = structuredClone(original);
     const result = applyIntent(original, ready([
@@ -31,6 +32,21 @@ describe('applyIntent', () => {
       ...snapshot, revision: 5,
       filters: { ...snapshot.filters, minRating: 8.5, keywordIds: [301] },
     } });
+    expect(original).toEqual(snapshot);
+    if (result.status !== 'applied') throw new Error('Expected an applied intent');
+    expect(SearchStateSchema.parse(result.state)).toEqual(result.state);
+    expect(result.state.filters).not.toHaveProperty('personIds');
+    expect(result.state.people).not.toBe(original.people);
+    expect(result.state.people[0]).not.toBe(original.people[0]);
+    expect(result.state.people[1]).not.toBe(original.people[1]);
+    expect(result.state.pendingQueries.personQueries).not.toBe(original.pendingQueries.personQueries);
+    expect(result.state.pendingQueries.keywordQueries).not.toBe(original.pendingQueries.keywordQueries);
+    const firstPerson = result.state.people[0];
+    if (!firstPerson) throw new Error('Expected an accepted person');
+    firstPerson.name = 'Changed display name';
+    firstPerson.id = 503;
+    result.state.people.push({ id: 504, name: 'Extra person' });
+    result.state.pendingQueries.personQueries.push('Extra query');
     expect(original).toEqual(snapshot);
   });
 
@@ -87,14 +103,17 @@ describe('applyIntent', () => {
     },
   );
 
-  // Branch coverage: ineffective changes do not normalize mode or advance revision.
+  // Branch coverage: ineffective changes preserve accepted identities, mode and revision.
   it.each([
     [],
     [change('minRating', 'set', 7)],
     [change('keywordIds', 'set', [301]), change('genreIds', 'set', [28])],
     [change('minRating', 'set', 8), change('minRating', 'set', 7)],
   ])('preserves state for ineffective intent %j', (...changes) => {
-    const original = state({ minRating: 7, keywordIds: [301], genreIds: [28] }, 2, 'discover');
+    const original = {
+      ...state({ minRating: 7, keywordIds: [301], genreIds: [28] }, 2, 'discover'),
+      people: [{ id: 501, name: 'Example person' }],
+    };
     const snapshot = structuredClone(original);
     expect(applyIntent(original, ready(changes, 2)))
       .toEqual({ status: 'unchanged', reason: 'no-effective-change' });
@@ -108,20 +127,35 @@ describe('applyIntent', () => {
     ], 8))).toMatchObject({ status: 'applied', state: { mode: 'trending', revision: 9 } });
   });
 
-  // Branch coverage: each remaining active criterion keeps discover mode.
+  // Branch coverage: each remaining stored filter keeps discover mode.
   it.each([
     { mediaType: 'movie' }, { sortBy: 'vote_average.desc' },
     { minYear: 2000 }, { maxYear: 2020 }, { genreIds: [878] },
-    { keywordIds: [301] }, { personIds: [501] },
+    { keywordIds: [301] },
   ])('keeps discover for remaining filters %j', (filters) => {
     expect(applyIntent(state({ ...filters, minRating: 7 }, 0, 'discover'), ready([
       change('minRating', 'remove', undefined),
     ]))).toMatchObject({ status: 'applied', state: { mode: 'discover', revision: 1 } });
   });
 
+  // Branch coverage: accepted people alone are individual criteria even without stored person IDs.
+  it('keeps discover when accepted people are the only remaining criteria', () => {
+    const original = SearchStateSchema.parse({
+      mode: 'discover', revision: 2, filters: { minRating: 7 },
+      people: [{ id: 501, name: 'Example person' }],
+    });
+    const snapshot = structuredClone(original);
+    const result = applyIntent(original, ready([change('minRating', 'remove', undefined)], 2));
+    expect(result).toEqual({ status: 'applied', state: {
+      ...snapshot, revision: 3,
+      filters: { mediaType: 'all', sortBy: 'popularity.desc', genreIds: [], keywordIds: [] },
+    } });
+    expect(original).toEqual(snapshot);
+  });
+
   // Branch coverage: unresolved person or keyword queries also keep discover mode.
   it.each([
-    { personQueries: ['Brad Pitt'], keywordQueries: [] },
+    { personQueries: ['Example person'], keywordQueries: [] },
     { personQueries: [], keywordQueries: ['space'] },
   ])('preserves pending queries %j', (pendingQueries) => {
     const original = { ...state({ minRating: 7 }, 0, 'discover'), pendingQueries };

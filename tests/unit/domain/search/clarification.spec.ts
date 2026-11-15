@@ -7,8 +7,9 @@ const clarification = { questionKey: 'keyword-ambiguous', options: ['Time travel
 function populatedState() {
   return SearchStateSchema.parse({
     mode: 'discover', revision: 2,
-    filters: { genreIds: [878], minRating: 7, personIds: [501] },
-    pendingQueries: { personQueries: ['Brad Pitt'], keywordQueries: ['space'] },
+    filters: { genreIds: [878], minRating: 7 },
+    people: [{ id: 501, name: 'Example person' }],
+    pendingQueries: { personQueries: ['Another person'], keywordQueries: ['space'] },
   });
 }
 
@@ -26,8 +27,8 @@ describe('clarification intent application', () => {
     },
   );
 
-  // Statement coverage: semantic clarification is returned separately from preserved criteria.
-  it('returns clarification without changing criteria, mode or revision', () => {
+  // Statement coverage: semantic clarification is returned separately from preserved criteria and people.
+  it('returns clarification without changing criteria, people, mode or revision', () => {
     const state = populatedState();
     const snapshot = structuredClone(state);
     expect(applyIntent(state, {

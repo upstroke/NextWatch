@@ -12,8 +12,8 @@ import { applyIntent } from '@lib/domain/search/apply-intent';
 const operations: FilterOperation[] = ['set', 'replace', 'add', 'remove'];
 
 describe('search filter catalog', () => {
-  // Statement coverage: the catalog stays aligned with the active-state contract.
-  it('covers every active field and reuses its value schema', () => {
+  // Statement coverage: the catalog describes technical filters, including derived person IDs.
+  it('covers every technical filter field and reuses its value schema', () => {
     expect(Object.keys(SEARCH_FILTER_CATALOG).sort()).toEqual(
       Object.keys(ActiveSearchFiltersSchema.shape).sort(),
     );
@@ -22,8 +22,8 @@ describe('search filter catalog', () => {
     }
   });
 
-  // Branch coverage: only own fields are recognized, not prototype properties.
-  it.each(['director', 'constructor', '__proto__', 'toString'])(
+  // Branch coverage: only own fields are recognized, not prototype properties or person-state records.
+  it.each(['director', 'people', 'constructor', '__proto__', 'toString'])(
     'rejects the unknown field %s', (field) => {
       expect(isCatalogFilterField(field)).toBe(false);
       expect(getSearchFilterDefinition(field)).toBeUndefined();
@@ -31,7 +31,7 @@ describe('search filter catalog', () => {
     },
   );
 
-  // Statement coverage: all active ID lists advertise the four list operations.
+  // Statement coverage: technical ID lists advertise operations without authorizing chat changes.
   it.each(['genreIds', 'keywordIds', 'personIds'])('describes list field %s', (field) => {
     expect(isCatalogFilterField(field)).toBe(true);
     expect(getSearchFilterDefinition(field)?.kind).toBe('list');
@@ -55,21 +55,25 @@ describe('search filter catalog', () => {
     expect(supportsFilterOperation(field, 'add')).toBe(false);
   });
 
-  // Branch coverage: catalog support does not authorize person-ID changes from chat intents.
-  it.each(operations)('rejects person-ID operation %s from a chat intent atomically', (operation) => {
-    const state = SearchStateSchema.parse({
-      mode: 'discover', revision: 3,
-      filters: { genreIds: [878], personIds: [501] },
-      pendingQueries: { personQueries: ['Brad Pitt'] },
-    });
-    const snapshot = structuredClone(state);
-    expect(applyIntent(state, {
-      status: 'ready', baseRevision: 3,
-      changes: [
-        { field: 'genreIds', operation: 'add', value: [28] },
-        { field: 'personIds', operation, value: [502] },
-      ],
-    })).toEqual({ status: 'rejected', reason: 'unknown-field', field: 'personIds' });
-    expect(state).toEqual(snapshot);
+  // Branch coverage: neither derived IDs nor accepted ID/name records may be changed by chat.
+  it.each(operations)('rejects person changes for operation %s atomically', (operation) => {
+    for (const field of ['personIds', 'people']) {
+      const state = SearchStateSchema.parse({
+        mode: 'discover', revision: 3,
+        filters: { genreIds: [878] },
+        people: [{ id: 501, name: 'Example person' }],
+        pendingQueries: { personQueries: ['Another person'] },
+      });
+      const snapshot = structuredClone(state);
+      const value = field === 'personIds' ? [502] : [{ id: 502, name: 'Other person' }];
+      expect(applyIntent(state, {
+        status: 'ready', baseRevision: 3,
+        changes: [
+          { field: 'genreIds', operation: 'add', value: [28] },
+          { field, operation, value },
+        ],
+      })).toEqual({ status: 'rejected', reason: 'unknown-field', field });
+      expect(state).toEqual(snapshot);
+    }
   });
 });

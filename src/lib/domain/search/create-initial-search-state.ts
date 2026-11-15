@@ -2,7 +2,7 @@ import type { SearchState } from '@lib/schemas/search-state';
 
 /**
  * Creates an independent initial domain state without individual search criteria.
- * @returns A trending state at revision zero with default filters and empty pending queries.
+ * @returns A trending state at revision zero with default filters, no people and empty pending queries.
  */
 export function createInitialSearchState(): SearchState {
   return {
@@ -13,8 +13,8 @@ export function createInitialSearchState(): SearchState {
       sortBy: 'popularity.desc',
       genreIds: [],
       keywordIds: [],
-      personIds: [],
     },
+    people: [],
     pendingQueries: {
       personQueries: [],
       keywordQueries: [],

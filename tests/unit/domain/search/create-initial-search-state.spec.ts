@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { SearchStateSchema } from '@lib/schemas/search-state';
 import { createInitialSearchState } from '@lib/domain/search/create-initial-search-state';
 
 describe('createInitialSearchState', () => {
-  // Statement coverage: initial entry has no individual criteria and starts in trending at revision zero.
-  it('creates the initial trending state with default filters and empty pending queries', () => {
-    expect(createInitialSearchState()).toEqual({
+  // Statement coverage: initial entry satisfies the migrated state contract without invented criteria.
+  it('creates a valid initial trending state with no people or pending queries', () => {
+    const state = createInitialSearchState();
+    expect(state).toEqual({
       mode: 'trending',
       revision: 0,
       filters: {
@@ -12,16 +14,14 @@ describe('createInitialSearchState', () => {
         sortBy: 'popularity.desc',
         genreIds: [],
         keywordIds: [],
-        personIds: [],
       },
-      pendingQueries: {
-        personQueries: [],
-        keywordQueries: [],
-      },
+      people: [],
+      pendingQueries: { personQueries: [], keywordQueries: [] },
     });
+    expect(SearchStateSchema.parse(state)).toEqual(state);
   });
 
-  // Statement coverage: separate searches do not share mutable state, filter lists or pending queries.
+  // Statement coverage: independent searches share no mutable filter, person or pending-query lists.
   it('creates independent objects and arrays on every call', () => {
     const first = createInitialSearchState();
     const second = createInitialSearchState();
@@ -29,10 +29,10 @@ describe('createInitialSearchState', () => {
 
     expect(first).not.toBe(second);
     expect(first.filters).not.toBe(second.filters);
+    expect(first.people).not.toBe(second.people);
     expect(first.pendingQueries).not.toBe(second.pendingQueries);
     expect(first.filters.genreIds).not.toBe(second.filters.genreIds);
     expect(first.filters.keywordIds).not.toBe(second.filters.keywordIds);
-    expect(first.filters.personIds).not.toBe(second.filters.personIds);
     expect(first.pendingQueries.personQueries).not.toBe(second.pendingQueries.personQueries);
     expect(first.pendingQueries.keywordQueries).not.toBe(second.pendingQueries.keywordQueries);
 
@@ -41,8 +41,8 @@ describe('createInitialSearchState', () => {
     first.filters.mediaType = 'movie';
     first.filters.genreIds.push(878);
     first.filters.keywordIds.push(301);
-    first.filters.personIds.push(501);
-    first.pendingQueries.personQueries.push('Example person');
+    first.people.push({ id: 501, name: 'Example person' });
+    first.pendingQueries.personQueries.push('Another person');
     first.pendingQueries.keywordQueries.push('space');
 
     expect(second).toEqual(snapshot);
