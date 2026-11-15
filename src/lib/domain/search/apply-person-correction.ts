@@ -1,6 +1,5 @@
 import { PersonCorrectionSchema, PersonRefinementContextSchema } from '@lib/schemas/person-correction';
 import { PersonClarificationSessionSchema } from '@lib/schemas/person-clarification-session';
-import type { PersonClarificationSession } from '@lib/schemas/person-clarification-session';
 import type { SearchState } from '@lib/schemas/search-state';
 import { applyPendingQueryCommand } from './pending-operations';
 import type { PendingTransitionResult } from './pending-operations';
