@@ -1,7 +1,8 @@
 import { ChatIntentSchema } from '@lib/schemas/chat';
 import type { ChatIntent } from '@lib/schemas/chat';
-import { ActiveSearchFiltersSchema } from '@lib/schemas/search-state';
-import type { ActiveSearchFilters, SearchState } from '@lib/schemas/search-state';
+import { SearchFiltersSchema } from '@lib/schemas/search';
+import type { SearchFilters } from '@lib/schemas/search';
+import type { SearchState } from '@lib/schemas/search-state';
 import { applyChangeTo } from './extraction';
 
 type Clarification = Extract<ChatIntent, { status: 'needs_clarification' }>['clarification'];
@@ -22,8 +23,8 @@ export type ApplyIntentResult =
       field?: string;
     };
 
-/** Compares active filters without changing the existing ID-list ordering semantics. */
-function filtersEqual(a: ActiveSearchFilters, b: ActiveSearchFilters): boolean {
+/** Compares stored filters without changing the existing ID-list ordering semantics. */
+function filtersEqual(a: SearchFilters, b: SearchFilters): boolean {
   return (
     a.mediaType === b.mediaType &&
     a.sortBy === b.sortBy &&
@@ -33,14 +34,16 @@ function filtersEqual(a: ActiveSearchFilters, b: ActiveSearchFilters): boolean {
     a.keywordIds.length === b.keywordIds.length &&
     a.keywordIds.every((id, index) => id === b.keywordIds[index]) &&
     a.genreIds.length === b.genreIds.length &&
-    a.genreIds.every((id, index) => id === b.genreIds[index]) &&
-    a.personIds.length === b.personIds.length &&
-    a.personIds.every((id, index) => id === b.personIds[index])
+    a.genreIds.every((id, index) => id === b.genreIds[index])
   );
 }
 
 /** Default media scope and popularity sorting alone are not individual search criteria. */
-function hasSearchCriteria(filters: ActiveSearchFilters, pending: SearchState['pendingQueries']) {
+function hasSearchCriteria(
+  filters: SearchFilters,
+  people: SearchState['people'],
+  pending: SearchState['pendingQueries'],
+) {
   return (
     filters.mediaType !== 'all' ||
     filters.sortBy !== 'popularity.desc' ||
@@ -49,18 +52,19 @@ function hasSearchCriteria(filters: ActiveSearchFilters, pending: SearchState['p
     filters.maxYear !== undefined ||
     filters.genreIds.length > 0 ||
     filters.keywordIds.length > 0 ||
-    filters.personIds.length > 0 ||
+    people.length > 0 ||
     pending.personQueries.length > 0 ||
     pending.keywordQueries.length > 0
   );
 }
 
 /**
- * Validates a chat intent and atomically applies supported changes to search state.
+ * Validates a chat intent and atomically applies supported filter changes to search state.
  * Structural validation precedes the revision guard for every status.
  * Only effective accepted changes update mode and increment revision once.
- * Existing resolved person IDs and pending queries are preserved; this entry
- * point neither accepts person-ID changes nor resolves or extracts entities.
+ * Accepted people, including IDs and display names, and pending queries are
+ * preserved. This entry point neither accepts person changes nor resolves
+ * or extracts entities, and never stores derived person IDs in filters.
  * Non-applied outcomes leave the original state unchanged and request no search.
  *
  * @param state Current, previously validated domain search state.
@@ -89,14 +93,14 @@ export function applyIntent(state: SearchState, intent: unknown): ApplyIntentRes
     return { status: 'unchanged', reason: 'error-status' };
   }
 
-  const candidate: ActiveSearchFilters = { ...state.filters };
+  const candidate: SearchFilters = { ...state.filters };
   for (const change of parsedIntent.data.changes) {
     const application = applyChangeTo(candidate, change);
     if (!application.ok) {
       return { status: 'rejected', reason: application.reason, field: change.field };
     }
   }
-  const validated = ActiveSearchFiltersSchema.safeParse(candidate);
+  const validated = SearchFiltersSchema.safeParse(candidate);
   if (!validated.success) {
     const field = validated.error.issues[0]?.path[0];
     return {
@@ -113,11 +117,14 @@ export function applyIntent(state: SearchState, intent: unknown): ApplyIntentRes
     state: {
       ...state,
       filters: validated.data,
+      people: state.people.map((person) => ({ ...person })),
       pendingQueries: {
         personQueries: [...state.pendingQueries.personQueries],
         keywordQueries: [...state.pendingQueries.keywordQueries],
       },
-      mode: hasSearchCriteria(validated.data, state.pendingQueries) ? 'discover' : 'trending',
+      mode: hasSearchCriteria(validated.data, state.people, state.pendingQueries)
+        ? 'discover'
+        : 'trending',
       revision: state.revision + 1,
     },
   };
