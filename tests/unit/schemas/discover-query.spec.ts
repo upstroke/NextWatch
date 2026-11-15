@@ -130,7 +130,9 @@ describe('Discover query schema', () => {
 
   // Branch coverage: rejects a keyword list exactly one entry beyond the configured limit
   it('rejects a keyword list exactly one entry beyond the configured limit', () => {
-    const keywordIds = Array.from({ length: MAX_KEYWORD_IDS + 1 }, (_, index) => index + 1).join(',');
+    const keywordIds = Array.from({ length: MAX_KEYWORD_IDS + 1 }, (_, index) => index + 1).join(
+      ',',
+    );
 
     expect(() => DiscoverQuerySchema.parse({ keywordIds })).toThrow();
   });

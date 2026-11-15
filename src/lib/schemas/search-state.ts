@@ -19,10 +19,16 @@ export const AcceptedPersonSchema = z
 export type AcceptedPerson = z.infer<typeof AcceptedPersonSchema>;
 
 /** A temporarily inactive genre with its position in the user's complete genre wish. */
-export const InactiveGenreSchema = z.object({
-  id: z.number().int().positive(),
-  position: z.number().int().nonnegative().max(MAX_GENRE_IDS - 1),
-}).strict();
+export const InactiveGenreSchema = z
+  .object({
+    id: z.number().int().positive(),
+    position: z
+      .number()
+      .int()
+      .nonnegative()
+      .max(MAX_GENRE_IDS - 1),
+  })
+  .strict();
 export type InactiveGenre = z.infer<typeof InactiveGenreSchema>;
 
 const pendingReference = z.string().min(1).regex(/^\S+$/);
@@ -115,11 +121,21 @@ export const SearchStateSchema = z
     const inactive = state.inactiveGenres ?? [];
     const genreIds = [...state.filters.genreIds, ...inactive.map((genre) => genre.id)];
     if (genreIds.length > MAX_GENRE_IDS || new Set(genreIds).size !== genreIds.length) {
-      context.addIssue({ code: 'custom', path: ['inactiveGenres'], message: 'Active and inactive genres must form one unique bounded wish' });
+      context.addIssue({
+        code: 'custom',
+        path: ['inactiveGenres'],
+        message: 'Active and inactive genres must form one unique bounded wish',
+      });
     }
-    if (new Set(inactive.map((genre) => genre.position)).size !== inactive.length ||
-        inactive.some((genre) => genre.position >= genreIds.length)) {
-      context.addIssue({ code: 'custom', path: ['inactiveGenres'], message: 'Inactive genre positions must be unique and inside the complete wish' });
+    if (
+      new Set(inactive.map((genre) => genre.position)).size !== inactive.length ||
+      inactive.some((genre) => genre.position >= genreIds.length)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['inactiveGenres'],
+        message: 'Inactive genre positions must be unique and inside the complete wish',
+      });
     }
     const additions = state.pendingQueries.personQueries.filter(
       (request) => request.operation === 'add',

@@ -3,9 +3,7 @@ import type { SearchFilters } from '@lib/schemas/search';
 import type { InactiveGenre, SearchState } from '@lib/schemas/search-state';
 
 export type GenreCompatibilityFailure =
-  | 'genre-catalogs-required'
-  | 'invalid-genre-catalogs'
-  | 'unknown-genre';
+  'genre-catalogs-required' | 'invalid-genre-catalogs' | 'unknown-genre';
 
 /** Facts for later translated feedback and media-specific execution, not rendered UI. */
 export type GenreMediaChange = {
@@ -18,7 +16,12 @@ export type GenreMediaChange = {
 
 type GenreCompatibilityResult =
   | { ok: false; reason: GenreCompatibilityFailure }
-  | { ok: true; filters: SearchFilters; inactiveGenres: InactiveGenre[]; mediaChange?: GenreMediaChange };
+  | {
+      ok: true;
+      filters: SearchFilters;
+      inactiveGenres: InactiveGenre[];
+      mediaChange?: GenreMediaChange;
+    };
 
 /**
  * Reconstructs the single genre wish without sorting genre IDs or mutating state.
@@ -64,9 +67,16 @@ export function prepareGenreCompatibility(
 
   if (desired.genreIds.length === 0) {
     return {
-      ok: true, filters: desired, inactiveGenres: [],
-      mediaChange: { from: state.filters.mediaType, to: desired.mediaType,
-        deactivatedGenreIds: [], restoredGenreIds: [], genreScopes: { movie: [], tv: [] } },
+      ok: true,
+      filters: desired,
+      inactiveGenres: [],
+      mediaChange: {
+        from: state.filters.mediaType,
+        to: desired.mediaType,
+        deactivatedGenreIds: [],
+        restoredGenreIds: [],
+        genreScopes: { movie: [], tv: [] },
+      },
     };
   }
   if (catalogs === undefined) return { ok: false, reason: 'genre-catalogs-required' };
@@ -81,7 +91,8 @@ export function prepareGenreCompatibility(
   const genreIds: number[] = [];
   const inactiveGenres: InactiveGenre[] = [];
   desired.genreIds.forEach((id, position) => {
-    const compatible = desired.mediaType === 'all' ||
+    const compatible =
+      desired.mediaType === 'all' ||
       (desired.mediaType === 'movie' ? movieIds.has(id) : tvIds.has(id));
     if (compatible) genreIds.push(id);
     else inactiveGenres.push({ id, position });
@@ -93,7 +104,9 @@ export function prepareGenreCompatibility(
     mediaChange: {
       from: state.filters.mediaType,
       to: desired.mediaType,
-      deactivatedGenreIds: inactiveGenres.filter((genre) => !priorInactive.has(genre.id)).map((genre) => genre.id),
+      deactivatedGenreIds: inactiveGenres
+        .filter((genre) => !priorInactive.has(genre.id))
+        .map((genre) => genre.id),
       restoredGenreIds: genreIds.filter((id) => priorInactive.has(id)),
       genreScopes: {
         movie: genreIds.filter((id) => movieIds.has(id)),

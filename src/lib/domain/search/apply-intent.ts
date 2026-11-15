@@ -47,8 +47,11 @@ function filtersEqual(a: SearchFilters, b: SearchFilters): boolean {
 }
 
 function inactiveGenresEqual(a: InactiveGenre[], b: InactiveGenre[]): boolean {
-  return a.length === b.length && a.every((genre) =>
-    b.some((other) => genre.id === other.id && genre.position === other.position),
+  return (
+    a.length === b.length &&
+    a.every((genre) =>
+      b.some((other) => genre.id === other.id && genre.position === other.position),
+    )
   );
 }
 
@@ -75,7 +78,11 @@ export function applyIntent(
   if (parsedIntent.data.baseRevision !== state.revision)
     return { status: 'rejected', reason: 'stale-revision' };
   if (parsedIntent.data.status === 'needs_clarification') {
-    return { status: 'unchanged', reason: 'clarification', clarification: parsedIntent.data.clarification };
+    return {
+      status: 'unchanged',
+      reason: 'clarification',
+      clarification: parsedIntent.data.clarification,
+    };
   }
   if (parsedIntent.data.status === 'unsupported')
     return { status: 'unchanged', reason: 'unsupported' };
@@ -91,7 +98,11 @@ export function applyIntent(
   const validated = SearchFiltersSchema.safeParse(candidate);
   if (!validated.success) {
     const field = validated.error.issues[0]?.path[0];
-    return { status: 'rejected', reason: 'invalid-value', field: typeof field === 'string' ? field : undefined };
+    return {
+      status: 'rejected',
+      reason: 'invalid-value',
+      field: typeof field === 'string' ? field : undefined,
+    };
   }
   if (idSetsEqual(originalWish, validated.data.genreIds)) {
     validated.data.genreIds = [...originalWish];
@@ -99,8 +110,10 @@ export function applyIntent(
   const prepared = prepareGenreCompatibility(state, validated.data, genreCatalogs);
   if (!prepared.ok) return { status: 'rejected', reason: prepared.reason };
   const nextFilters = prepared.filters;
-  if (filtersEqual(state.filters, nextFilters) &&
-      inactiveGenresEqual(state.inactiveGenres ?? [], prepared.inactiveGenres)) {
+  if (
+    filtersEqual(state.filters, nextFilters) &&
+    inactiveGenresEqual(state.inactiveGenres ?? [], prepared.inactiveGenres)
+  ) {
     return { status: 'unchanged', reason: 'no-effective-change' };
   }
 
