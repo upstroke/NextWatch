@@ -47,6 +47,17 @@ export type PendingEntityQueries = z.infer<typeof PendingEntityQueriesSchema>;
  * Legacy filters.personIds payloads are rejected by SearchFiltersSchema.
  * Pending-query references and replacement context are a subsequent migration.
  * Domain transitions own mode, revision and identity acceptance decisions.
+ *
+ * Required rule for the forthcoming controlled person-acceptance transition:
+ * deduplicate by person ID, not display name. Accepting an addition that resolves
+ * to an already accepted ID removes its pending request without adding a duplicate.
+ * For replacement A -> B when B is already accepted, remove A and the matching
+ * pending replacement atomically, leaving B exactly once; this is not a conflict.
+ * Preserve unrelated criteria and pending requests. An effective acceptance
+ * increments revision exactly once, including when only the pending request is
+ * removed. Validate the request reference and source revision before acceptance.
+ * This schema only rejects duplicate stored IDs; it does not implement that
+ * transition or deduplicate incoming state payloads.
  */
 export const SearchStateSchema = z
   .object({
