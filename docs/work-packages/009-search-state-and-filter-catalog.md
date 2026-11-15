@@ -138,7 +138,7 @@ It describes how filters and pending entity queries are represented and preserve
 
 ## Execution status
 
-WP 009 remains open for completion of the repository-wide reference inventory and final acceptance. The current domain implementation is substantially ahead of the previously recorded remaining-work list. This status replaces that stale list without claiming an exhaustive repository audit or assistant-executed automated validation. The Specification is unchanged by this status reconciliation.
+WP 009 is completed by explicit user acceptance on 2026-11-15. The user accepted closure with the documented limited review scope despite the outstanding complete repository-wide reference inventory. That inventory remains an open, non-blocking follow-up; it is not claimed as completed or proven unnecessary. The Specification is unchanged. This is work-package acceptance, not an exhaustive audit, a merge or confirmation of complete live person-search functionality.
 
 ### Historical implementation milestones
 
@@ -191,18 +191,20 @@ Reviewed at code snapshot `26aefe9` and the documentation successor `7d64270`:
 - Checked `server/services/tmdb/discover.ts`, `discover-params.ts`, `search.ts`, `detail.ts` and `watch-providers.ts` use their service-specific filters, query text or entity IDs, not the migrated stored state. Numeric person-ID filters in Discover contracts are valid technical inputs, not duplicate person-name storage to remove.
 - Domain years use `minYear`/`maxYear`; the existing service contract uses `yearFrom`/`yearTo`. The explicit adapter and readiness check are assigned to WP 012.
 - The existing Discover parameter builder emits `with_cast` for nonempty person IDs without a media-type guard. This is not verified TV person support; WP 012 explicitly owns guarding/specializing execution and the separate credits path before integration.
-- This is a direct, scoped inspection of the named files and their contracts, not an exhaustive repository-wide reference search. Remaining API routes, service/helper/mapping modules, test fixtures and integration references have not all been read end-to-end. No absence claim is based solely on directory listings or default-branch search results.
+- The follow-up read-only review at `d4e6f48` additionally inspected all five Search routes, Movie/TV detail and watch-provider routes, Trending, the detail/discover/search/trending mappers, HTTP transport, server helpers, technical Discover tests, Search service/mapper tests, candidate fixtures, schema exports and Search/Discover HTTP test definitions. No obsolete stored-person-state caller was found in those checked paths.
+- This remains a scoped inspection, not an exhaustive repository-wide reference inventory. Not every other schema, test, fixture or configuration file was read end-to-end. The index-based searches returned incomplete results and were not used as proof of absence. The user explicitly accepted this limitation for closure.
 
 ### Validation report
 
 - On 2026-11-15 the user reported all tests green and subsequently explicitly confirmed coverage, lint and typecheck for the implementation completed so far. These are user-reported successful local checks, not assistant-executed validation.
 - No exact numeric coverage value, command output, precise local HEAD or local working-tree cleanliness was supplied or independently verified. The report must not be represented as a certified CI result or a successful assistant-run test-first red/green cycle.
-- The assistant performed read-only repository/code/test review for this reconciliation and did not run tests, coverage, lint or typecheck. No new application code is introduced by this documentation update.
+- The assistant performed read-only repository/code/test review and did not run tests, coverage, lint or typecheck. No application code is changed by this acceptance documentation.
 
-### Remaining closure work and follow-up boundaries
+### Closure decision and non-blocking follow-up
 
-- Finish the repository-wide caller/reference inventory or explicitly obtain acceptance of the documented narrower review scope before marking WP 009 closed. Inspect any remaining references directly and correct only concrete WP 009 findings.
-- The current review does not justify keeping structured pending operations, controlled person acceptance, ID-set semantics or inactive genre handling listed as unimplemented; they already exist as described above.
-- Reconcile any concrete findings from the remaining inventory, obtain fresh validation for any resulting code changes, then record final acceptance. WP 009 is not closed by this status update.
+- On 2026-11-15 the user explicitly requested that WP 009 be marked completed even though a complete reference inventory is still outstanding. This is final user acceptance of the work package with the documented review limitation; it supersedes the prior open-for-inventory status.
+- The complete repository-wide caller/reference inventory remains an open follow-up, not a completed check. Any later concrete compatibility finding must be tracked and validated separately; closure does not establish that all possible references or defects have been ruled out.
+- Accepted domain scope includes the implemented state contract, catalog, pending operations, controlled person acceptance, mode/revision rules, ID-set semantics and inactive genre handling described above. No implementation is claimed for the excluded provider or UI workflows.
 - WP 010 owns the complete clarification workflow and candidate selection interaction. WP 011 owns parser extraction and its validated application adapter. WP 014 owns identity lookup/provenance/candidate validation and resolution coordination. A controlled keyword-resolution acceptance integration remains explicitly to be designed before its implementation; this is not claimed as an existing person-acceptance feature.
-- WP 012 owns domain-to-service adaptation, readiness, provider execution, Movie/TV person routing, acting-role eligibility and result completeness. Store/UI work, provider calls and full asynchronous orchestration have not been moved into WP 009 to claim product completion.
+- WP 012 owns domain-to-service adaptation, readiness, provider execution, Movie/TV person routing, acting-role eligibility and result completeness. Store/UI work, provider calls and full asynchronous orchestration remain outside WP 009.
+- This closure changes documentation only. It neither merges the branch nor starts another work package or deploys anything.
