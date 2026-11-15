@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MAX_KEYWORD_IDS, MAX_PERSON_IDS } from '@lib/config/domain';
+import { MAX_GENRE_IDS, MAX_KEYWORD_IDS, MAX_PERSON_IDS } from '@lib/config/domain';
 import { SearchFiltersSchema } from '@lib/schemas/search';
 
 /** Search mode; transitions are decided by the domain, not by this schema. */
@@ -17,6 +17,13 @@ export const AcceptedPersonSchema = z
   .object({ id: z.number().int().positive(), name: z.string().trim().min(1) })
   .strict();
 export type AcceptedPerson = z.infer<typeof AcceptedPersonSchema>;
+
+/** A temporarily inactive genre with its position in the user's complete genre wish. */
+export const InactiveGenreSchema = z.object({
+  id: z.number().int().positive(),
+  position: z.number().int().nonnegative().max(MAX_GENRE_IDS - 1),
+}).strict();
+export type InactiveGenre = z.infer<typeof InactiveGenreSchema>;
 
 const pendingReference = z.string().min(1).regex(/^\S+$/);
 const pendingText = z.string().trim().min(1);
@@ -71,8 +78,10 @@ export type PendingEntityQueries = z.infer<typeof PendingEntityQueriesSchema>;
  * Additions reserve slots alongside accepted criteria; replacements reserve their
  * existing target rather than another slot. Only one replacement may target a person.
  * Domain transitions own mode, revision and identity acceptance decisions.
+ * Inactive genres are session-only return values, not active technical filters.
+ * Active and inactive genres together represent one bounded, unique genre wish.
  *
- * Required rule for the forthcoming controlled person-acceptance transition:
+ * Rule for the controlled person-acceptance transition:
  * deduplicate by person ID, not display name. Accepting an addition that resolves
  * to an already accepted ID removes its pending request without adding a duplicate.
  * For replacement A -> B when B is already accepted, remove A and the matching
@@ -88,6 +97,7 @@ export const SearchStateSchema = z
     mode: SearchModeSchema,
     revision: z.number().int().nonnegative(),
     filters: SearchFiltersSchema,
+    inactiveGenres: z.array(InactiveGenreSchema).max(MAX_GENRE_IDS).optional(),
     people: z
       .array(AcceptedPersonSchema)
       .max(MAX_PERSON_IDS)
@@ -102,6 +112,15 @@ export const SearchStateSchema = z
   })
   .strict()
   .superRefine((state, context) => {
+    const inactive = state.inactiveGenres ?? [];
+    const genreIds = [...state.filters.genreIds, ...inactive.map((genre) => genre.id)];
+    if (genreIds.length > MAX_GENRE_IDS || new Set(genreIds).size !== genreIds.length) {
+      context.addIssue({ code: 'custom', path: ['inactiveGenres'], message: 'Active and inactive genres must form one unique bounded wish' });
+    }
+    if (new Set(inactive.map((genre) => genre.position)).size !== inactive.length ||
+        inactive.some((genre) => genre.position >= genreIds.length)) {
+      context.addIssue({ code: 'custom', path: ['inactiveGenres'], message: 'Inactive genre positions must be unique and inside the complete wish' });
+    }
     const additions = state.pendingQueries.personQueries.filter(
       (request) => request.operation === 'add',
     );
