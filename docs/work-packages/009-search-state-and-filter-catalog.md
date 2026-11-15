@@ -140,6 +140,14 @@ It describes how filters and pending entity queries are represented and preserve
 
 WP 009 is completed by explicit user acceptance on 2026-11-15. The user accepted closure with the documented limited review scope despite the outstanding complete repository-wide reference inventory. That inventory remains an open, non-blocking follow-up; it is not claimed as completed or proven unnecessary. The Specification is unchanged. This is work-package acceptance, not an exhaustive audit, a merge or confirmation of complete live person-search functionality.
 
+### Merge and handoff to WP 010
+
+- WP 009 was subsequently merged into `main` through PR #11 on 2026-11-15 in commit `61928e6fa9a4daeb7dbcdd44de34a04152d0715b` (`Feat/009 search state and filter catalog (#11)`). The merged file retains the accepted closure and its reference-inventory limitation.
+- The user requested the transition to WP 010. Branch `feat/010-clarification-and-guardrails` was created from that exact `main` commit; it contains the accepted WP 009 implementation as its baseline.
+- WP 010 is the next active work package. Reuse the implemented WP 009 contracts and pure transitions; do not recreate pending/person state or reopen completed scope merely because a complete reference inventory remains outstanding.
+- The complete repository-wide reference inventory remains an open, non-blocking follow-up. Neither the merge nor the WP 010 branch creation establishes that it has been completed.
+- This handoff update changes documentation only; no WP 010 application code or implementation plan is approved by it. Tests, coverage, lint and typecheck were not executed by the assistant for the handoff; the prior user-reported WP 009 validation remains recorded below.
+
 ### Historical implementation milestones
 
 - Initial state contract: `src/lib/schemas/search-state.ts` introduced mode, revision, filters and pending queries. The user reported tests green; coverage, lint and typecheck were not separately confirmed at that stage.

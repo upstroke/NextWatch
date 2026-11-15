@@ -7,22 +7,35 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 ## Current project status
 
 - The active work package is
-  `docs/work-packages/009-search-state-and-filter-catalog.md`.
+  `docs/work-packages/010-clarification-and-guardrails.md`.
+- Work package 009 is completed by explicit user acceptance on 2026-11-15
+  and merged into `main` through PR #11 in commit
+  `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
+- WP 009 was accepted with a complete repository-wide reference inventory
+  still outstanding as a documented, non-blocking follow-up. Do not claim
+  that inventory was completed or that all possible references were ruled out.
 - Work package 008 is completed by user acceptance and merged into `main`
   in commit `05c45d86430acb2e62e7395df8848de5ce8ed095`.
-- The working branch for work package 009 is
-  `feat/009-search-state-and-filter-catalog`, created from that `main` commit.
-- Before implementing work package 009, perform a targeted read-only review
-  of the existing search schemas, domain functions and tests on this branch.
-  Reuse the completed work package 008 implementation; do not rebuild it.
+- The working branch for work package 010 is
+  `feat/010-clarification-and-guardrails`, created from `main` at
+  `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
+- Before implementing work package 010, perform a targeted read-only review
+  of existing clarification contracts, search-state schemas, domain functions
+  and relevant tests on this branch. Reuse completed WP 009 state, pending
+  operations and controlled person acceptance; do not rebuild them.
 - Document existing behavior with file references and distinguish between
   available, partially available, missing and contradictory capabilities.
-- Read the work-package boundaries in work package 009. Pending entity-query
-  state belongs to work package 009; parser fields and extraction belong to
-  work package 011. Actual person/keyword resolution remains separately
-  unassigned and is not part of work package 009.
+- Read the active work-package boundaries. WP 010 owns clarification and
+  guardrail contracts; WP 009 supplies domain state and pure transitions.
+  Parser extraction belongs to WP 011, provider person/keyword resolution
+  to WP 014, and search execution to WP 012. Candidate/clarification state
+  must remain separate from active criteria.
+- WP 010 may prepare contracts with synthetic resolution outcomes; live
+  provider-resolution integration depends on WP 014. This does not authorize
+  UI rendering, provider lookups or search execution in WP 010.
 - Prepare an implementation plan with affected files and obtain user approval
-  before implementation. This status update does not approve that plan.
+  before implementation. Branch creation and this status update do not
+  approve an implementation plan or claim any WP 010 code is implemented.
 - The branch `feat/003-multi-step-search-orchestration` was discarded.
   Do not restore, reference or continue its architecture.
 - Do not treat “Task 003a” as an official work package. It was only a
