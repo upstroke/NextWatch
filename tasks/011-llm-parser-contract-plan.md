@@ -36,20 +36,20 @@ The first later interactive test surface is a CLI using a real LLM with initiall
 
 The application findings below are historical observations at the original review baseline, not execution results, a fresh code audit or a complete repository-wide inventory.
 
-| Capability | Evidence and status |
-| --- | --- |
-| Existing intent boundary | `src/lib/schemas/chat.ts`: ready changes are supported; needs_clarification explicitly permits zero changes. It cannot directly carry mixed accepted changes plus unresolved entities. |
-| Atomic filter application | `src/lib/domain/search/apply-intent.ts`: validates the whole filter group, preserves people/pending state, applies genre compatibility, and increments revision once per effective transition. |
-| List semantics | `src/lib/domain/search/extraction.ts`: set/replace address an entire ID list; add/remove operate on IDs. Targeted replacement must not be blindly mapped to whole-list replacement. |
-| Pending operations | `src/lib/schemas/search-transition.ts` and `src/lib/domain/search/pending-operations.ts`: referenced person/keyword add/change/remove commands, stale guards and controlled person acceptance already exist. |
-| Replacement/duplicates | `acceptResolvedPerson()` atomically retains/replaces source identity, removes the matching pending request and deduplicates IDs. Reuse it. |
-| Semantic clarification | `src/lib/domain/search/semantic-guardrails.ts`: existing replacement-target, year-conflict and keyword-meaning actions reuse real transitions. Offering a question does not change criteria. |
-| Replacement-source candidate gap | Existing replacement-target offers collect all eligible accepted people, not only those matching the user's source wording. WP 011 needs an application-controlled matching/subset policy before offering “which Tom?”. |
-| Clarification ordering gap | `person-clarification-lifecycle.ts` offers only the first pending person; `apply-person-correction.ts` likewise requires the first request. Explicitly addressing another pending request is not yet supported by those paths. |
-| Candidate bounds | `src/lib/schemas/clarification.ts` directly imports the candidate-only limit. The known-title limit is separate and must remain unchanged. |
-| Existing regressions | Directly read `pending-operations.spec.ts`, `semantic-guardrails.spec.ts` and `year-range.spec.ts`: duplicate acceptance, source retention, stale references, year corrections and atomic invalid ranges already have tests. |
-| Test inventory | Listed `tests/unit/domain/search`; remaining suites were not all read. Do not claim a full test audit. |
-| Repository status documentation | The original review found stale WP 010 status. A subsequent direct read on the target branch verified that `AGENTS.md` names WP 011, its branch and this draft plan. Do not reopen WP 010 or report the old status correction as still outstanding. |
+| Capability                       | Evidence and status                                                                                                                                                                                                                                 |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Existing intent boundary         | `src/lib/schemas/chat.ts`: ready changes are supported; needs_clarification explicitly permits zero changes. It cannot directly carry mixed accepted changes plus unresolved entities.                                                              |
+| Atomic filter application        | `src/lib/domain/search/apply-intent.ts`: validates the whole filter group, preserves people/pending state, applies genre compatibility, and increments revision once per effective transition.                                                      |
+| List semantics                   | `src/lib/domain/search/extraction.ts`: set/replace address an entire ID list; add/remove operate on IDs. Targeted replacement must not be blindly mapped to whole-list replacement.                                                                 |
+| Pending operations               | `src/lib/schemas/search-transition.ts` and `src/lib/domain/search/pending-operations.ts`: referenced person/keyword add/change/remove commands, stale guards and controlled person acceptance already exist.                                        |
+| Replacement/duplicates           | `acceptResolvedPerson()` atomically retains/replaces source identity, removes the matching pending request and deduplicates IDs. Reuse it.                                                                                                          |
+| Semantic clarification           | `src/lib/domain/search/semantic-guardrails.ts`: existing replacement-target, year-conflict and keyword-meaning actions reuse real transitions. Offering a question does not change criteria.                                                        |
+| Replacement-source candidate gap | Existing replacement-target offers collect all eligible accepted people, not only those matching the user's source wording. WP 011 needs an application-controlled matching/subset policy before offering “which Tom?”.                             |
+| Clarification ordering gap       | `person-clarification-lifecycle.ts` offers only the first pending person; `apply-person-correction.ts` likewise requires the first request. Explicitly addressing another pending request is not yet supported by those paths.                      |
+| Candidate bounds                 | `src/lib/schemas/clarification.ts` directly imports the candidate-only limit. The known-title limit is separate and must remain unchanged.                                                                                                          |
+| Existing regressions             | Directly read `pending-operations.spec.ts`, `semantic-guardrails.spec.ts` and `year-range.spec.ts`: duplicate acceptance, source retention, stale references, year corrections and atomic invalid ranges already have tests.                        |
+| Test inventory                   | Listed `tests/unit/domain/search`; remaining suites were not all read. Do not claim a full test audit.                                                                                                                                              |
+| Repository status documentation  | The original review found stale WP 010 status. A subsequent direct read on the target branch verified that `AGENTS.md` names WP 011, its branch and this draft plan. Do not reopen WP 010 or report the old status correction as still outstanding. |
 
 The prompt/JSON requirements and backlink to this plan are saved in WP 011 at `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. No application code was changed during this documentation alignment.
 
@@ -156,25 +156,25 @@ Replace candidate-limit references with `MAX_PERSON_IDS`, keep value five, retai
 
 All new names below are proposed, not already implemented APIs. Avoid empty scaffolding and add a file only when used.
 
-| File/group | Planned action |
-| --- | --- |
-| `src/lib/schemas/parser.ts` | External parser schemas, normalized response outcomes and consistent versioned JSON-schema representation; inspect generation support before choosing an approach. |
-| `src/lib/parser/instructions.ts` | Fixed trusted parser instruction/version, kept consistent with the response contract. |
-| `src/lib/parser/compose-request.ts` | Pure provider-neutral request composition with bounded context projection and separated user text. |
-| `src/lib/parser/validate-response.ts` | Pure status/JSON/schema validation; no transport, repair or retry. |
-| `src/lib/schemas/parser-application.ts` | Minimal bounded application-owned continuation context. |
-| `src/lib/domain/search/apply-parser-result.ts` | Pure validated coordination using existing transitions. |
-| `src/lib/schemas/search-state.ts`, `search-transition.ts` | Only approved keyword/domain contract extensions; preserve existing invariants. |
-| `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/semantic-guardrails.ts` | Reuse/extend source-subset binding; preserve year/keyword guards. |
-| `src/lib/schemas/person-clarification-session.ts`, `person-correction.ts`, related flow schemas | Only fields needed for explicit non-first request association after direct inspection. |
-| `src/lib/domain/search/person-clarification-lifecycle.ts`, `apply-person-correction.ts`, affected action/selection callers | Default ordering plus authorized explicit request activation and stale-context handling. |
-| `src/lib/domain/search/pending-operations.ts` | Reuse existing person operations; add approved pure keyword acceptance support only if needed. |
-| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, every discovered caller | Shared-limit migration. |
-| `tests/unit/schemas/parser.spec.ts`, `parser-application.spec.ts` | New project-specific schema invariants, not tests of Zod primitives. |
-| `tests/unit/parser/compose-request.spec.ts`, `validate-response.spec.ts` | Deterministic instruction/context separation, schema consistency and normalized response-failure tests; synthetic examples, no live model calls. |
-| `tests/unit/domain/search/apply-parser-result.spec.ts` | New adapter behavior and composed real-transition tests. |
-| Existing affected schema/domain suites | Focused regressions; extend instead of duplicating coverage. |
-| WP 011 execution status and this plan | Track actual progress and validation. |
+| File/group                                                                                                                 | Planned action                                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/lib/schemas/parser.ts`                                                                                                | External parser schemas, normalized response outcomes and consistent versioned JSON-schema representation; inspect generation support before choosing an approach. |
+| `src/lib/parser/instructions.ts`                                                                                           | Fixed trusted parser instruction/version, kept consistent with the response contract.                                                                              |
+| `src/lib/parser/compose-request.ts`                                                                                        | Pure provider-neutral request composition with bounded context projection and separated user text.                                                                 |
+| `src/lib/parser/validate-response.ts`                                                                                      | Pure status/JSON/schema validation; no transport, repair or retry.                                                                                                 |
+| `src/lib/schemas/parser-application.ts`                                                                                    | Minimal bounded application-owned continuation context.                                                                                                            |
+| `src/lib/domain/search/apply-parser-result.ts`                                                                             | Pure validated coordination using existing transitions.                                                                                                            |
+| `src/lib/schemas/search-state.ts`, `search-transition.ts`                                                                  | Only approved keyword/domain contract extensions; preserve existing invariants.                                                                                    |
+| `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/semantic-guardrails.ts`                                   | Reuse/extend source-subset binding; preserve year/keyword guards.                                                                                                  |
+| `src/lib/schemas/person-clarification-session.ts`, `person-correction.ts`, related flow schemas                            | Only fields needed for explicit non-first request association after direct inspection.                                                                             |
+| `src/lib/domain/search/person-clarification-lifecycle.ts`, `apply-person-correction.ts`, affected action/selection callers | Default ordering plus authorized explicit request activation and stale-context handling.                                                                           |
+| `src/lib/domain/search/pending-operations.ts`                                                                              | Reuse existing person operations; add approved pure keyword acceptance support only if needed.                                                                     |
+| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, every discovered caller                                    | Shared-limit migration.                                                                                                                                            |
+| `tests/unit/schemas/parser.spec.ts`, `parser-application.spec.ts`                                                          | New project-specific schema invariants, not tests of Zod primitives.                                                                                               |
+| `tests/unit/parser/compose-request.spec.ts`, `validate-response.spec.ts`                                                   | Deterministic instruction/context separation, schema consistency and normalized response-failure tests; synthetic examples, no live model calls.                   |
+| `tests/unit/domain/search/apply-parser-result.spec.ts`                                                                     | New adapter behavior and composed real-transition tests.                                                                                                           |
+| Existing affected schema/domain suites                                                                                     | Focused regressions; extend instead of duplicating coverage.                                                                                                       |
+| WP 011 execution status and this plan                                                                                      | Track actual progress and validation.                                                                                                                              |
 
 No automatic barrel exports, server routes, provider dependencies, CLI or UI files are planned. Confirm the new parser module/test paths during the design gate before coding.
 
