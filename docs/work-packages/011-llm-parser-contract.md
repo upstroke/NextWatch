@@ -68,6 +68,8 @@ The original scope above remains in force. Cross-package product decisions below
 
 - Incomplete names such as “Tom” are valid. Preserve the supplied query; do not invent surnames, identities or IDs.
 - Multiple plausible identities require selection or refinement. One returned candidate alone does not establish uniqueness. Acceptance requires established identity or explicit valid selection.
+- Decision 1: a successfully and unambiguously resolved person is accepted without an additional person-confirmation step. Display the accepted person as a pill below the search input. Use the wizard only when resolution requires selection or refinement, or when no match was found. This does not require showing the search input alongside an already active wizard.
+- A single returned result alone is still not proof of successful, unambiguous resolution. WP 014 owns the technical uniqueness policy; WP 011 must distinguish resolved outcomes from clarification/no-match outcomes. Do not reopen mandatory confirmation for every resolved person.
 - During an active clarification, a bare person reference corrects/refines that request. “Tom Cruise” replaces the unresolved query “Tom” and invalidates its prior candidate group; it does not remove previously accepted people merely because they were offered as candidates.
 - An explicit addition such as “and Brad Pitt” creates a separate request and leaves “Tom” pending.
 - An explicit reference to another pending request takes precedence: “By Chris I mean Chris Evans” refines Chris while Tom stays pending.
@@ -83,6 +85,8 @@ The original scope above remains in force. Cross-package product decisions below
 - Equal names with different IDs are not duplicates.
 - Replacing A with already accepted B removes A, retains B once and closes the request without an extra duplication question.
 - Preserve unrelated accepted people and pending requests. Reuse existing domain transitions rather than duplicating these policies.
+- Decision 3: when the replacement source matches multiple accepted people, first ask which accepted person to replace. Example: with Tom Hanks and Tom Hardy accepted, “Replace Tom with Tom Cruise” offers Tom Hanks and Tom Hardy as source options.
+- Preserve “Tom Cruise” and the complete replacement intent during that question. After source selection, resolve the replacement person. Replace the selected source only after successful unambiguous resolution or valid candidate selection. Keep the source accepted until then; leave unrelated people and pending wishes unchanged.
 
 ### D. Shared limit and overflow
 
@@ -92,6 +96,9 @@ The original scope above remains in force. Cross-package product decisions below
 - On overflow, explain the limit and that pending additions count. Ask whom to add/replace or which pending wish to discard.
 - Do not choose an arbitrary subset or silently remove existing requests. Preserve excess requested additions for clarification without inserting an invalid sixth bounded pending entry.
 - If two additions compete for one free slot, neither is arbitrarily selected. Independent unambiguous filter changes may still proceed.
+- Decision 2: temporarily retain the related overflowing addition command as a separate clarification request, outside the bounded accepted-person/pending-addition collection. The wizard asks whom to add, whom to replace, or which wish/addition command to discard.
+- Selecting one person does not implicitly discard the other requested additions. Retain each unselected wish until it is resolved or explicitly discarded. Transfer the chosen change into the regular domain state only after the relevant decision and validation; never exceed the person-slot bound.
+- The product behavior is decided. Specify the concrete schema, references, revisions and adapter mapping in the approved implementation plan; do not invent an unbounded alternative domain state.
 
 ### E. Shared rules and criterion-specific boundaries
 
@@ -141,16 +148,18 @@ The original scope above remains in force. Cross-package product decisions below
 - Retry orchestration and shared-constant cleanup: confirm ownership before implementation. Any necessary domain extension requires explicit approval; do not reopen completed WP 010 implicitly.
 - WP 012–014 and other specifications are not changed by this record. Align them after ownership decisions are approved.
 
-### J. Remaining questions before implementation
+### J. Decision status and remaining questions before implementation
 
-1. What evidence permits accepting a person without explicit selection? Finalize with WP 014; define the outcome contract in WP 011.
-2. How are excess additions retained without violating pending-state bounds?
-3. How is an ambiguous replacement target handled when multiple already accepted people match? The earlier discussion clarified candidate refinement instead and did not settle this case.
-4. How are accepted independent changes, the proposed search and the currently executed search represented without inventing a competing state model? Determine review/confirmation revision semantics.
-5. Which operations/errors receive three-attempt retries, which package owns orchestration, and how are budgets, timeouts and existing no-auto-recovery boundaries reconciled?
-6. Which genre/keyword cases are already covered, and which require approved contract extensions, including keyword acceptance?
-7. How do cancellation, explicit resumption, free-text refinement and input locks map onto the final wizard? No UI implementation is authorized here.
-8. Assign the shared-constant cleanup and cross-package follow-up changes explicitly.
+Original question numbers are retained for continuity.
+
+1. Product decision resolved: successfully and unambiguously resolved persons are accepted without an additional confirmation and represented by a person pill. See B. Technical uniqueness criteria remain a WP 014 follow-up; WP 011 defines the outcome boundary.
+2. Product decision resolved: preserve an overflowing related addition command as a separate clarification request outside the bounded person/pending collection; no unselected wish is silently discarded. See D. Concrete schema/adapter design remains part of implementation planning.
+3. Product decision resolved: clarify the accepted replacement source first, retain the desired replacement, then resolve and accept it before removing the source. See C.
+4. Open: how are accepted independent changes, the proposed search and the currently executed search represented without inventing a competing state model? Determine review/confirmation revision semantics.
+5. Open: which operations/errors receive three-attempt retries, which package owns orchestration, and how are budgets, timeouts and existing no-auto-recovery boundaries reconciled?
+6. Open: which genre/keyword cases are already covered, and which require approved contract extensions, including keyword acceptance?
+7. Open: how do cancellation, explicit resumption, free-text refinement and input locks map onto the final wizard? No UI implementation is authorized here.
+8. Open: assign the shared-constant cleanup and cross-package follow-up changes explicitly.
 
 ### K. Implementation gate and validation plan
 
