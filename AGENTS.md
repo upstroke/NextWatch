@@ -7,7 +7,39 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 ## Current project status
 
 - The active work package is
-  `docs/work-packages/010-clarification-and-guardrails.md`.
+  [WP 011 — LLM parser contract](docs/work-packages/011-llm-parser-contract.md).
+- The working branch is `feat/011-llm-parser-contract`.
+- WP 010 is complete in its accepted clarification/guardrail contract and
+  domain scope. Do not reopen it or treat later UI, live resolution or search
+  execution as unfinished WP 010 implementation.
+- WP 011 decisions are recorded in its work-package specification. Read that
+  file before continuing; do not reconstruct settled decisions from chat memory.
+- The implementation plan is
+  [tasks/011-llm-parser-contract-plan.md](tasks/011-llm-parser-contract-plan.md),
+  saved in commit `99b5a2dfb9b1470c8b67686e5db55abc6e229264`.
+  Its status is Draft — awaiting approval. Saving the plan does not authorize
+  application implementation, a later code commit, a pull request or a merge.
+- Before implementation, complete the plan's targeted caller/test inventory
+  and concrete schema/adapter design gates. Reuse WP 009 state, pending
+  operations and controlled person acceptance, and WP 010 clarification and
+  guardrails. Do not rebuild them or introduce a competing state model.
+- Document existing behavior with file references and distinguish between
+  available, partially available, missing and contradictory capabilities.
+- WP 011 owns parser extraction contracts and the pure application adapter,
+  directly necessary approved schema/domain extensions and the shared person
+  limit constant cleanup. Live person/keyword resolution belongs to WP 014;
+  title-search execution belongs to WP 012; title disambiguation and providers
+  remain in WP 013. Dependency order is WP 011 → WP 014 → WP 012.
+- Candidate/clarification context remains separate from accepted criteria.
+  Independently accepted criteria changes do not execute a title search.
+  Execution requires explicit “Search now” confirmation; preserve the distinction
+  between edited criteria and the last executed search/results.
+- The wizard UI is deferred to [tasks/clarificaton-flow.md](tasks/clarificaton-flow.md).
+  WP 011 does not authorize UI rendering, live provider lookups, retry
+  orchestration, search execution or a full LLM/provider implementation.
+- Cross-package documentation alignment, the WP 011 backlink to its plan and
+  wizard-task alignment remain follow-ups identified in the plan; this status
+  update does not claim those files were updated or their work implemented.
 - Work package 009 is completed by explicit user acceptance on 2026-11-15
   and merged into `main` through PR #11 in commit
   `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
@@ -16,26 +48,6 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   that inventory was completed or that all possible references were ruled out.
 - Work package 008 is completed by user acceptance and merged into `main`
   in commit `05c45d86430acb2e62e7395df8848de5ce8ed095`.
-- The working branch for work package 010 is
-  `feat/010-clarification-and-guardrails`, created from `main` at
-  `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
-- Before implementing work package 010, perform a targeted read-only review
-  of existing clarification contracts, search-state schemas, domain functions
-  and relevant tests on this branch. Reuse completed WP 009 state, pending
-  operations and controlled person acceptance; do not rebuild them.
-- Document existing behavior with file references and distinguish between
-  available, partially available, missing and contradictory capabilities.
-- Read the active work-package boundaries. WP 010 owns clarification and
-  guardrail contracts; WP 009 supplies domain state and pure transitions.
-  Parser extraction belongs to WP 011, provider person/keyword resolution
-  to WP 014, and search execution to WP 012. Candidate/clarification state
-  must remain separate from active criteria.
-- WP 010 may prepare contracts with synthetic resolution outcomes; live
-  provider-resolution integration depends on WP 014. This does not authorize
-  UI rendering, provider lookups or search execution in WP 010.
-- Prepare an implementation plan with affected files and obtain user approval
-  before implementation. Branch creation and this status update do not
-  approve an implementation plan or claim any WP 010 code is implemented.
 - The branch `feat/003-multi-step-search-orchestration` was discarded.
   Do not restore, reference or continue its architecture.
 - Do not treat “Task 003a” as an official work package. It was only a
