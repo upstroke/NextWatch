@@ -17,14 +17,14 @@ The review was static and read-only. Directly read at the baseline: the specific
 
 All findings are open. Blocking means the affected design cannot safely be implemented as currently specified; the additional clarifications are also required before final contract approval.
 
-| ID | Classification | Finding | Status |
-| --- | --- | --- | --- |
-| WP011-R01 | Blocking | Continuation lifecycle and compound-request ownership incomplete | Open |
-| WP011-R02 | Blocking | Reservation accounting for unresolved multi-person replacements incomplete | Open |
-| WP011-R03 | Blocking | Cross-group dependency and conflict policy incomplete | Open |
-| WP011-R04 | Blocking | Active clarification projection assumes an entity pending reference | Open |
-| WP011-R05 | Required clarification | Reusable fields, enums, reference scopes and bounds not fully defined | Open |
-| WP011-R06 | Required clarification | Staged resolution validity and revision association incomplete | Open |
+| ID        | Classification         | Finding                                                                    | Status |
+| --------- | ---------------------- | -------------------------------------------------------------------------- | ------ |
+| WP011-R01 | Blocking               | Continuation lifecycle and compound-request ownership incomplete           | Open   |
+| WP011-R02 | Blocking               | Reservation accounting for unresolved multi-person replacements incomplete | Open   |
+| WP011-R03 | Blocking               | Cross-group dependency and conflict policy incomplete                      | Open   |
+| WP011-R04 | Blocking               | Active clarification projection assumes an entity pending reference        | Open   |
+| WP011-R05 | Required clarification | Reusable fields, enums, reference scopes and bounds not fully defined      | Open   |
+| WP011-R06 | Required clarification | Staged resolution validity and revision association incomplete             | Open   |
 
 Suggested order: R01 and R04 establish ownership/context; R02 and R06 establish capacity/result validity; R03 completes coordination; R05 consolidates the final field matrix. These topics can be designed together where they depend on each other. Do not close a finding just because a paragraph was added.
 
@@ -143,11 +143,11 @@ For each finding, record the revised contract location, reviewed examples/tests,
 
 No application implementation is authorized by this record. Close or explicitly and safely defer every finding before requesting the affected implementation approval. Update the main plan/specification with accepted resolutions; do not let this checklist become a competing contract.
 
-| Finding | Resolution location | Design review / closure commit | Implementation evidence |
-| --- | --- | --- | --- |
-| WP011-R01 | Pending | Open | Not implemented |
-| WP011-R02 | Pending | Open | Not implemented |
-| WP011-R03 | Pending | Open | Not implemented |
-| WP011-R04 | Pending | Open | Not implemented |
-| WP011-R05 | Pending | Open | Not implemented |
-| WP011-R06 | Pending | Open | Not implemented |
+| Finding   | Resolution location | Design review / closure commit | Implementation evidence |
+| --------- | ------------------- | ------------------------------ | ----------------------- |
+| WP011-R01 | Pending             | Open                           | Not implemented         |
+| WP011-R02 | Pending             | Open                           | Not implemented         |
+| WP011-R03 | Pending             | Open                           | Not implemented         |
+| WP011-R04 | Pending             | Open                           | Not implemented         |
+| WP011-R05 | Pending             | Open                           | Not implemented         |
+| WP011-R06 | Pending             | Open                           | Not implemented         |

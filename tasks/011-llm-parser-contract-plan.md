@@ -15,17 +15,17 @@ The earlier targeted review used `5c85d69`, with follow-up at `a6fe74b`. The rec
 
 Directly inspected for this consolidation at `1374785`: AGENTS, WP 011, the accessible current plan, `search-state.ts`, `search-transition.ts`, `tests/unit/domain/search/pending-operations.spec.ts`, plus original plan history and instruction translation diff. The current plan response was truncated in the file map; the original `99b5a2d` patch supplied the original remaining sequence, matrix and gates. Do not claim a complete read of every intervening plan revision or a full test/caller audit.
 
-| Area | Evidence and disposition |
-| --- | --- |
-| Accepted/pending people | `search-state.ts` supports singular replacement query/target and one replacement per source. Multi-replacement requires a planned extension, not repeated independent acceptance. |
-| Trusted acceptance | `search-transition.ts` accepts one person per request. `pending-operations.spec.ts` covers ID deduplication, source retention, one-to-one replacement, stale/wrong-kind references, bounds and mutation isolation. Preserve those regressions. |
-| Keywords | Inspected state supports pending additions; inspected transition file has no controlled keyword acceptance. Targeted/whole-selection keyword replacement is a gap, not existing support. |
-| Existing application | Prior review: `applyIntent()` applies filter groups atomically; `extraction.ts` whole-list replacement differs from targeted replacement. Reuse rather than bypass. |
-| Clarification | Prior review: lifecycle/correction paths assume the first pending person. Explicit non-first targeting needs focused caller/test inspection. Source offers need an eligible matching subset rather than every accepted person. |
-| Guardrails | Reuse replacement-target, year-conflict and keyword-meaning guards. Preserve request, revision and question-sequence checks. |
-| Genres | Active/inactive genres form one unique bounded wish in the directly read state schema. Exact catalog, normalization and whole-selection mapping still need focused inspection. |
-| Prompt | Translation commit `166e144` changed the saved draft to English, revision `0.1.1-draft`. The old plan's German/0.1.0 description was historical, not current. No runtime connection. |
-| Tooling | Prior review recorded Zod 4.6.7 and native `z.toJSONSchema()` as the starting approach. Installation and concrete export/provider compatibility remain unverified. |
+| Area                    | Evidence and disposition                                                                                                                                                                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accepted/pending people | `search-state.ts` supports singular replacement query/target and one replacement per source. Multi-replacement requires a planned extension, not repeated independent acceptance.                                                              |
+| Trusted acceptance      | `search-transition.ts` accepts one person per request. `pending-operations.spec.ts` covers ID deduplication, source retention, one-to-one replacement, stale/wrong-kind references, bounds and mutation isolation. Preserve those regressions. |
+| Keywords                | Inspected state supports pending additions; inspected transition file has no controlled keyword acceptance. Targeted/whole-selection keyword replacement is a gap, not existing support.                                                       |
+| Existing application    | Prior review: `applyIntent()` applies filter groups atomically; `extraction.ts` whole-list replacement differs from targeted replacement. Reuse rather than bypass.                                                                            |
+| Clarification           | Prior review: lifecycle/correction paths assume the first pending person. Explicit non-first targeting needs focused caller/test inspection. Source offers need an eligible matching subset rather than every accepted person.                 |
+| Guardrails              | Reuse replacement-target, year-conflict and keyword-meaning guards. Preserve request, revision and question-sequence checks.                                                                                                                   |
+| Genres                  | Active/inactive genres form one unique bounded wish in the directly read state schema. Exact catalog, normalization and whole-selection mapping still need focused inspection.                                                                 |
+| Prompt                  | Translation commit `166e144` changed the saved draft to English, revision `0.1.1-draft`. The old plan's German/0.1.0 description was historical, not current. No runtime connection.                                                           |
+| Tooling                 | Prior review recorded Zod 4.6.7 and native `z.toJSONSchema()` as the starting approach. Installation and concrete export/provider compatibility remain unverified.                                                                             |
 
 Remote inspection does not establish local cleanliness, unpushed changes or validation success. No runtime commands were run for this consolidation.
 
@@ -35,13 +35,13 @@ Use an internal request envelope and a separate model-visible projection. All ob
 
 ### Internal envelope, not model output
 
-| Field | Proposed meaning |
-| --- | --- |
-| `requestRef` | Application-issued parser invocation reference. |
-| `baseRevision` | Existing state revision captured before the call. |
+| Field             | Proposed meaning                                                             |
+| ----------------- | ---------------------------------------------------------------------------- |
+| `requestRef`      | Application-issued parser invocation reference.                              |
+| `baseRevision`    | Existing state revision captured before the call.                            |
 | `sessionSequence` | Application-owned generation for session-only changes and replay protection. |
-| `context` | Immutable projection actually supplied to this invocation. |
-| `userInput` | Current ephemeral input; never permanent conversation storage. |
+| `context`         | Immutable projection actually supplied to this invocation.                   |
+| `userInput`       | Current ephemeral input; never permanent conversation storage.               |
 
 Consume the invocation once. Validate both criteria and session association, including cancelled/replaced questions at unchanged criteria revision. A reset cannot revive old associations.
 
@@ -81,24 +81,24 @@ Reusable accepted-source selector: either `{mode: "reference", ref}` for a suppl
 
 ### Operation-specific variants
 
-| Variant | Required additional fields |
-| --- | --- |
-| `filter`, `set` | `field` and typed `value`; mediaType movie/tv/all, minRating number 0–10, minYear/maxYear integer 1900–2100, sortBy one of the existing two values. Implement as field-dependent strict variants, not a broad cross-product. |
-| `filter`, `remove` | `field` restricted to optional minRating/minYear/maxYear; no value. Reuse domain default/removal semantics after confirming the existing mapping. No undefined media type or sort order. |
-| `entity`, `add` | `entityType` person/keyword and non-empty `queries` array. Related additions remain together for overflow handling. |
-| `entity`, `refine` | `entityType`, supplied `pendingRef` and one `query`. Reference must designate the exact refinable pending query, including an application-projected child query of a compound intention. |
-| `entity`, `replace` | `entityType`, `source` selector and non-empty `queries`. One person source may have several replacements. Keyword mapping requires the planned extension. |
-| `entity`, `remove` | `entityType`, `source` selector; no replacement queries. |
-| `entity`, `discard` | `entityType` and supplied `pendingRef`; no accepted source. Discard scope is exactly the referenced pending intention/query as described by the application, not all pending work. |
-| `entity`, `replace_all` | `entityType` restricted to keyword and non-empty `queries`; implicit target is the complete keyword selection. No person replace_all is introduced. |
-| `genre`, `add` | Non-empty `queries`; query correction is a hint, mapping comes from supplied catalogs. |
-| `genre`, `refine` | Supplied genre `pendingRef` and one `query`, for retained unresolved genre intentions. |
-| `genre`, `replace` | Accepted-genre `source` selector and non-empty `queries`. |
-| `genre`, `remove` | Accepted-genre `source` selector. |
-| `genre`, `discard` | Supplied genre `pendingRef`. |
-| `genre`, `replace_all` | Non-empty `queries`; applies to the complete active/inactive selection. |
-| `clarification` | `subject`, `reason`, `relatedPendingRef` (supplied ref or null). Reasons: missing_value, ambiguous_meaning, ambiguous_reference. Subject identifies the criterion or workflow. No generated UI question/options. |
-| `unsupported` | `reason`: unsupported_criterion or unsupported_operation. The common excerpt preserves the requested part; no invented substitute. |
+| Variant                 | Required additional fields                                                                                                                                                                                                   |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`, `set`         | `field` and typed `value`; mediaType movie/tv/all, minRating number 0–10, minYear/maxYear integer 1900–2100, sortBy one of the existing two values. Implement as field-dependent strict variants, not a broad cross-product. |
+| `filter`, `remove`      | `field` restricted to optional minRating/minYear/maxYear; no value. Reuse domain default/removal semantics after confirming the existing mapping. No undefined media type or sort order.                                     |
+| `entity`, `add`         | `entityType` person/keyword and non-empty `queries` array. Related additions remain together for overflow handling.                                                                                                          |
+| `entity`, `refine`      | `entityType`, supplied `pendingRef` and one `query`. Reference must designate the exact refinable pending query, including an application-projected child query of a compound intention.                                     |
+| `entity`, `replace`     | `entityType`, `source` selector and non-empty `queries`. One person source may have several replacements. Keyword mapping requires the planned extension.                                                                    |
+| `entity`, `remove`      | `entityType`, `source` selector; no replacement queries.                                                                                                                                                                     |
+| `entity`, `discard`     | `entityType` and supplied `pendingRef`; no accepted source. Discard scope is exactly the referenced pending intention/query as described by the application, not all pending work.                                           |
+| `entity`, `replace_all` | `entityType` restricted to keyword and non-empty `queries`; implicit target is the complete keyword selection. No person replace_all is introduced.                                                                          |
+| `genre`, `add`          | Non-empty `queries`; query correction is a hint, mapping comes from supplied catalogs.                                                                                                                                       |
+| `genre`, `refine`       | Supplied genre `pendingRef` and one `query`, for retained unresolved genre intentions.                                                                                                                                       |
+| `genre`, `replace`      | Accepted-genre `source` selector and non-empty `queries`.                                                                                                                                                                    |
+| `genre`, `remove`       | Accepted-genre `source` selector.                                                                                                                                                                                            |
+| `genre`, `discard`      | Supplied genre `pendingRef`.                                                                                                                                                                                                 |
+| `genre`, `replace_all`  | Non-empty `queries`; applies to the complete active/inactive selection.                                                                                                                                                      |
+| `clarification`         | `subject`, `reason`, `relatedPendingRef` (supplied ref or null). Reasons: missing_value, ambiguous_meaning, ambiguous_reference. Subject identifies the criterion or workflow. No generated UI question/options.             |
+| `unsupported`           | `reason`: unsupported_criterion or unsupported_operation. The common excerpt preserves the requested part; no invented substitute.                                                                                           |
 
 An empty whole-selection replacement is not the encoding for removal of everything; an explicit clear-all contract is deferred. Preserve such input as clarification rather than guessing or advertising an unimplemented operation. Cancellation/reset/resumption and search are not arbitrary executable parser commands. Their exact free-text interpretation mapping remains a gate; labelled controls retain the existing application-owned workflow.
 
@@ -109,22 +109,22 @@ Incomplete names remain entity queries, not automatic clarification. Year bounds
 All references below must have been supplied with the stated target kind. These are draft fixtures, not provider-tested JSON Schema examples.
 
 1. Addition, “und Brad Pitt”:
-`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"und Brad Pitt","operation":"add","entityType":"person","queries":[{"text":"Brad Pitt","correction":null}]}]}]}`
+   `{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"und Brad Pitt","operation":"add","entityType":"person","queries":[{"text":"Brad Pitt","correction":null}]}]}]}`
 
 2. Active refinement, “Chris Evans”, with pending-ref c supplied:
-`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Chris Evans","operation":"refine","entityType":"person","pendingRef":"c","query":{"text":"Chris Evans","correction":null}}]}]}`
+   `{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Chris Evans","operation":"refine","entityType":"person","pendingRef":"c","query":{"text":"Chris Evans","correction":null}}]}]}`
 
 3. Multi-replacement, “Ersetze Tom Hanks durch Tom Cruise und Brad Pitt”, with accepted person-ref p supplied:
-`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Ersetze Tom Hanks durch Tom Cruise und Brad Pitt","operation":"replace","entityType":"person","source":{"mode":"reference","ref":"p"},"queries":[{"text":"Tom Cruise","correction":null},{"text":"Brad Pitt","correction":null}]}]}]}`
+   `{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Ersetze Tom Hanks durch Tom Cruise und Brad Pitt","operation":"replace","entityType":"person","source":{"mode":"reference","ref":"p"},"queries":[{"text":"Tom Cruise","correction":null},{"text":"Brad Pitt","correction":null}]}]}]}`
 
 4. Whole-selection replacement, “Nur noch Komödien und Thriller”:
-`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"genre","inputExcerpt":"Nur noch Komödien und Thriller","operation":"replace_all","queries":[{"text":"Komödien","correction":null},{"text":"Thriller","correction":null}]}]}]}`
+   `{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"genre","inputExcerpt":"Nur noch Komödien und Thriller","operation":"replace_all","queries":[{"text":"Komödien","correction":null},{"text":"Thriller","correction":null}]}]}]}`
 
 5. Typo, “Mit Tom Hnaks”:
-`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Mit Tom Hnaks","operation":"add","entityType":"person","queries":[{"text":"Tom Hnaks","correction":"Tom Hanks"}]}]}]}`
+   `{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Mit Tom Hnaks","operation":"add","entityType":"person","queries":[{"text":"Tom Hnaks","correction":"Tom Hanks"}]}]}]}`
 
 6. Mixed, “Nur Serien und mit Chris”:
-`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"filter","inputExcerpt":"Nur Serien","operation":"set","field":"mediaType","value":"tv"}]},{"items":[{"kind":"entity","inputExcerpt":"mit Chris","operation":"add","entityType":"person","queries":[{"text":"Chris","correction":null}]}]}]}`
+   `{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"filter","inputExcerpt":"Nur Serien","operation":"set","field":"mediaType","value":"tv"}]},{"items":[{"kind":"entity","inputExcerpt":"mit Chris","operation":"add","entityType":"person","queries":[{"text":"Chris","correction":null}]}]}]}`
 
 Invalid fixtures: fabricated/unknown/wrong-kind references; provider IDs or authoritative revisions; unknown fields; set mediaType to a number; empty queries for replacement; person replace_all; remove carrying replacement queries; refinement targeting accepted rather than pending state; excerpts absent from input; oversized nesting. Distinguish structural failure from well-formed but stale or unoffered references in application validation.
 
