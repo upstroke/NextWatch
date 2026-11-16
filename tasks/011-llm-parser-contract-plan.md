@@ -6,7 +6,8 @@
 - Created: 2026-11-16.
 - Target branch: `feat/011-llm-parser-contract`.
 - Original read-only application review baseline: `5c85d691e4ca95c033af8610f9fc5ae137153fc7`.
-- Prompt/JSON contract alignment: specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`, 2026-11-16. The plan was reread on the target branch before this documentation update; application code was not re-audited.
+- Prompt/JSON contract alignment: specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`, 2026-11-16.
+- Targeted follow-up review completed at `a6fe74b2fd7083fd4bc25c0e830f646792014701` on 2026-11-16; scope, unchanged-code evidence and remaining limitations are recorded in section 2.
 - Creating or updating this document approves documentation only, not application implementation, a later code commit, PR or merge.
 - The remote review does not establish local working-tree cleanliness, unpushed commits or passing validation.
 - Product decisions are authoritative in [WP 011](../docs/work-packages/011-llm-parser-contract.md). This plan describes their implementation, not an alternative specification.
@@ -34,7 +35,7 @@ The first later interactive test surface is a CLI using a real LLM with initiall
 
 ## 2. Read-only findings
 
-The application findings below are historical observations at the original review baseline, not execution results, a fresh code audit or a complete repository-wide inventory.
+The original application findings below remain applicable to the reviewed remote code: Git tree/blob hashes at `5c85d691e4ca95c033af8610f9fc5ae137153fc7` and `a6fe74b2fd7083fd4bc25c0e830f646792014701` are identical for `src/`, `server/`, `app/`, `tests/`, `package.json`, `pnpm-lock.yaml` and the TypeScript, Vitest and ESLint configuration. Differences are in `AGENTS.md`, `docs/` and `tasks/`. A repeated full audit is not required merely because documentation changed. This comparison does not turn the original targeted review into a complete caller/test inventory or establish passing tests.
 
 | Capability                       | Evidence and status                                                                                                                                                                                                                                 |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -51,7 +52,21 @@ The application findings below are historical observations at the original revie
 | Test inventory                   | Listed `tests/unit/domain/search`; remaining suites were not all read. Do not claim a full test audit.                                                                                                                                              |
 | Repository status documentation  | The original review found stale WP 010 status. A subsequent direct read on the target branch verified that `AGENTS.md` names WP 011, its branch and this draft plan. Do not reopen WP 010 or report the old status correction as still outstanding. |
 
-The prompt/JSON requirements and backlink to this plan are saved in WP 011 at `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. No application code was changed during this documentation alignment.
+### Targeted follow-up review — 2026-11-16
+
+Directly read at `a6fe74b`: `AGENTS.md`, `docs/typing.md`, `package.json`, `src/lib/schemas/chat.ts`, `search.ts`, `search-state.ts`, `search-transition.ts`, `src/lib/domain/search/filter-catalog.ts`, `extraction.ts`, and `tests/unit/schemas/chat.spec.ts`, `search.spec.ts`, `search-year-range.spec.ts`. The schema and schema-test directories were directly listed.
+
+- Existing intent tests explicitly reject changes on non-ready statuses. Preserve that boundary; introduce the separate parser proposal contract instead of weakening `ChatIntentSchema`.
+- `FilterChangeSchema` currently accepts a general string field and unknown value; it is not yet a precise field-dependent external model-response contract.
+- Reuse the versioned filter catalog and existing value schemas. Catalog entries describe capabilities, not identity provenance or blanket permission for the model to set IDs; derive an allowed model-facing projection.
+- Existing search tests cover defaults, ranges and list limits; year-range tests cover open/closed/equal bounds and reversed-bound rejection. Do not duplicate those general rules as parser tests. Test the new composition, response and adapter boundaries.
+- `package.json` pins Zod `4.6.7`. Local installation/runtime behavior was not checked. Zod 4's native `z.toJSONSchema()` is the starting approach; no additional conversion library is required by the current design. Verify conversion of the concrete new parser schema during implementation.
+- Zod validates separate external boundaries, including TMDb responses and LLM parser responses; these are different contracts, not one shared API payload.
+- Markdown instructions explain semantics; JSON Schema supports provider-side Structured Outputs; local Zod and domain validation control acceptance. These complement each other. Prefer Structured Outputs when the selected provider/model supports the required contract; exact compatibility is deferred to provider selection, and fallback requires explicit approval.
+- The existing filter `.transform()` deduplication and domain checks remain local and unchanged for this purpose. Do not export the complete domain filter/state schema as the LLM response or remove transforms merely to enable export. Design a dedicated JSON-Schema-compatible parser response contract.
+- Further caller/test inspection is limited to concrete planned adapter/domain changes and remaining relevant gaps. Do not restart a repository-wide audit or reopen WP 009/010.
+
+The prompt/JSON requirements and backlink to this plan are saved in WP 011 at `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. No application code was changed and no validation commands were run during these documentation/review steps.
 
 ## 3. Proposed contract design
 
@@ -100,7 +115,7 @@ Define a versioned fixed parser instruction together with the external response 
 
 Provide a pure provider-neutral request composer with three logically separated parts: trusted fixed instructions, a minimal serialized application-context projection, and the current untrusted user input. A later provider adapter maps these parts to API roles/options. Do not embed secrets, result lists or full conversation history, or duplicate accepted state in a competing model. Define allowed context fields and serialization/bounds before implementation.
 
-Use a single consistent schema source following project Zod/typing conventions. Determine the supported JSON Schema generation approach after inspecting installed versions; do not add a dependency or maintain a second handwritten schema without approval. Specify contract version, required fields, allowed values, strict unknown-field policy, bounds and missing/ambiguous/unsupported representations. Review provider-relevant schema limitations without selecting a provider or weakening local validation.
+Use a single consistent schema source following project Zod/typing conventions. Start with native `z.toJSONSchema()` for the dedicated parser response schema; verify the concrete schema's conversion and target limitations during implementation. Do not add a dependency or maintain a second handwritten schema without approval. Specify contract version, required fields, allowed values, strict unknown-field policy, bounds and missing/ambiguous/unsupported representations. Existing domain transforms remain unchanged and local; the model response is not an export of the complete domain schema. Review provider-relevant schema limitations without selecting a provider or weakening local validation.
 
 Specify that the later adapter supplies the schema through supported structured-output controls. Document the minimum capability requirements and require explicit approval for any fallback; asking for JSON in a prompt alone is not an acceptance guarantee. No automatic provider/model failover is planned.
 
@@ -180,8 +195,8 @@ No automatic barrel exports, server routes, provider dependencies, CLI or UI fil
 
 ## 6. Implementation sequence
 
-1. Reconfirm branch/local status, reread active WP and complete affected-caller/test inventory. Verify `AGENTS.md` remains aligned with WP 011; its previously stale active-package status has already been corrected.
-2. Present exact schema shapes, prompt/version and request examples, model-visible context/bounds, JSON-schema generation approach, normalized response outcomes, envelope bounds, group-failure policy and criterion-gap disposition for approval. Reuse existing decisions; ask only genuinely new questions.
+1. Reconfirm branch/local status and reread the active WP. Use the completed targeted follow-up review in section 2; inspect only remaining relevant callers/tests for concrete planned changes, and recheck changed files if the code baseline moves. Verify `AGENTS.md` remains aligned with WP 011; do not restart a full audit or reopen WP 009/010.
+2. Present the concrete design deliverables consolidated in section 9 for approval. Reuse existing decisions; ask only genuinely new questions.
 3. Add failing parser boundary/request-composition/response-validation tests; implement strict consistent contracts, fixed instructions and pure helpers. No provider connection or live model call.
 4. Add failing session/overflow/source-selection tests and implement minimal context contracts.
 5. Add failing mixed adapter tests; implement filter/entity coordination with real existing transitions.
@@ -225,40 +240,44 @@ Use the checked `package.json` scripts with the project's pnpm package manager:
 
 During development, use focused Vitest runs for affected suites, then the complete commands above. Verify statement coverage at least 80%, including unimported application modules. Record actual command output/failures and commands not run. Do not claim Playwright, live TMDb or model-eval coverage from fixture tests.
 
-No validation commands have been run for this draft or its prompt/JSON documentation alignment.
+No validation commands have been run for this draft, its documentation updates or the targeted read-only follow-up review.
 
 ## 9. Open design gates and downstream follow-up
 
-Before coding the relevant slice, approve:
+### Consolidated open tasks before implementation
 
-- Exact parser and application-envelope schemas, limits and full-capacity behavior.
-- Fixed instruction text/version, synthetic request/response examples, model-visible context projection/serialization and request association.
-- Consistent JSON-schema generation approach after checking installed versions, response discriminants and normalized failure mapping. Record minimum future provider capabilities; no silent fallback or provider/model selection.
-- Concrete used helper/test paths and any required dependencies before adding them.
-- Matching policy/subset validation for ambiguous accepted source references.
-- Mixed-group dependency/failure policy and session/revision commit semantics.
-- Which keyword extensions belong in this implementation and which explicit contracts defer work.
-- Any truly unspecified genre/keyword AND/OR or strict numeric semantics after checking existing specifications.
+This is the single consolidated checklist of remaining design deliverables; details are in sections 3 and 4. The targeted prerequisite review in section 2 is complete within its stated scope, not an open requirement for a repeated full audit.
 
-These gates do not reopen the eight agreed workflow decisions. Do not label this a fully approved implementation plan until they are resolved or explicitly deferred with a safe supported outcome.
+- [ ] Fixed parser instruction: write the concrete Markdown instruction, version and synthetic request/response examples for new requests, additions, replacements, removals, refinements and mixed changes.
+- [ ] Model-visible context: define the allowed fields, supported-catalog projection, serialization, size bounds and separation from user text. Specify application-owned request/revision and clarification association; do not expose trusted IDs as authority to generate new identities.
+- [ ] Parser input/output: specify exact JSON fields, types, status/discriminant values, contract version, required/optional semantics and strict unknown-field policy. Keep the model response distinct from TMDb payloads and complete domain state.
+- [ ] Structured Outputs contract: use native Zod JSON-schema generation as the starting approach and verify the concrete parser schema's conversion. State minimum provider capabilities; exact provider/model compatibility is a later integration task. No silent fallback, extra dependency or handwritten duplicate schema without approval.
+- [ ] Response validation: define normalized refusal, incomplete/truncated, transport/timeout, malformed-JSON and schema-invalid outcomes, distinct from valid clarification/unsupported interpretations. Specify unchanged-state behavior and the separate domain-invalid group policy; no automatic repair or repeat call.
+- [ ] Mixed changes: define independent versus cohesive/dependent groups, partial-success/rejection behavior, atomicity and state/session revision/commit semantics. Preserve unresolved wishes and existing transition guarantees.
+- [ ] Continuation context: specify the bounded overflow and unresolved-replacement-source representation, pending mention order, question/request association, capacity behavior, replay/stale protection and matching/subset policy for ambiguous accepted sources.
+- [ ] Targeted domain extensions: inspect only remaining relevant callers/tests and verify genuine genre/keyword gaps, especially trusted keyword acceptance and targeted replacement. List exact necessary extensions versus safe deferrals; do not reopen shared rules or invent undecided AND/OR or strict numeric semantics.
+- [ ] Concrete implementation map: confirm used helper/test paths, reused transitions, any necessary dependency changes and the focused tests for each change. Existing domain deduplication/transforms remain unchanged solely for schema export.
 
-Documentation alignment already completed outside this plan update:
+Review and approve these deliverables before coding the relevant slice. They do not reopen the eight agreed workflow decisions or imply approval of application implementation. Do not label this a fully approved implementation plan until the gates are resolved or explicitly deferred with a safe supported outcome. WP 011's specification needs no change solely for the Markdown/Zod/Structured Outputs clarification recorded here.
+
+### Documentation alignment already completed
 
 - WP 011 links back to this plan in specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`.
 - The directly read target-branch `AGENTS.md` identifies WP 011 and this draft plan. Its other follow-up descriptions may need a separately reviewed status refresh; this update does not edit it.
 
-Separately reviewed downstream follow-up:
+### Separately reviewed downstream follow-up
 
 - Align WP 012 with explicit confirmation, executed snapshots and bounded transient retries; retain the existing separate Movie/TV paths.
 - Align WP 014 with resolution/uniqueness, candidate continuation and bounded transient retries.
 - Review the existing wizard task against the final cancellation/resumption rules.
-- Plan and approve the real-provider CLI integration separately, with search data/execution initially mocked. Select provider/model and verify actual structured-output support then; do not assign a new work-package number implicitly.
+- Plan and approve the real-provider CLI integration separately, with search data/execution initially mocked. Select provider/model and verify actual structured-output support then; do not assign a new work-package number implicitly. Dependency order remains WP 011 → WP 014 → WP 012.
 
-The original plan-creation commit changed only this plan file. This alignment also changes only this plan; it does not silently update work packages, `AGENTS.md` or the UI task.
+The original plan-creation commit changed only this plan file. This update also changes only this plan; it does not silently update work packages, `AGENTS.md` or the UI task.
 
 ## 10. Approval log
 
 - Draft creation requested by the user; implementation approval pending.
 - Reviewed baseline and limitations recorded above.
 - Prompt/JSON plan alignment requested on 2026-11-16 after specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. This records documentation scope, not technical implementation approval.
-- No application changes, tests, provider calls, branch creation, PR or merge performed as part of this plan alignment.
+- Open-task consolidation and the targeted follow-up review status requested on 2026-11-16. This preserves the specification and does not approve implementation or claim a complete repository-wide audit.
+- No application changes, tests, provider calls, branch creation, PR or merge performed as part of these plan updates.
