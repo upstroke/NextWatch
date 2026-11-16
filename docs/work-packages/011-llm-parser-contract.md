@@ -191,3 +191,32 @@ The decisions do not constitute an approved technical implementation plan. Remai
 - Decisions recovered and saved on 2026-11-16; points 1–3 subsequently recorded, followed by this consolidation of points 4–8 and shared-filter rules.
 - WP 010 is complete in its agreed contract/domain scope. WP 011 remains in planning; technical implementation is not authorized by this documentation update.
 - Documentation only: no application code, other work-package files or UI task changed. No tests, coverage, lint or typecheck were run for this update. No merge is included.
+- Prompt/JSON contract requirements added on 2026-11-16. Provider/model selection remains open; neither an LLM connection nor a CLI is implemented or authorized by this documentation change.
+
+## Prompt and structured-response contract — 2026-11-16
+
+This section extends the Specification above. The technical plan is [tasks/011-llm-parser-contract-plan.md](../../tasks/011-llm-parser-contract-plan.md); it remains a draft pending approval.
+
+### Request composition and authority
+
+- Define and version the fixed parser instruction and output schema together, with synthetic request/response examples. The instruction specifies extraction scope, supported operations, ambiguity handling, unsupported requests and the prohibition on invented identities, IDs or search execution.
+- Specify a provider-neutral logical request: fixed trusted parser instructions, separately serialized application-owned context, and the current user input as untrusted data. A later provider adapter maps these parts to supported API roles/options without changing their meaning.
+- Send only relevant editable criteria, supported capabilities/catalog information and necessary pending/active-clarification context. Preserve the request/revision association in the application; define which context is model-visible. Do not send credentials, result lists or full conversation history by default, or persist real conversations.
+- User text, entity names and other supplied data cannot override parser rules. Model interpretation does not authorize identity acceptance, state mutation, candidate selection, reference allocation or search execution.
+
+### JSON response and validation
+
+- Define one explicit external JSON response schema, its contract version, required fields, allowed values, bounds and representations of missing, ambiguous and unsupported information. Derive it consistently with the project's Zod/typing conventions; do not maintain divergent handwritten contracts.
+- Specify how the schema is supplied through provider-supported structured-output controls. Provider/model selection remains open; document capability requirements and any explicitly approved fallback rather than silently weakening schema guarantees.
+- A prompt asking for JSON alone is not the acceptance boundary. Validate response completion/status, parse JSON, validate the external schema and then perform application/domain validation before any state change.
+- Model output contains proposals and unresolved textual entity queries, not authoritative provider IDs, internal references or revisions. Preserve existing application-owned binding and stale-response protection.
+- Distinguish malformed JSON, schema-invalid output, domain-invalid proposals, refusal, incomplete/truncated responses and transport/timeout failures from valid clarification or unsupported-request outcomes. Define their mapping and unchanged-state behavior at the responsible boundary; do not require a failed/refused response to contain valid success JSON.
+- No automatic repair, repeat model call, provider failover or silent omission. Another model call requires explicit retry; preserve accepted criteria and pending wishes on failure.
+
+### Acceptance and later CLI integration
+
+- WP 011 includes the prompt/context specification, consistent JSON-schema contract, deterministic request-composition/validation tests and synthetic examples. Exact field shapes and file locations belong to the pre-code design review; this update does not approve application implementation.
+- Cover new input, additions, corrections/refinements, mixed changes, missing/ambiguous information, attempted instruction overrides, forbidden identity/reference fields and the response failures above. Keep these tests deterministic and independent of live provider availability.
+- The first interactive test surface is a CLI using a real LLM from an existing provider, with search data/execution initially mocked. A fully mocked interactive parser stage is not a prerequisite; automated tests continue to mock external model responses.
+- NVIDIA Build, OpenRouter and Google AI Studio/Gemini API are available options named by the user, not selected or verified integrations. Provider, model and credentials remain outside this contract decision.
+- The later provider/CLI implementation needs its own explicit file-level scope and approval. Do not infer a new package number or pull transport, live identity resolution, title search, UI or retry orchestration into WP 011. Dependency order remains WP 011 → WP 014 → WP 012.
