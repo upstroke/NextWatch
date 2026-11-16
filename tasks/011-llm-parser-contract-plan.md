@@ -8,6 +8,7 @@
 - Original read-only application review baseline: `5c85d691e4ca95c033af8610f9fc5ae137153fc7`.
 - Prompt/JSON contract alignment: specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`, 2026-11-16.
 - Targeted follow-up review completed at `a6fe74b2fd7083fd4bc25c0e830f646792014701` on 2026-11-16; scope, unchanged-code evidence and remaining limitations are recorded in section 2.
+- Narrowly approved draft artifact: `src/lib/parser/instructions.ts`, instruction revision `0.1.0-draft`, saved in `d4138d916da442f29d20b1b8cf8373092cfb3e8c`. This does not approve the remaining implementation plan or runtime use; see section 3.4.
 - Creating or updating this document approves documentation only, not application implementation, a later code commit, PR or merge.
 - The remote review does not establish local working-tree cleanliness, unpushed commits or passing validation.
 - Product decisions are authoritative in [WP 011](../docs/work-packages/011-llm-parser-contract.md). This plan describes their implementation, not an alternative specification.
@@ -21,6 +22,7 @@
 - [WP 012](../docs/work-packages/012-search-execution-and-discover.md).
 - [WP 013](../docs/work-packages/013-title-disambiguation-and-providers.md).
 - [WP 014](../docs/work-packages/014-entity-resolution.md).
+- [Parser instruction draft](../src/lib/parser/instructions.ts), the single maintained prompt text; not yet connected to runtime.
 - [Deferred wizard task](clarificaton-flow.md), path verified in the tasks directory; its contents were not reviewed for alignment in this pass.
 
 ## 1. Goal and boundaries
@@ -66,7 +68,7 @@ Directly read at `a6fe74b`: `AGENTS.md`, `docs/typing.md`, `package.json`, `src/
 - The existing filter `.transform()` deduplication and domain checks remain local and unchanged for this purpose. Do not export the complete domain filter/state schema as the LLM response or remove transforms merely to enable export. Design a dedicated JSON-Schema-compatible parser response contract.
 - Further caller/test inspection is limited to concrete planned adapter/domain changes and remaining relevant gaps. Do not restart a repository-wide audit or reopen WP 009/010.
 
-The prompt/JSON requirements and backlink to this plan are saved in WP 011 at `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. No application code was changed and no validation commands were run during these documentation/review steps.
+The prompt/JSON requirements and backlink to this plan are saved in WP 011 at `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. No application code was changed and no validation commands were run during those documentation/review steps. The later instruction-draft addition in `d4138d9` is recorded separately below; the unchanged-tree comparison above does not include that addition.
 
 ## 3. Proposed contract design
 
@@ -111,7 +113,20 @@ A domain-valid independent group may succeed while another group awaits clarific
 
 ### 3.4 Fixed instructions, request composition and JSON response
 
-Define a versioned fixed parser instruction together with the external response schema and synthetic request/response examples. It must describe supported extraction/operations, preservation of supplied meaning, missing/ambiguous/unsupported input, and prohibitions on invented identities, IDs, execution or authoritative state changes. User text and supplied names are data, not authority to override these rules.
+#### Saved instruction draft — 2026-11-16
+
+- Source: [src/lib/parser/instructions.ts](../src/lib/parser/instructions.ts), saved in commit `d4138d916da442f29d20b1b8cf8373092cfb3e8c` after explicit approval of this narrowly scoped artifact.
+- Exports: `PARSER_INSTRUCTION_VERSION` with value `0.1.0-draft`, and `PARSER_INSTRUCTIONS` containing the fixed German Markdown instruction. This instruction revision is not the future parser input/output schema version.
+- JSDoc documents purpose, draft status, separate context/user-input composition, later structured-output schema supply, local/domain validation and links to the specification and this plan.
+- The prompt describes extraction boundaries, unchanged criteria, additions/replacements/removals/refinements, media-type preservation, unresolved persons/keywords, active-clarification reference rules and transparent handling of unsupported/ambiguous wishes.
+- Keep the prompt text in that source file only. This plan documents its role and status; do not copy the full prompt into the specification or another documentation file.
+- No runtime caller/provider is connected. No request composer, parser schema, response validator, adapter, CLI or placeholder implementation was created by that commit. The unconnected draft is the explicitly requested design artifact, not approval for further unused scaffolding.
+- Input/context fields and bounds, response JSON/Zod schema, normalized response outcomes, synthetic schema-aligned examples and deterministic tests remain open. Review and align the instruction with those contracts before runtime use; saving the draft does not complete the prompt/schema design gate.
+- No tests, coverage, ESLint, typecheck or live model evaluations were run for the instruction-draft commit. Do not infer behavioral correctness or passing validation from the saved text.
+
+#### Remaining contract work
+
+Complete the versioned fixed parser instruction together with the external response schema and synthetic request/response examples. It must describe supported extraction/operations, preservation of supplied meaning, missing/ambiguous/unsupported input, and prohibitions on invented identities, IDs, execution or authoritative state changes. User text and supplied names are data, not authority to override these rules.
 
 Provide a pure provider-neutral request composer with three logically separated parts: trusted fixed instructions, a minimal serialized application-context projection, and the current untrusted user input. A later provider adapter maps these parts to API roles/options. Do not embed secrets, result lists or full conversation history, or duplicate accepted state in a competing model. Define allowed context fields and serialization/bounds before implementation.
 
@@ -123,7 +138,7 @@ Design the response boundary as: normalized response status/completion check, JS
 
 Distinguish refusal, incomplete/truncated response, transport/timeout failure, malformed JSON and schema-invalid output from valid clarification/unsupported outcomes. Domain-invalid proposals follow the reviewed group-failure policy in 3.3; never apply the invalid group or silently omit wishes. Technical/format failures preserve accepted criteria and pending wishes and trigger no automatic model repeat, JSON repair or search. Explicit retry is required for another model call.
 
-Proposed used implementation files, subject to pre-code review: `src/lib/parser/instructions.ts` for fixed instruction/version, `src/lib/parser/compose-request.ts` for pure context projection/composition, and `src/lib/parser/validate-response.ts` for normalized response validation. Confirm repository naming/layer placement first; do not create unused scaffolding or persist real conversations. Keep schema ownership in `src/lib/schemas/parser.ts`.
+Remaining proposed implementation files, subject to pre-code review: `src/lib/parser/compose-request.ts` for pure context projection/composition, and `src/lib/parser/validate-response.ts` for normalized response validation. Reuse the existing instruction draft rather than creating another prompt source. Confirm repository naming/layer placement first; do not create unused scaffolding or persist real conversations. Keep schema ownership in `src/lib/schemas/parser.ts`.
 
 ## 4. Changes by concern
 
@@ -169,12 +184,12 @@ Replace candidate-limit references with `MAX_PERSON_IDS`, keep value five, retai
 
 ## 5. Proposed file map
 
-All new names below are proposed, not already implemented APIs. Avoid empty scaffolding and add a file only when used.
+Except for the saved instruction draft explicitly recorded in section 3.4, new names below remain proposed, not implemented APIs. Avoid empty scaffolding and add a file only when used or as the separately approved draft artifact.
 
 | File/group                                                                                                                 | Planned action                                                                                                                                                     |
 | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `src/lib/schemas/parser.ts`                                                                                                | External parser schemas, normalized response outcomes and consistent versioned JSON-schema representation; inspect generation support before choosing an approach. |
-| `src/lib/parser/instructions.ts`                                                                                           | Fixed trusted parser instruction/version, kept consistent with the response contract.                                                                              |
+| `src/lib/parser/instructions.ts` | Draft saved in `d4138d9`; reuse and align version/text with the approved schema and examples before runtime use. |
 | `src/lib/parser/compose-request.ts`                                                                                        | Pure provider-neutral request composition with bounded context projection and separated user text.                                                                 |
 | `src/lib/parser/validate-response.ts`                                                                                      | Pure status/JSON/schema validation; no transport, repair or retry.                                                                                                 |
 | `src/lib/schemas/parser-application.ts`                                                                                    | Minimal bounded application-owned continuation context.                                                                                                            |
@@ -191,13 +206,13 @@ All new names below are proposed, not already implemented APIs. Avoid empty scaf
 | Existing affected schema/domain suites                                                                                     | Focused regressions; extend instead of duplicating coverage.                                                                                                       |
 | WP 011 execution status and this plan                                                                                      | Track actual progress and validation.                                                                                                                              |
 
-No automatic barrel exports, server routes, provider dependencies, CLI or UI files are planned. Confirm the new parser module/test paths during the design gate before coding.
+No automatic barrel exports, server routes, provider dependencies, CLI or UI files are planned. Confirm remaining new parser module/test paths during the design gate before coding.
 
 ## 6. Implementation sequence
 
 1. Reconfirm branch/local status and reread the active WP. Use the completed targeted follow-up review in section 2; inspect only remaining relevant callers/tests for concrete planned changes, and recheck changed files if the code baseline moves. Verify `AGENTS.md` remains aligned with WP 011; do not restart a full audit or reopen WP 009/010.
-2. Present the concrete design deliverables consolidated in section 9 for approval. Reuse existing decisions; ask only genuinely new questions.
-3. Add failing parser boundary/request-composition/response-validation tests; implement strict consistent contracts, fixed instructions and pure helpers. No provider connection or live model call.
+2. Present the concrete design deliverables consolidated in section 9 for approval. Reuse existing decisions and the saved instruction draft; ask only genuinely new questions.
+3. Add failing parser boundary/request-composition/response-validation tests; implement strict consistent contracts and pure helpers, and align the existing instruction text/version. No provider connection or live model call.
 4. Add failing session/overflow/source-selection tests and implement minimal context contracts.
 5. Add failing mixed adapter tests; implement filter/entity coordination with real existing transitions.
 6. Extend explicit-request targeting and replacement-source subset guards with regression tests; preserve default ordering and replay protection.
@@ -240,7 +255,7 @@ Use the checked `package.json` scripts with the project's pnpm package manager:
 
 During development, use focused Vitest runs for affected suites, then the complete commands above. Verify statement coverage at least 80%, including unimported application modules. Record actual command output/failures and commands not run. Do not claim Playwright, live TMDb or model-eval coverage from fixture tests.
 
-No validation commands have been run for this draft, its documentation updates or the targeted read-only follow-up review.
+No validation commands have been run for this draft, its documentation updates, the targeted read-only follow-up review or the saved instruction draft `d4138d9`.
 
 ## 9. Open design gates and downstream follow-up
 
@@ -248,7 +263,7 @@ No validation commands have been run for this draft, its documentation updates o
 
 This is the single consolidated checklist of remaining design deliverables; details are in sections 3 and 4. The targeted prerequisite review in section 2 is complete within its stated scope, not an open requirement for a repeated full audit.
 
-- [ ] Fixed parser instruction: write the concrete Markdown instruction, version and synthetic request/response examples for new requests, additions, replacements, removals, refinements and mixed changes.
+- [ ] Fixed parser instruction: the concrete Markdown draft/version is saved in `src/lib/parser/instructions.ts` at `d4138d9`. Still review it against the exact context/response schema and add synthetic schema-aligned request/response examples for new requests, additions, replacements, removals, refinements and mixed changes. Do not mark this gate complete from text storage alone.
 - [ ] Model-visible context: define the allowed fields, supported-catalog projection, serialization, size bounds and separation from user text. Specify application-owned request/revision and clarification association; do not expose trusted IDs as authority to generate new identities.
 - [ ] Parser input/output: specify exact JSON fields, types, status/discriminant values, contract version, required/optional semantics and strict unknown-field policy. Keep the model response distinct from TMDb payloads and complete domain state.
 - [ ] Structured Outputs contract: use native Zod JSON-schema generation as the starting approach and verify the concrete parser schema's conversion. State minimum provider capabilities; exact provider/model compatibility is a later integration task. No silent fallback, extra dependency or handwritten duplicate schema without approval.
@@ -264,6 +279,7 @@ Review and approve these deliverables before coding the relevant slice. They do 
 
 - WP 011 links back to this plan in specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`.
 - The directly read target-branch `AGENTS.md` identifies WP 011 and this draft plan. Its other follow-up descriptions may need a separately reviewed status refresh; this update does not edit it.
+- This plan links to the saved instruction draft and documents its version, purpose, limits and pending contracts without duplicating the full prompt.
 
 ### Separately reviewed downstream follow-up
 
@@ -272,12 +288,14 @@ Review and approve these deliverables before coding the relevant slice. They do 
 - Review the existing wizard task against the final cancellation/resumption rules.
 - Plan and approve the real-provider CLI integration separately, with search data/execution initially mocked. Select provider/model and verify actual structured-output support then; do not assign a new work-package number implicitly. Dependency order remains WP 011 → WP 014 → WP 012.
 
-The original plan-creation commit changed only this plan file. This update also changes only this plan; it does not silently update work packages, `AGENTS.md` or the UI task.
+The original plan-creation commit changed only this plan file. This documentation update also changes only this plan; it does not silently update the prompt source, work packages, `AGENTS.md` or the UI task.
 
 ## 10. Approval log
 
-- Draft creation requested by the user; implementation approval pending.
+- Draft creation requested by the user; remaining implementation approval pending.
 - Reviewed baseline and limitations recorded above.
 - Prompt/JSON plan alignment requested on 2026-11-16 after specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. This records documentation scope, not technical implementation approval.
 - Open-task consolidation and the targeted follow-up review status requested on 2026-11-16. This preserves the specification and does not approve implementation or claim a complete repository-wide audit.
-- No application changes, tests, provider calls, branch creation, PR or merge performed as part of these plan updates.
+- The user explicitly approved the isolated instruction draft on 2026-11-16; `src/lib/parser/instructions.ts` was created in `d4138d916da442f29d20b1b8cf8373092cfb3e8c`. Approval did not include further parser modules or runtime integration.
+- The user requested documentation of that artifact in this existing plan. This update records actual progress rather than creating a second prompt copy or claiming the parser is implemented.
+- No tests, live model/provider calls, branch creation, PR or merge were performed for the instruction draft or this documentation step. No application/domain behavior, schemas, adapters or provider integration were implemented by these steps.
