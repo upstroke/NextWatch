@@ -2,300 +2,185 @@
 
 ## Status and approval
 
-- Status: Draft — awaiting approval.
-- Created: 2026-11-16.
-- Target branch: `feat/011-llm-parser-contract`.
-- Original read-only application review baseline: `5c85d691e4ca95c033af8610f9fc5ae137153fc7`.
-- Prompt/JSON contract alignment: specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`, 2026-11-16.
-- Targeted follow-up review completed at `a6fe74b2fd7083fd4bc25c0e830f646792014701` on 2026-11-16; scope, unchanged-code evidence and remaining limitations are recorded in section 2.
-- Narrowly approved draft artifact: `src/lib/parser/instructions.ts`, instruction revision `0.1.0-draft`, saved in `d4138d916da442f29d20b1b8cf8373092cfb3e8c`. This does not approve the remaining implementation plan or runtime use; see section 3.4.
-- Creating or updating this document approves documentation only, not application implementation, a later code commit, PR or merge.
-- The remote review does not establish local working-tree cleanliness, unpushed commits or passing validation.
-- Product decisions are authoritative in [WP 011](../docs/work-packages/011-llm-parser-contract.md). This plan describes their implementation, not an alternative specification.
+- Status: Draft — concrete contract proposed; application implementation awaiting approval.
+- Created and consolidated: 2026-11-16.
+- Target branch: `feat/011-llm-parser-contract`; documentation/review baseline: `13747850705c67df124976504b53fe19303a41d2`.
+- Product authority: [WP 011](../docs/work-packages/011-llm-parser-contract.md). The [supplement](../docs/work-packages/011-parser-contract-decisions.md) is retained as historical evidence, not a competing specification.
+- Saving this plan approves documentation only, not implementation, code commit, PR, merge or provider/CLI work. Proposed fields and limits below are not implemented APIs.
+- Follow [AGENTS](../AGENTS.md), [Typing](../docs/typing.md), [Testing](../docs/testing.md), WP 009/010 and the WP 012/014 ownership boundaries. Do not reopen completed WP 010 or restart a repository-wide audit.
 
-## References
+## 1. Evidence and limitations
 
-- [Development rules](../AGENTS.md).
-- [Typing](../docs/typing.md) and [Testing](../docs/testing.md).
-- [WP 009](../docs/work-packages/009-search-state-and-filter-catalog.md).
-- [WP 010](../docs/work-packages/010-clarification-and-guardrails.md), complete in its accepted contract/domain scope.
-- [WP 012](../docs/work-packages/012-search-execution-and-discover.md).
-- [WP 013](../docs/work-packages/013-title-disambiguation-and-providers.md).
-- [WP 014](../docs/work-packages/014-entity-resolution.md).
-- [Parser instruction draft](../src/lib/parser/instructions.ts), the single maintained prompt text; not yet connected to runtime.
-- [Deferred wizard task](clarificaton-flow.md), path verified in the tasks directory; its contents were not reviewed for alignment in this pass.
+The earlier targeted review used `5c85d69`, with follow-up at `a6fe74b`. The recorded tree/blob comparison found identical application/test/config trees between those two baselines; it did not establish passing tests or a complete inventory. Historical prompt/schema alignment is `a8dbca0`; initial plan is `99b5a2d`.
 
-## 1. Goal and boundaries
+Directly inspected for this consolidation at `1374785`: AGENTS, WP 011, the accessible current plan, `search-state.ts`, `search-transition.ts`, `tests/unit/domain/search/pending-operations.spec.ts`, plus original plan history and instruction translation diff. The current plan response was truncated in the file map; the original `99b5a2d` patch supplied the original remaining sequence, matrix and gates. Do not claim a complete read of every intervening plan revision or a full test/caller audit.
 
-Implement validated parser input/output contracts, the fixed parser-instruction/context contract and a pure application adapter for proposed filter changes, unresolved entity requests and clarification refinements. Preserve existing WP 009/010 transitions, limits, provenance boundaries and stale-answer protection.
+| Area | Evidence and disposition |
+| --- | --- |
+| Accepted/pending people | `search-state.ts` supports singular replacement query/target and one replacement per source. Multi-replacement requires a planned extension, not repeated independent acceptance. |
+| Trusted acceptance | `search-transition.ts` accepts one person per request. `pending-operations.spec.ts` covers ID deduplication, source retention, one-to-one replacement, stale/wrong-kind references, bounds and mutation isolation. Preserve those regressions. |
+| Keywords | Inspected state supports pending additions; inspected transition file has no controlled keyword acceptance. Targeted/whole-selection keyword replacement is a gap, not existing support. |
+| Existing application | Prior review: `applyIntent()` applies filter groups atomically; `extraction.ts` whole-list replacement differs from targeted replacement. Reuse rather than bypass. |
+| Clarification | Prior review: lifecycle/correction paths assume the first pending person. Explicit non-first targeting needs focused caller/test inspection. Source offers need an eligible matching subset rather than every accepted person. |
+| Guardrails | Reuse replacement-target, year-conflict and keyword-meaning guards. Preserve request, revision and question-sequence checks. |
+| Genres | Active/inactive genres form one unique bounded wish in the directly read state schema. Exact catalog, normalization and whole-selection mapping still need focused inspection. |
+| Prompt | Translation commit `166e144` changed the saved draft to English, revision `0.1.1-draft`. The old plan's German/0.1.0 description was historical, not current. No runtime connection. |
+| Tooling | Prior review recorded Zod 4.6.7 and native `z.toJSONSchema()` as the starting approach. Installation and concrete export/provider compatibility remain unverified. |
 
-WP 011 includes a versioned prompt and consistent external JSON-schema contract, pure request composition/response validation with deterministic tests, directly necessary approved schema/domain extensions and migration from `MAX_PERSON_CLARIFICATION_CANDIDATES` to `MAX_PERSON_IDS`.
+Remote inspection does not establish local cleanliness, unpushed changes or validation success. No runtime commands were run for this consolidation.
 
-It does not implement an LLM provider connection, parser HTTP endpoint, CLI, live identity lookup, TV-credit search, title-search execution, retry timers, UI components, persistence or browser journeys. There must be no network side effects or implicit search execution in the new adapter.
+## 2. Proposed request contract
 
-The first later interactive test surface is a CLI using a real LLM with initially mocked search data/execution. A fully mocked interactive parser stage is not a prerequisite. Provider/model selection remains open among the user-named NVIDIA Build, OpenRouter and Google AI Studio/Gemini API options; no integration or capability has been verified by naming them. Provider/CLI implementation requires a separately approved file-level scope. Automated contract tests remain deterministic and mock external model responses.
+Use an internal request envelope and a separate model-visible projection. All objects are strict. Types derive from Zod schemas through `z.infer`; do not maintain a parallel handwritten JSON Schema.
 
-## 2. Read-only findings
+### Internal envelope, not model output
 
-The original application findings below remain applicable to the reviewed remote code: Git tree/blob hashes at `5c85d691e4ca95c033af8610f9fc5ae137153fc7` and `a6fe74b2fd7083fd4bc25c0e830f646792014701` are identical for `src/`, `server/`, `app/`, `tests/`, `package.json`, `pnpm-lock.yaml` and the TypeScript, Vitest and ESLint configuration. Differences are in `AGENTS.md`, `docs/` and `tasks/`. A repeated full audit is not required merely because documentation changed. This comparison does not turn the original targeted review into a complete caller/test inventory or establish passing tests.
+| Field | Proposed meaning |
+| --- | --- |
+| `requestRef` | Application-issued parser invocation reference. |
+| `baseRevision` | Existing state revision captured before the call. |
+| `sessionSequence` | Application-owned generation for session-only changes and replay protection. |
+| `context` | Immutable projection actually supplied to this invocation. |
+| `userInput` | Current ephemeral input; never permanent conversation storage. |
 
-| Capability                       | Evidence and status                                                                                                                                                                                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Existing intent boundary         | `src/lib/schemas/chat.ts`: ready changes are supported; needs_clarification explicitly permits zero changes. It cannot directly carry mixed accepted changes plus unresolved entities.                                                              |
-| Atomic filter application        | `src/lib/domain/search/apply-intent.ts`: validates the whole filter group, preserves people/pending state, applies genre compatibility, and increments revision once per effective transition.                                                      |
-| List semantics                   | `src/lib/domain/search/extraction.ts`: set/replace address an entire ID list; add/remove operate on IDs. Targeted replacement must not be blindly mapped to whole-list replacement.                                                                 |
-| Pending operations               | `src/lib/schemas/search-transition.ts` and `src/lib/domain/search/pending-operations.ts`: referenced person/keyword add/change/remove commands, stale guards and controlled person acceptance already exist.                                        |
-| Replacement/duplicates           | `acceptResolvedPerson()` atomically retains/replaces source identity, removes the matching pending request and deduplicates IDs. Reuse it.                                                                                                          |
-| Semantic clarification           | `src/lib/domain/search/semantic-guardrails.ts`: existing replacement-target, year-conflict and keyword-meaning actions reuse real transitions. Offering a question does not change criteria.                                                        |
-| Replacement-source candidate gap | Existing replacement-target offers collect all eligible accepted people, not only those matching the user's source wording. WP 011 needs an application-controlled matching/subset policy before offering “which Tom?”.                             |
-| Clarification ordering gap       | `person-clarification-lifecycle.ts` offers only the first pending person; `apply-person-correction.ts` likewise requires the first request. Explicitly addressing another pending request is not yet supported by those paths.                      |
-| Candidate bounds                 | `src/lib/schemas/clarification.ts` directly imports the candidate-only limit. The known-title limit is separate and must remain unchanged.                                                                                                          |
-| Existing regressions             | Directly read `pending-operations.spec.ts`, `semantic-guardrails.spec.ts` and `year-range.spec.ts`: duplicate acceptance, source retention, stale references, year corrections and atomic invalid ranges already have tests.                        |
-| Test inventory                   | Listed `tests/unit/domain/search`; remaining suites were not all read. Do not claim a full test audit.                                                                                                                                              |
-| Repository status documentation  | The original review found stale WP 010 status. A subsequent direct read on the target branch verified that `AGENTS.md` names WP 011, its branch and this draft plan. Do not reopen WP 010 or report the old status correction as still outstanding. |
+Consume the invocation once. Validate both criteria and session association, including cancelled/replaced questions at unchanged criteria revision. A reset cannot revive old associations.
 
-### Targeted follow-up review — 2026-11-16
+### Model-visible composition
 
-Directly read at `a6fe74b`: `AGENTS.md`, `docs/typing.md`, `package.json`, `src/lib/schemas/chat.ts`, `search.ts`, `search-state.ts`, `search-transition.ts`, `src/lib/domain/search/filter-catalog.ts`, `extraction.ts`, and `tests/unit/schemas/chat.spec.ts`, `search.spec.ts`, `search-year-range.spec.ts`. The schema and schema-test directories were directly listed.
+Compose three logical parts: fixed English instructions, serialized context JSON, current untrusted user input. A later provider adapter maps these to API roles/options.
 
-- Existing intent tests explicitly reject changes on non-ready statuses. Preserve that boundary; introduce the separate parser proposal contract instead of weakening `ChatIntentSchema`.
-- `FilterChangeSchema` currently accepts a general string field and unknown value; it is not yet a precise field-dependent external model-response contract.
-- Reuse the versioned filter catalog and existing value schemas. Catalog entries describe capabilities, not identity provenance or blanket permission for the model to set IDs; derive an allowed model-facing projection.
-- Existing search tests cover defaults, ranges and list limits; year-range tests cover open/closed/equal bounds and reversed-bound rejection. Do not duplicate those general rules as parser tests. Test the new composition, response and adapter boundaries.
-- `package.json` pins Zod `4.6.7`. Local installation/runtime behavior was not checked. Zod 4's native `z.toJSONSchema()` is the starting approach; no additional conversion library is required by the current design. Verify conversion of the concrete new parser schema during implementation.
-- Zod validates separate external boundaries, including TMDb responses and LLM parser responses; these are different contracts, not one shared API payload.
-- Markdown instructions explain semantics; JSON Schema supports provider-side Structured Outputs; local Zod and domain validation control acceptance. These complement each other. Prefer Structured Outputs when the selected provider/model supports the required contract; exact compatibility is deferred to provider selection, and fallback requires explicit approval.
-- The existing filter `.transform()` deduplication and domain checks remain local and unchanged for this purpose. Do not export the complete domain filter/state schema as the LLM response or remove transforms merely to enable export. Design a dedicated JSON-Schema-compatible parser response contract.
-- Further caller/test inspection is limited to concrete planned adapter/domain changes and remaining relevant gaps. Do not restart a repository-wide audit or reopen WP 009/010.
+Context fields:
 
-The prompt/JSON requirements and backlink to this plan are saved in WP 011 at `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. No application code was changed and no validation commands were run during those documentation/review steps. The later instruction-draft addition in `d4138d9` is recorded separately below; the unchanged-tree comparison above does not include that addition.
+- `contractVersion`: proposed literal `0.1.0-draft`, independent of instruction revision.
+- `catalogVersion`: existing capability-catalog version.
+- `capabilities`: allowed fields, operations and valid scalar values/ranges derived from the existing catalog; not blanket permission to emit identity IDs.
+- `criteria`: scalar values and relevant accepted criterion descriptors `{ref, criterion, label, activity}`. `criterion` is person/keyword/genre; `activity` is active/inactive. IDs remain in the application binding, not the model-facing descriptor.
+- `pending`: ordered descriptors `{ref, criterion, operation, queries, source, status}` derived from existing state/continuation records. `source` is null or a readable description and supplied accepted-target reference where known. No duplicate authoritative state store.
+- `activeClarification`: null or `{pendingRef, subject}`. A null value forbids interpreting a bare name as an answer to a closed question. UI candidate selection uses application actions, not model identity selection.
+- `genreCatalogs`: complete application-supplied Movie/TV catalogs projected as supported labels/aliases and media-type association. Catalog mapping remains application-owned; do not collapse same labels across media types without validation.
 
-## 3. Proposed contract design
+No authoritative revision, question token, credential, result cache or full history needs to be exposed to the model. Explicit reference to another pending request takes priority over the active question.
 
-### 3.1 Parser boundary
+### Proposed technical bounds
 
-Create `src/lib/schemas/parser.ts` with strict external input/output schemas and types derived through `z.infer`.
+These require technical approval, not changes to product criterion limits: input 8,000 characters; query/label/target wording 512; opaque reference 128; at most 32 response groups, 64 total interpretation items and 64 total query entries per response; at most 64 retained continuation query entries and 64,000 retained text characters per session. Count all nesting, not only each array separately. Provider/output-byte bounds must also be configured before connection.
 
-Input contains the current relevant criteria/revision, supported capabilities/catalog version, supplied catalog information where needed, user text and explicit application-owned active-clarification context. Distinguish the internal request envelope from the model-visible projection; retain authoritative request/revision binding in the application. Do not send result lists or a full conversation history by default. Do not persist raw text.
+Do not truncate input, names, response arrays or pending work to fit. Reject over-capacity composition/application without changing state/session; preserve the current input in the caller's ephemeral editor and return a structured capacity fact. Do not call the model if required context cannot be supplied intact. Finalize full-capacity UX and concrete schema bounds before coding the envelope.
 
-Output describes supported criteria changes and unresolved requests with explicit addition/replacement/removal/refinement meaning and mention order. Person/keyword names remain text until trusted resolution. The model cannot issue trusted IDs, allocate references, set authoritative revisions, select arbitrary actions or authorize a search.
+## 3. Proposed response contract
 
-Preserve the existing `ChatIntentSchema` as the filter-application contract rather than weakening its clarification branch to allow arbitrary mixed application. The new parser boundary and adapter split a validated proposal into accepted transition groups and separately retained unresolved work. Evidence text is not identity provenance.
+Top-level required fields: `contractVersion` and `groups`. Each group is `{items: [...]}` with at least one item. Groups and items preserve mention order. Groups represent coupled intentions; different groups are only candidates for independent application, never model authorization. Empty `groups` means no extracted change, not permission to execute.
 
-Represent parser failure, unsupported requirements and clarification-needed outcomes explicitly. A provider refusal or failed response is not required to contain valid success JSON. Treat malformed/invalid output as a failure without automatic repair or another model call. Concrete schema fields and discriminants must be included in the pre-code contract review, not improvised while coding.
+The adapter may combine dependencies across groups, especially edits to the same target or year range; it must not split a coupled group to obtain partial success. If independence cannot be established safely, retain/clarify the related intention rather than guess. Group positions are local structure, not model-allocated target references.
 
-### 3.2 Application-owned context
+Every item requires `kind` and `inputExcerpt`, a non-empty excerpt of the relevant current input. Excerpt text is evidence of wording, not identity provenance. Validate excerpt containment locally. Operation-specific fields below are the only permitted additional fields; no generic unknown `value` or catch-all passthrough.
 
-Create `src/lib/schemas/parser-application.ts` for the minimal session-level envelope required to retain overflow commands, unresolved replacement-source context, pending mention order and active clarification association. Reuse existing search and clarification schemas rather than copying their records.
+Reusable query: `{text, correction}` where `text` preserves the supplied term and `correction` is null or an optional proposed corrected search form. Both are non-empty bounded strings when present. No confidence score or provider ID. A correction cannot silently replace the original term or establish uniqueness.
 
-Keep this envelope outside the bounded accepted-person/pending-addition collection. It must be bounded, revision/context-associated and ephemeral; it is not a second store of accepted filters or a hidden extra person slot. Exact bounds and full-capacity behavior require explicit approval before this schema is implemented.
+Reusable accepted-source selector: either `{mode: "reference", ref}` for a supplied accepted criterion of the matching kind, or `{mode: "unresolved", description}` preserving source wording for clarification. An unresolved selector never authorizes immediate removal/replacement.
 
-Application-issued references identify retained requests and question instances. The adapter may allocate them through an explicit supplied allocator; never generate them from model guesses. Define consumption/replay protection for session-only actions even where criteria revision does not change. Reuse existing question sequences where possible; do not permit session reset to revive old answers.
+### Operation-specific variants
 
-### 3.3 Pure adapter and mixed changes
+| Variant | Required additional fields |
+| --- | --- |
+| `filter`, `set` | `field` and typed `value`; mediaType movie/tv/all, minRating number 0–10, minYear/maxYear integer 1900–2100, sortBy one of the existing two values. Implement as field-dependent strict variants, not a broad cross-product. |
+| `filter`, `remove` | `field` restricted to optional minRating/minYear/maxYear; no value. Reuse domain default/removal semantics after confirming the existing mapping. No undefined media type or sort order. |
+| `entity`, `add` | `entityType` person/keyword and non-empty `queries` array. Related additions remain together for overflow handling. |
+| `entity`, `refine` | `entityType`, supplied `pendingRef` and one `query`. Reference must designate the exact refinable pending query, including an application-projected child query of a compound intention. |
+| `entity`, `replace` | `entityType`, `source` selector and non-empty `queries`. One person source may have several replacements. Keyword mapping requires the planned extension. |
+| `entity`, `remove` | `entityType`, `source` selector; no replacement queries. |
+| `entity`, `discard` | `entityType` and supplied `pendingRef`; no accepted source. Discard scope is exactly the referenced pending intention/query as described by the application, not all pending work. |
+| `entity`, `replace_all` | `entityType` restricted to keyword and non-empty `queries`; implicit target is the complete keyword selection. No person replace_all is introduced. |
+| `genre`, `add` | Non-empty `queries`; query correction is a hint, mapping comes from supplied catalogs. |
+| `genre`, `refine` | Supplied genre `pendingRef` and one `query`, for retained unresolved genre intentions. |
+| `genre`, `replace` | Accepted-genre `source` selector and non-empty `queries`. |
+| `genre`, `remove` | Accepted-genre `source` selector. |
+| `genre`, `discard` | Supplied genre `pendingRef`. |
+| `genre`, `replace_all` | Non-empty `queries`; applies to the complete active/inactive selection. |
+| `clarification` | `subject`, `reason`, `relatedPendingRef` (supplied ref or null). Reasons: missing_value, ambiguous_meaning, ambiguous_reference. Subject identifies the criterion or workflow. No generated UI question/options. |
+| `unsupported` | `reason`: unsupported_criterion or unsupported_operation. The common excerpt preserves the requested part; no invented substitute. |
 
-Create `src/lib/domain/search/apply-parser-result.ts` as the single pure coordination entry point. Use explicit state/session inputs and dependencies such as loaded genre catalogs and reference allocation. Return validated next state/session plus structured outcome facts; no transport, retry, rendering or execution.
+An empty whole-selection replacement is not the encoding for removal of everything; an explicit clear-all contract is deferred. Preserve such input as clarification rather than guessing or advertising an unimplemented operation. Cancellation/reset/resumption and search are not arbitrary executable parser commands. Their exact free-text interpretation mapping remains a gate; labelled controls retain the existing application-owned workflow.
 
-Proposed sequence:
+Incomplete names remain entity queries, not automatic clarification. Year bounds may each be in range while jointly contradictory: allow extraction, then route to the year-conflict guardrail. Missing values and out-of-range values are never silently repaired; use clarification for understood input that cannot supply a valid scalar.
 
-1. Validate the complete external proposal and verify its original base revision from the application-owned request association before applying anything. Malformed or stale proposals fail closed without mutation; do not depend on a model-generated revision.
-2. Bind any refinement/replacement source using stored application context, never model-supplied provider IDs.
-3. Determine explicitly independent groups. Treat coupled year bounds and related overflowing additions as cohesive groups. Do not infer that every individual change can safely commit alone.
-4. Apply an independent supported filter group through `applyIntent()` on a working copy.
-5. Apply authorized entity commands through `applyPendingQueryCommand()` using the revision produced by the immediately preceding synchronous transition.
-6. Retain unresolved source selection, overflow and other unapplied intentions in the envelope; do not silently discard them.
-7. Reconcile affected clarification lifecycles. Never relabel old asynchronous lookup/candidate results with a newer revision.
-8. Return the outcome for controlled caller persistence. An adapter result is not search permission.
+### Complete synthetic response examples
 
-Existing transition-level atomicity and revision increments remain authoritative. Do not force one revision increment for an entire mixed message. Internal revisions for fresh synchronous commands are distinct from rebasing old external results. Persist the returned state/session together under caller concurrency control.
+All references below must have been supplied with the stated target kind. These are draft fixtures, not provider-tested JSON Schema examples.
 
-A domain-valid independent group may succeed while another group awaits clarification. Unexpected internal inconsistencies must not be mistaken for ordinary partial success; define rejection versus retained-pending outcomes before coding and test both.
+1. Addition, “und Brad Pitt”:
+`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"und Brad Pitt","operation":"add","entityType":"person","queries":[{"text":"Brad Pitt","correction":null}]}]}]}`
 
-### 3.4 Fixed instructions, request composition and JSON response
+2. Active refinement, “Chris Evans”, with pending-ref c supplied:
+`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Chris Evans","operation":"refine","entityType":"person","pendingRef":"c","query":{"text":"Chris Evans","correction":null}}]}]}`
 
-#### Saved instruction draft — 2026-11-16
+3. Multi-replacement, “Ersetze Tom Hanks durch Tom Cruise und Brad Pitt”, with accepted person-ref p supplied:
+`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Ersetze Tom Hanks durch Tom Cruise und Brad Pitt","operation":"replace","entityType":"person","source":{"mode":"reference","ref":"p"},"queries":[{"text":"Tom Cruise","correction":null},{"text":"Brad Pitt","correction":null}]}]}]}`
 
-- Source: [src/lib/parser/instructions.ts](../src/lib/parser/instructions.ts), saved in commit `d4138d916da442f29d20b1b8cf8373092cfb3e8c` after explicit approval of this narrowly scoped artifact.
-- Exports: `PARSER_INSTRUCTION_VERSION` with value `0.1.0-draft`, and `PARSER_INSTRUCTIONS` containing the fixed German Markdown instruction. This instruction revision is not the future parser input/output schema version.
-- JSDoc documents purpose, draft status, separate context/user-input composition, later structured-output schema supply, local/domain validation and links to the specification and this plan.
-- The prompt describes extraction boundaries, unchanged criteria, additions/replacements/removals/refinements, media-type preservation, unresolved persons/keywords, active-clarification reference rules and transparent handling of unsupported/ambiguous wishes.
-- Keep the prompt text in that source file only. This plan documents its role and status; do not copy the full prompt into the specification or another documentation file.
-- No runtime caller/provider is connected. No request composer, parser schema, response validator, adapter, CLI or placeholder implementation was created by that commit. The unconnected draft is the explicitly requested design artifact, not approval for further unused scaffolding.
-- Input/context fields and bounds, response JSON/Zod schema, normalized response outcomes, synthetic schema-aligned examples and deterministic tests remain open. Review and align the instruction with those contracts before runtime use; saving the draft does not complete the prompt/schema design gate.
-- No tests, coverage, ESLint, typecheck or live model evaluations were run for the instruction-draft commit. Do not infer behavioral correctness or passing validation from the saved text.
+4. Whole-selection replacement, “Nur noch Komödien und Thriller”:
+`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"genre","inputExcerpt":"Nur noch Komödien und Thriller","operation":"replace_all","queries":[{"text":"Komödien","correction":null},{"text":"Thriller","correction":null}]}]}]}`
 
-#### Remaining contract work
+5. Typo, “Mit Tom Hnaks”:
+`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"entity","inputExcerpt":"Mit Tom Hnaks","operation":"add","entityType":"person","queries":[{"text":"Tom Hnaks","correction":"Tom Hanks"}]}]}]}`
 
-Complete the versioned fixed parser instruction together with the external response schema and synthetic request/response examples. It must describe supported extraction/operations, preservation of supplied meaning, missing/ambiguous/unsupported input, and prohibitions on invented identities, IDs, execution or authoritative state changes. User text and supplied names are data, not authority to override these rules.
+6. Mixed, “Nur Serien und mit Chris”:
+`{"contractVersion":"0.1.0-draft","groups":[{"items":[{"kind":"filter","inputExcerpt":"Nur Serien","operation":"set","field":"mediaType","value":"tv"}]},{"items":[{"kind":"entity","inputExcerpt":"mit Chris","operation":"add","entityType":"person","queries":[{"text":"Chris","correction":null}]}]}]}`
 
-Provide a pure provider-neutral request composer with three logically separated parts: trusted fixed instructions, a minimal serialized application-context projection, and the current untrusted user input. A later provider adapter maps these parts to API roles/options. Do not embed secrets, result lists or full conversation history, or duplicate accepted state in a competing model. Define allowed context fields and serialization/bounds before implementation.
+Invalid fixtures: fabricated/unknown/wrong-kind references; provider IDs or authoritative revisions; unknown fields; set mediaType to a number; empty queries for replacement; person replace_all; remove carrying replacement queries; refinement targeting accepted rather than pending state; excerpts absent from input; oversized nesting. Distinguish structural failure from well-formed but stale or unoffered references in application validation.
 
-Use a single consistent schema source following project Zod/typing conventions. Start with native `z.toJSONSchema()` for the dedicated parser response schema; verify the concrete schema's conversion and target limitations during implementation. Do not add a dependency or maintain a second handwritten schema without approval. Specify contract version, required fields, allowed values, strict unknown-field policy, bounds and missing/ambiguous/unsupported representations. Existing domain transforms remain unchanged and local; the model response is not an export of the complete domain schema. Review provider-relevant schema limitations without selecting a provider or weakening local validation.
+## 4. Pure application and continuation design
 
-Specify that the later adapter supplies the schema through supported structured-output controls. Document the minimum capability requirements and require explicit approval for any fallback; asking for JSON in a prompt alone is not an acceptance guarantee. No automatic provider/model failover is planned.
+Validate completion/status, JSON, the entire external schema and request/context association before mutation. Normalize refusal, incomplete, timeout, transport_error, malformed_json and schema_invalid outside valid interpretation objects. Application rejection distinguishes stale/unknown-reference/capacity from retained semantic clarification. No repair, repeated model call, provider failover or search.
 
-Design the response boundary as: normalized response status/completion check, JSON parsing, external-schema validation, application-owned request association/stale checks, then domain validation/application. Provider-specific status mapping and transport remain later work; WP 011 defines minimal normalized outcomes and pure validators, not a provider SDK abstraction or network client.
+Use a single pure `apply-parser-result.ts` entry point with explicit state/session/context/catalog inputs and reference allocation dependency. Work on copies; return validated next state/session and outcome facts. Preserve transition-level revision semantics; synchronous new commands use the immediately preceding transition revision, never rebase old asynchronous results. Caller commits state/session together under concurrency control.
 
-Distinguish refusal, incomplete/truncated response, transport/timeout failure, malformed JSON and schema-invalid output from valid clarification/unsupported outcomes. Domain-invalid proposals follow the reviewed group-failure policy in 3.3; never apply the invalid group or silently omit wishes. Technical/format failures preserve accepted criteria and pending wishes and trigger no automatic model repeat, JSON repair or search. Explicit retry is required for another model call.
+Retain compound/overflow intentions in a bounded ephemeral envelope, referencing canonical state rather than copying accepted filters. Application-issued child references may address individual unresolved terms without losing their parent operation. Track the ordered original/corrected queries, source binding, staged trusted resolution facts and active question association. These are not extra accepted slots. Resolve exact envelope schema, session generation and full-capacity behavior before implementation.
 
-Remaining proposed implementation files, subject to pre-code review: `src/lib/parser/compose-request.ts` for pure context projection/composition, and `src/lib/parser/validate-response.ts` for normalized response validation. Reuse the existing instruction draft rather than creating another prompt source. Confirm repository naming/layer placement first; do not create unused scaffolding or persist real conversations. Keep schema ownership in `src/lib/schemas/parser.ts`.
+Expected semantic blockers retain the entire affected group; independently valid groups may proceed. Unresolved replacements keep previous values. Unsupported parts are reported, never marked fulfilled or silently ignored at search readiness. Unexpected internal inconsistency rejects the entire working-copy result.
 
-## 4. Changes by concern
+Multi-person replacement must not be implemented by calling singular acceptance repeatedly: stage trusted resolutions, then validate/deduplicate the complete final set plus reservations and commit the source/removals/additions atomically. Handle destinations already accepted, equal names/different IDs, source included in destinations, overflow and stale staged results. Whole genre/keyword replacement likewise retains previous selection until complete validation. WP 014 supplies provenance; no model IDs cross acceptance.
 
-### 4.1 Refinement and out-of-order requests
+## 5. Affected files and focused inspection
 
-Update `person-clarification-lifecycle.ts`, `apply-person-correction.ts` and only necessary related session schemas/callers so mention order remains the default while an explicit application-validated request selection may activate another pending request.
+Proposed new files only when used:
 
-Reuse existing no-match, refine, selection and correction boundaries. Read all affected lifecycle/action/selection modules and tests before modification. Retire old candidate groups and question references; do not reorder or discard unrelated requests just to bypass the current first-item checks.
+- `src/lib/schemas/parser.ts`: dedicated request/proposal schemas, inferred types, normalized response outcomes and derived JSON Schema. Verify native `z.toJSONSchema()` conversion of the actual strict variants; no added converter dependency without approval.
+- `src/lib/schemas/parser-application.ts`: bounded continuation/context association; reuse canonical schemas.
+- `src/lib/parser/compose-request.ts`: pure projection/composition, no network.
+- `src/lib/parser/validate-response.ts`: completion/JSON/schema boundary, no repair/retry.
+- `src/lib/domain/search/apply-parser-result.ts`: pure adapter and real-transition coordination.
 
-A bare name during active clarification refines that request; an explicit addition creates another request. A bare name after confirmed cancellation must not answer the closed question.
+Existing files requiring targeted review before changes:
 
-### 4.2 Ambiguous replacement source
+- `src/lib/parser/instructions.ts`: single maintained English prompt; align and increment instruction revision when changing it, not in this documentation commit.
+- `search-state.ts`, `search-transition.ts`, `pending-operations.ts`: minimal atomic multi-person acceptance, reservation accounting and controlled keyword operations. Reuse single-person duplicate/provenance rules.
+- `semantic-guardrails.ts` schema/domain: eligible source subsets and preserved complete replacement context; existing year and keyword guards remain.
+- `person-clarification-session.ts`, `person-correction.ts`, related flow schemas; `person-clarification-lifecycle.ts`, `apply-person-correction.ts`, affected action/selection callers: explicit non-first targeting, invalidation and replay protection. Do not reorder unrelated wishes merely to bypass first-item checks.
+- Existing genre compatibility/catalog/application modules: targeted versus whole-selection mapping, active/inactive order and final validation. Confirm exact affected paths before coding; no invented transition API.
+- `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts` and every discovered caller/test: shared-limit migration, preserving `MAX_PERSON_CLARIFICATION_KNOWN_TITLES`.
 
-Reuse `offerSemanticGuardrail()` and `processSemanticGuardrailResponse()` rather than adding another replacement state machine. Extend their schemas/offer validation only as needed to carry an application-validated subset of current eligible source identities.
+Tests: extend existing affected regressions; proposed parser/parser-application schema suites, parser composition/validation suites and `tests/unit/domain/search/apply-parser-result.spec.ts`. Use synthetic fixtures, real internal transitions and required coverage-intent comments. No automatic barrels, endpoint, provider dependency, UI file, HTTP integration suite or browser E2E work.
 
-Retain the desired replacement query while asking which accepted source to replace. Validate selected source membership and current revision, then create the normal pending replacement. Lookup of the replacement remains WP 014 work. Keep the source until trusted identity acceptance.
+## 6. Implementation sequence, tests and gates
 
-### 4.3 Overflow
+1. Review this concrete contract before coding. Complete the targeted caller/test inventory only for proposed changes; inspect current package scripts, typing/testing rules and genre/numeric semantics. Do not repeat the full audit.
+2. Finalize exact continuation schema, bounds/full-capacity outcome, source subset policy, group dependency classification and free-text workflow mapping. Resolve any gap as a safe explicit unsupported/clarification outcome, not silent omission. Clear-all/empty-list replacement remains deferred.
+3. Add failing composition/response tests, then implement strict schemas, JSON-schema derivation and pure validators.
+4. Add failing continuation/reference/replay tests; implement minimal session contracts.
+5. Add failing multi-replacement/whole-selection tests, then approved domain extensions and adapter with real transitions.
+6. Extend non-first clarification/source-subset paths; preserve ordering, cancellation and stale-candidate rules.
+7. Migrate the shared limit through a repository-wide reference inventory.
+8. Run validation, review specification/scope and record actual outcomes; obtain explicit approval before application-code commit, PR or merge.
 
-Retain the related addition group before calling a bounded pending transition. Present structured clarification facts; do not insert an over-limit request and rely on silent dropping or an arbitrary subset.
+Test new boundary behavior: typo original/hint preservation, no Tom-to-surname expansion, no numeric guessing, attempted prompt overrides, supplied versus fabricated refs, same-revision obsolete sessions, group coupling, independent TV plus unresolved replacement, multiple destinations/deduplication/source retention, reserved-slot overflow, no arbitrary subset, retained unselected wishes, keyword acceptance provenance, full active/inactive genre replacement, contradictory-year routing, input immutability and atomic unexpected-failure handling. Preserve existing no-match/technical-error distinction and duplicate regressions. All outcomes lack implicit search/retry authorization.
 
-On a validated user choice, transfer only the chosen change into normal state and retain other wishes until resolved or explicitly discarded. Recompute capacity from current state for every action. Replacement/refinement at full capacity remains possible.
+Use focused runs during development, then `pnpm test`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck`. Verify at least 80% statements including unimported application modules. Do not report fixture tests as HTTP/live-provider/browser validation. No commands run for this document update.
 
-### 4.4 Shared rules, genres and keywords
+## 7. Downstream and approval log
 
-Audit existing schemas, genre compatibility, keyword meaning and acceptance paths before extending them. Keep ID provenance and accepted/pending distinctions intact.
-
-`PendingKeywordQuerySchema` currently represents additions only, and no controlled keyword acceptance was present in the inspected `search-transition.ts`/`pending-operations.ts`. Specify a minimal trusted keyword-acceptance and targeted-replacement extension only if required for the approved contract; implement pure contract support here if approved, with provider provenance supplied later by WP 014. Do not inject model-proposed keyword IDs through ordinary filter changes.
-
-Preserve existing year-conflict correction and atomic range rules. Do not re-ask those general principles. Check existing specifications before deciding whether list AND/OR or strict numeric wording is supported. Do not invent an OR feature, broaden sorting or approximate unsupported numeric meaning silently.
-
-### 4.5 Edited versus executed search
-
-Keep WP 009 state as the editable criteria owner. WP 011 may return criteria/session changes and downstream contract facts only; it must not update result caches or run searches.
-
-Specify that the WP 012 owner retains its executed revision/criteria snapshot and that prior results remain associated with it until a new confirmed execution. Do not add an unused execution cache or UI store to WP 011. Concrete readiness/confirmation execution is implemented later and must validate unresolved requests, session-held work and stale review actions, not just projected active IDs.
-
-### 4.6 Constant migration
-
-Update `src/lib/config/domain.ts` and `src/lib/schemas/clarification.ts`; perform a repository-wide reference search for all other callers and tests. The inspected import is a known caller, not an exhaustive list.
-
-Replace candidate-limit references with `MAX_PERSON_IDS`, keep value five, retain `MAX_PERSON_CLARIFICATION_KNOWN_TITLES`, and test that candidates remain options for one wish rather than additional person slots. Do not alter global coverage configuration to hide regressions.
-
-## 5. Proposed file map
-
-Except for the saved instruction draft explicitly recorded in section 3.4, new names below remain proposed, not implemented APIs. Avoid empty scaffolding and add a file only when used or as the separately approved draft artifact.
-
-| File/group                                                                                                                 | Planned action                                                                                                                                                     |
-| -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/lib/schemas/parser.ts`                                                                                                | External parser schemas, normalized response outcomes and consistent versioned JSON-schema representation; inspect generation support before choosing an approach. |
-| `src/lib/parser/instructions.ts` | Draft saved in `d4138d9`; reuse and align version/text with the approved schema and examples before runtime use. |
-| `src/lib/parser/compose-request.ts`                                                                                        | Pure provider-neutral request composition with bounded context projection and separated user text.                                                                 |
-| `src/lib/parser/validate-response.ts`                                                                                      | Pure status/JSON/schema validation; no transport, repair or retry.                                                                                                 |
-| `src/lib/schemas/parser-application.ts`                                                                                    | Minimal bounded application-owned continuation context.                                                                                                            |
-| `src/lib/domain/search/apply-parser-result.ts`                                                                             | Pure validated coordination using existing transitions.                                                                                                            |
-| `src/lib/schemas/search-state.ts`, `search-transition.ts`                                                                  | Only approved keyword/domain contract extensions; preserve existing invariants.                                                                                    |
-| `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/semantic-guardrails.ts`                                   | Reuse/extend source-subset binding; preserve year/keyword guards.                                                                                                  |
-| `src/lib/schemas/person-clarification-session.ts`, `person-correction.ts`, related flow schemas                            | Only fields needed for explicit non-first request association after direct inspection.                                                                             |
-| `src/lib/domain/search/person-clarification-lifecycle.ts`, `apply-person-correction.ts`, affected action/selection callers | Default ordering plus authorized explicit request activation and stale-context handling.                                                                           |
-| `src/lib/domain/search/pending-operations.ts`                                                                              | Reuse existing person operations; add approved pure keyword acceptance support only if needed.                                                                     |
-| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, every discovered caller                                    | Shared-limit migration.                                                                                                                                            |
-| `tests/unit/schemas/parser.spec.ts`, `parser-application.spec.ts`                                                          | New project-specific schema invariants, not tests of Zod primitives.                                                                                               |
-| `tests/unit/parser/compose-request.spec.ts`, `validate-response.spec.ts`                                                   | Deterministic instruction/context separation, schema consistency and normalized response-failure tests; synthetic examples, no live model calls.                   |
-| `tests/unit/domain/search/apply-parser-result.spec.ts`                                                                     | New adapter behavior and composed real-transition tests.                                                                                                           |
-| Existing affected schema/domain suites                                                                                     | Focused regressions; extend instead of duplicating coverage.                                                                                                       |
-| WP 011 execution status and this plan                                                                                      | Track actual progress and validation.                                                                                                                              |
-
-No automatic barrel exports, server routes, provider dependencies, CLI or UI files are planned. Confirm remaining new parser module/test paths during the design gate before coding.
-
-## 6. Implementation sequence
-
-1. Reconfirm branch/local status and reread the active WP. Use the completed targeted follow-up review in section 2; inspect only remaining relevant callers/tests for concrete planned changes, and recheck changed files if the code baseline moves. Verify `AGENTS.md` remains aligned with WP 011; do not restart a full audit or reopen WP 009/010.
-2. Present the concrete design deliverables consolidated in section 9 for approval. Reuse existing decisions and the saved instruction draft; ask only genuinely new questions.
-3. Add failing parser boundary/request-composition/response-validation tests; implement strict consistent contracts and pure helpers, and align the existing instruction text/version. No provider connection or live model call.
-4. Add failing session/overflow/source-selection tests and implement minimal context contracts.
-5. Add failing mixed adapter tests; implement filter/entity coordination with real existing transitions.
-6. Extend explicit-request targeting and replacement-source subset guards with regression tests; preserve default ordering and replay protection.
-7. Add only approved keyword/domain extensions and criterion-specific mappings. If a product gap blocks them, stop that slice and record the precise question.
-8. Migrate the shared constant and all actual references/tests.
-9. Run composed fixture scenarios through the parser response boundary, adapter and real domain functions. Keep them in the appropriate unit/domain suites; do not mislabel them as HTTP integration tests or evidence of live model quality.
-10. Run validation, review scope and document actual results. Obtain explicit approval before application-code commit/PR/merge. Define provider/CLI work separately; do not start it under this plan.
-
-## 7. Test matrix
-
-- Fixed instructions, application context and user input remain logically separated; instruction-like user text stays in the untrusted data part and cannot replace trusted instructions in the composed request. This is not proof that a live model resists every injection.
-- Only approved context fields are serialized; omit secrets, results and full history, preserve synthetic Unicode/quoted text safely and enforce reviewed bounds.
-- Prompt/schema contract versions and required response fields stay consistent; reject forbidden authoritative identity/reference/revision fields and unsupported schema shapes according to the strict contract.
-- Complete valid JSON can proceed; refusal, incomplete/truncated responses, transport/timeout failures, malformed JSON and schema-invalid output remain distinct from valid clarification/unsupported outcomes and cause no state mutation or automatic retry.
-- Synthetic request/response examples cover new input, additions, replacements, removals, corrections/refinements, mixed changes and missing/ambiguous information. Fixtures establish contract/application behavior, not actual extraction quality of an untested model.
-- Mixed message: TV change succeeds; replacement query remains pending; accepted source is retained.
-- Incomplete person query preserved without invented identity/ID.
-- Active bare-name refinement versus explicit addition; explicitly referenced non-first request; unrelated requests preserved.
-- Ambiguous accepted source: only matching eligible people offered, replacement query retained, unoffered/stale selection rejected.
-- Overflow: two additions competing for one slot; no arbitrary subset, no sixth slot, unselected wish retained, cancellation and duplicate resolution handled without data loss.
-- Existing duplicate addition and A-to-already-accepted-B replacement behavior stays unchanged.
-- No-match and technical error remain distinct; neither silently removes the pending wish/source.
-- Coupled year updates remain atomic; independent groups do not weaken existing `applyIntent()` guarantees.
-- Stale external base revision, same-revision obsolete questions, reference collisions, replay and input mutation are rejected/prevented.
-- Keyword meaning remains query refinement rather than identity acceptance; approved keyword acceptance checks request/revision and limits.
-- Genre compatibility and inactive return values survive adapter coordination.
-- Parser failures do not automatically request another model call; ready/clarification outcomes do not execute searches. Domain-invalid groups follow the explicitly approved partial-success/rejection policy without applying invalid changes or losing wishes.
-- Person candidate limit uses shared constant without consuming multiple person-condition slots.
-
-Use synthetic fixtures and real internal transitions; mock only external boundaries if one exists. Add required coverage-intent comments. Preserve all existing unit regressions. No new HTTP endpoint, live provider evaluation or browser E2E work is authorized here. Test an error mapping at its owning boundary rather than duplicating it across every suite.
-
-## 8. Validation commands
-
-Use the checked `package.json` scripts with the project's pnpm package manager:
-
-- `pnpm test`
-- `pnpm test:coverage`
-- `pnpm lint`
-- `pnpm typecheck`
-
-During development, use focused Vitest runs for affected suites, then the complete commands above. Verify statement coverage at least 80%, including unimported application modules. Record actual command output/failures and commands not run. Do not claim Playwright, live TMDb or model-eval coverage from fixture tests.
-
-No validation commands have been run for this draft, its documentation updates, the targeted read-only follow-up review or the saved instruction draft `d4138d9`.
-
-## 9. Open design gates and downstream follow-up
-
-### Consolidated open tasks before implementation
-
-This is the single consolidated checklist of remaining design deliverables; details are in sections 3 and 4. The targeted prerequisite review in section 2 is complete within its stated scope, not an open requirement for a repeated full audit.
-
-- [ ] Fixed parser instruction: the concrete Markdown draft/version is saved in `src/lib/parser/instructions.ts` at `d4138d9`. Still review it against the exact context/response schema and add synthetic schema-aligned request/response examples for new requests, additions, replacements, removals, refinements and mixed changes. Do not mark this gate complete from text storage alone.
-- [ ] Model-visible context: define the allowed fields, supported-catalog projection, serialization, size bounds and separation from user text. Specify application-owned request/revision and clarification association; do not expose trusted IDs as authority to generate new identities.
-- [ ] Parser input/output: specify exact JSON fields, types, status/discriminant values, contract version, required/optional semantics and strict unknown-field policy. Keep the model response distinct from TMDb payloads and complete domain state.
-- [ ] Structured Outputs contract: use native Zod JSON-schema generation as the starting approach and verify the concrete parser schema's conversion. State minimum provider capabilities; exact provider/model compatibility is a later integration task. No silent fallback, extra dependency or handwritten duplicate schema without approval.
-- [ ] Response validation: define normalized refusal, incomplete/truncated, transport/timeout, malformed-JSON and schema-invalid outcomes, distinct from valid clarification/unsupported interpretations. Specify unchanged-state behavior and the separate domain-invalid group policy; no automatic repair or repeat call.
-- [ ] Mixed changes: define independent versus cohesive/dependent groups, partial-success/rejection behavior, atomicity and state/session revision/commit semantics. Preserve unresolved wishes and existing transition guarantees.
-- [ ] Continuation context: specify the bounded overflow and unresolved-replacement-source representation, pending mention order, question/request association, capacity behavior, replay/stale protection and matching/subset policy for ambiguous accepted sources.
-- [ ] Targeted domain extensions: inspect only remaining relevant callers/tests and verify genuine genre/keyword gaps, especially trusted keyword acceptance and targeted replacement. List exact necessary extensions versus safe deferrals; do not reopen shared rules or invent undecided AND/OR or strict numeric semantics.
-- [ ] Concrete implementation map: confirm used helper/test paths, reused transitions, any necessary dependency changes and the focused tests for each change. Existing domain deduplication/transforms remain unchanged solely for schema export.
-
-Review and approve these deliverables before coding the relevant slice. They do not reopen the eight agreed workflow decisions or imply approval of application implementation. Do not label this a fully approved implementation plan until the gates are resolved or explicitly deferred with a safe supported outcome. WP 011's specification needs no change solely for the Markdown/Zod/Structured Outputs clarification recorded here.
-
-### Documentation alignment already completed
-
-- WP 011 links back to this plan in specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`.
-- The directly read target-branch `AGENTS.md` identifies WP 011 and this draft plan. Its other follow-up descriptions may need a separately reviewed status refresh; this update does not edit it.
-- This plan links to the saved instruction draft and documents its version, purpose, limits and pending contracts without duplicating the full prompt.
-
-### Separately reviewed downstream follow-up
-
-- Align WP 012 with explicit confirmation, executed snapshots and bounded transient retries; retain the existing separate Movie/TV paths.
-- Align WP 014 with resolution/uniqueness, candidate continuation and bounded transient retries.
-- Review the existing wizard task against the final cancellation/resumption rules.
-- Plan and approve the real-provider CLI integration separately, with search data/execution initially mocked. Select provider/model and verify actual structured-output support then; do not assign a new work-package number implicitly. Dependency order remains WP 011 → WP 014 → WP 012.
-
-The original plan-creation commit changed only this plan file. This documentation update also changes only this plan; it does not silently update the prompt source, work packages, `AGENTS.md` or the UI task.
-
-## 10. Approval log
-
-- Draft creation requested by the user; remaining implementation approval pending.
-- Reviewed baseline and limitations recorded above.
-- Prompt/JSON plan alignment requested on 2026-11-16 after specification commit `a8dbca0954a9f8da5b44bf41f35ce82909c4858f`. This records documentation scope, not technical implementation approval.
-- Open-task consolidation and the targeted follow-up review status requested on 2026-11-16. This preserves the specification and does not approve implementation or claim a complete repository-wide audit.
-- The user explicitly approved the isolated instruction draft on 2026-11-16; `src/lib/parser/instructions.ts` was created in `d4138d916da442f29d20b1b8cf8373092cfb3e8c`. Approval did not include further parser modules or runtime integration.
-- The user requested documentation of that artifact in this existing plan. This update records actual progress rather than creating a second prompt copy or claiming the parser is implemented.
-- No tests, live model/provider calls, branch creation, PR or merge were performed for the instruction draft or this documentation step. No application/domain behavior, schemas, adapters or provider integration were implemented by these steps.
+- Only documentation consolidation and concrete design drafting were requested for this step; code implementation is not approved by saving it.
+- The historical instruction artifact `d4138d9` was narrowly approved; its English translation is `166e144`. Neither authorizes the rest of the plan or runtime use.
+- Existing AGENTS already identifies WP 011 and the branch; do not report the original stale-WP-010 finding as current. Its historical plan-commit/backlink-follow-up wording may need a separate small alignment; do not rewrite shared rules incidentally.
+- WP 012/WP 014 and the wizard task require separately reviewed alignment for confirmation, snapshots, retries and cancellation/resumption. Their files were not updated or fully audited here.
+- First later interactive test: real-LLM CLI, mocked search data/execution initially; provider/model selection remains open. No network/provider/CLI scaffolding in this slice.
+- This plan retains pre-code approval gates. It does not claim complete caller coverage, passing validation, local cleanliness, a PR or a merge.
