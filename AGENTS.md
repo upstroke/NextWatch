@@ -41,16 +41,25 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   against the post-state. Complete proposals distinguish consumed and retired
   bindings; rejected results expose no partial stores. Identity selection is
   excluded and follow-up data does not authorize or start another lookup.
-- The user confirmed all tests passing for `fa026dc` on 2026-11-17. Fresh
-  typecheck, ESLint and coverage results for this new code remain unreported.
-  Earlier tests/typecheck/ESLint confirmation for `f6d9db2` does not validate the
-  later action slice; that earlier integration's coverage also remained open.
-  The assistant did not execute validation commands. Complete the current checks
-  before describing the latest code as fully green; details are in the ledger.
-- Controlled follow-up processing, resolution-result/identity-selection
-  integration, owned-target questions, result staging and full pause/resume
-  remain later scoped work. Returning coherent proposals does not implement
-  persistence, concurrency control or end-to-end invocation replay protection.
+- `ab704c3` added `BoundPersonRefinementRequestSchema`,
+  `processBoundPersonRefinement()` and its unit suite. This alternative path
+  validates one parser-proposed canonical person refinement against the trusted
+  original submission/invocation and still-live question binding. It must not
+  follow prior consumption by the deferred action path. Query edits reuse the
+  existing transitions; successful proposals close the question and return all
+  four stores with consumption, retirement and invalidation facts. A query no-op
+  still completes the answer but preserves revision/generation (`queryChanged: false`).
+- On 2026-11-17 the user confirmed all tests passing for `ab704c3`, after the
+  earlier test report for `fa026dc`. Fresh typecheck, ESLint and coverage results
+  for this latest code remain unreported. Older checks must not be carried forward
+  as current proof. The assistant did not execute validation commands; see the
+  ledger for historical evidence and open checks.
+- Deferred follow-up coordination, candidate continuation, resolution-result/
+  identity-selection integration, owned-target questions, result staging and full
+  pause/resume remain later scoped work. The refinement function is not wired
+  into productive callers. Trusted request loading, processing locks, persistence,
+  concurrency control and complete invocation lifetime enforcement remain caller/
+  runtime obligations, not capabilities established by the pure proposal.
   WP 011 is not complete or ready for an implicit merge.
 - Before each further implementation slice, complete the relevant targeted
   caller/test inventory and concrete schema/adapter design gates. Do not claim

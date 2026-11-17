@@ -1,6 +1,6 @@
 # WP 011 — implementation progress
 
-Updated: 2026-11-17. Branch: `feat/011-llm-parser-contract`. Latest user-confirmed tests: `fa026dc`. Fresh typecheck/ESLint/coverage for that action slice remain unreported. Earlier tests/typecheck/ESLint were confirmed for `f6d9db2`, with coverage open; historical fully reported-green foundation baseline: `c5d4b3e`.
+Updated: 2026-11-17. Branch: `feat/011-llm-parser-contract`. Latest user-confirmed tests: `ab704c3`. Fresh typecheck/ESLint/coverage for that refinement slice remain unreported. Earlier tests were confirmed for `fa026dc`; tests/typecheck/ESLint were confirmed for `f6d9db2`, with coverage open. Historical fully reported-green foundation baseline: `c5d4b3e`.
 
 The [work-package specification](../docs/work-packages/011-llm-parser-contract.md) remains product authority. The [implementation plan](011-llm-parser-contract-plan.md) and [binding plan](011-parser-continuation-binding-plan.md) remain design references. This ledger records implemented slices, validation evidence and remaining work; it does not close R01–R06 or redefine product requirements.
 
@@ -18,6 +18,7 @@ The [work-package specification](../docs/work-packages/011-llm-parser-contract.m
 | `c5d4b3e` | Removed unused domain Zod import only | Historical foundation checks green, including coverage under agreed convention |
 | `f6d9db2` | Registry reconciliation in edit application and extended tests | User-confirmed tests/typecheck/ESLint; coverage remained unconfirmed |
 | `fa026dc` | Bound canonical-person clarification actions and unit tests | User reported all tests passing; fresh typecheck/ESLint/coverage unreported |
+| `ab704c3` | Original-request schema, bound parsed person refinement and unit tests | User reported all tests passing; fresh typecheck/ESLint/coverage unreported |
 
 Earlier green reports included coverage under the historical convention. The latest test-only report is not silently expanded to other checks. No fresh numeric coverage percentage or command logs were supplied. The assistant did not execute validation commands.
 
@@ -52,18 +53,38 @@ Commit: `fa026dc`. New files: `src/lib/domain/search/process-bound-person-clarif
 - The caller must commit all changed stores together with concurrency control. Search revision alone is insufficient to detect concurrent follow-up actions that close a question without changing criteria. No persistence or exactly-once external execution is implemented.
 - Unit scenarios include linked and unlinked discard, replacement-source preservation, parent/final-child cleanup and exhaustion rejection, normalized follow-ups with replay rejection, wrong action/question/revision, unavailable navigation, wrong purpose/epoch/lifetime, malformed authority, closed questions and input isolation. Tests do not certify unimplemented provider/UI/runtime behavior or every later failure integration.
 
+## Bound parser refinement
+
+Commit: `ab704c3`. Added files:
+
+- `src/lib/schemas/bound-person-refinement-request.ts`
+- `src/lib/domain/search/process-bound-person-refinement.ts`
+- `tests/unit/domain/search/process-bound-person-refinement.spec.ts`
+
+`BoundPersonRefinementRequestSchema` combines the original question association, refinement action and existing parser invocation snapshot. The original request must be loaded from trusted application storage; structural parsing does not establish its provenance. The invocation remains immutable processing context, not a second editable query owner.
+
+`processBoundPersonRefinement()` checks current binding authority and the original action, then matches invocation revision, question sequence, submitted text and pending-query context. It reuses `validateParserResponse()` and accepts exactly one matching canonical person-refine item. Different targets, broader/mixed proposals and non-null correction hints reject without partial stores or isolated consumption. Rejecting unsupported proposals is not an implemented mechanism for retaining them in a mixed-result workflow.
+
+Linked edits reuse `applyParserContinuationCommand()`; unlinked edits reuse `applyPendingQueryCommand()`. The existing reference, addition/replacement operation, accepted replacement source and unrelated query/criterion data are preserved. Effective edits advance revision once and, where linked, parent generation; counter exhaustion rejects. Canonical correction metadata is still unsupported rather than silently discarded.
+
+Successful results return all four stores, `requestRef`, `queryChanged`, consumed and retired binding refs and query/intention invalidations. Consumption checks the same pre-transition context; remaining bindings reconcile against the validated post-state. A successful query no-op still closes the answered question and consumes its binding, but preserves revision/generation, emits no query invalidations and may retain independent resolution bindings. Query changes retire old-revision response bindings, including unchanged siblings, without deleting sibling query data.
+
+This is an alternative entry point while the original question is still live, not a consumer of `processBoundPersonClarificationAction()`'s already-consumed `followUp`. Calling that deferred action path first makes this request stale. No productive caller, original-request creation/storage coordinator, processing lock, global invocation allocation or atomic persistence was added. The caller must associate the immutable invocation with the original submission and commit the proposal with concurrency control. This slice does not establish complete invocation replay safety, start a parser/provider call, issue fresh bindings/questions, accept identities or execute a search.
+
+Tests reuse the synthetic parser fixture and real domain/binding helpers. Scenarios include linked/unlinked edits, replacement-source preservation, no-ops at counter limits, revision/generation exhaustion, parser rejection without consumption, unsupported/misdirected interpretation, original invocation mismatch, stale authority, replay after completion, rejection after deferred consumption and input isolation. These are unit-level scenarios, not end-to-end/runtime guarantees.
+
 ## Validation evidence and next gate
 
-- On 2026-11-17 the user reported all tests passing for `fa026dc`. Fresh `pnpm typecheck`, `pnpm lint` and `pnpm test:coverage` results remain unreported for this new code. Do not carry `f6d9db2` or foundation checks forward.
-- Historical `f6d9db2` evidence: tests, typecheck and ESLint passed according to the user; integration coverage remained unconfirmed. Historical foundation baseline `c5d4b3e` was reported green under the agreed convention.
+- On 2026-11-17 the user reported all tests passing for `ab704c3`. Fresh `pnpm typecheck`, `pnpm lint` and `pnpm test:coverage` results remain unreported for this latest code. Do not infer them from older checks.
+- Historical `fa026dc` evidence: the user reported all tests passing; typecheck/ESLint/coverage were not separately confirmed for that action slice. Historical `f6d9db2` evidence: tests, typecheck and ESLint passed according to the user; integration coverage remained unconfirmed. Historical foundation baseline `c5d4b3e` was reported green under the agreed convention.
 - Current coverage threshold remains at least 80% statements, including unimported modules. The earlier 87% parser-schema figure is not a current whole-project measurement.
 - Immediate next gate: complete current typecheck, lint and coverage checks; handle failures before claiming fully green. All evidence is user-reported; the assistant did not run these commands. Reports do not validate later changes.
 
 ## Explicit limitations and follow-ups
 
-1. Controlled follow-up processing remains a proposed next direction: validate current target/context again before applying interpreted refinement or preparing fresh resolution authority. No automatic parser/provider call or replay of closed questions. Concrete contracts/file scope require separate review and approval.
+1. Productive refinement routing and deferred follow-up coordination remain missing. Keep the two entry points distinct; candidate continuation and fresh resolution authority require separately reviewed scope. No automatic parser/provider call or replay of closed questions.
 2. Canonical correction metadata remains missing; non-null correction hints reject as unsupported-correction rather than being dropped. Preserve a single canonical query owner.
-3. Integrate resolution-result/identity-selection handling and complete invocation lifetime, routing and allocator safeguards. Bound structured actions and edit reconciliation do not prove end-to-end replay safety or complete pause/reset/resume.
+3. Integrate resolution-result/identity-selection handling and complete invocation lifetime, routing and allocator safeguards. Bound structured actions, parsed refinement and edit reconciliation do not prove end-to-end replay safety or complete pause/reset/resume.
 4. Add authoritative owned-target/non-person questions, staged trusted results and unchanged-child retention/reconciliation, then current-state atomic replacement/whole-selection acceptance.
 5. Implement protected reservations, capacity competition, ownership transfer and mixed-change adapter coupling/unsupported retention.
 6. Migrate MAX_PERSON_CLARIFICATION_CANDIDATES to MAX_PERSON_IDS after an actual caller/test inventory; preserve five and the known-title limit.
