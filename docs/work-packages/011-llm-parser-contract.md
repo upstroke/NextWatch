@@ -15,7 +15,7 @@ This is the authoritative consolidated product specification. The [implementatio
 - Keep `ChatIntentSchema` as the existing filter-application boundary. Do not weaken it to apply arbitrary changes under clarification status, or permit chat intents to set accepted people/person IDs.
 - WP 014: live person/keyword resolution, uniqueness policy, candidate continuation and transient resolution retries.
 - WP 012: explicit execution readiness/confirmation, separate Movie/TV execution paths, executed snapshots/results and transient search retries.
-- WP 013: title disambiguation and providers. UI/wizard rendering remains the [deferred task](../../tasks/clarificaton-flow.md).
+- WP 013: title disambiguation and providers. UI/wizard rendering remains the [deferred task](../../tasks/clarificaton-wizzard-flow.md).
 - No live provider client, parser HTTP endpoint, CLI implementation, network side effects, retry timers, persistence, UI or title execution in this documentation task. Dependency order remains WP 011 → WP 014 → WP 012.
 - Remove `MAX_PERSON_CLARIFICATION_CANDIDATES` during approved implementation; migrate all actual application/test references to `MAX_PERSON_IDS`, keeping value five and the separate known-title limit unchanged. Verify the reference inventory rather than assuming it complete.
 

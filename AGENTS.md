@@ -34,7 +34,7 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   Independently accepted criteria changes do not execute a title search.
   Execution requires explicit “Search now” confirmation; preserve the distinction
   between edited criteria and the last executed search/results.
-- The wizard UI is deferred to [tasks/clarificaton-flow.md](tasks/clarificaton-flow.md).
+- The wizard UI is deferred to [tasks/clarificaton-flow.md](tasks/clarificaton-wizzard-flow.md).
   WP 011 does not authorize UI rendering, live provider lookups, retry
   orchestration, search execution or a full LLM/provider implementation.
 - Cross-package documentation alignment, the WP 011 backlink to its plan and

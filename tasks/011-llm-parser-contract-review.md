@@ -17,14 +17,14 @@ The original review was static and read-only. Directly read at the baseline: the
 
 No finding is closed. Blocking means the affected design cannot safely be implemented as currently specified; the additional clarifications are also required before final contract approval. Policy acceptance is not technical closure or implementation evidence.
 
-| ID | Classification | Finding | Status |
-| --- | --- | --- | --- |
-| WP011-R01 | Blocking until re-review | Continuation lifecycle and compound-request ownership | Design specified; follow-up consolidation and re-review pending |
-| WP011-R02 | Blocking | Reservation accounting for unresolved multi-person replacements incomplete | Policy A accepted; technical integration/review pending |
-| WP011-R03 | Blocking | Cross-group dependency and conflict policy incomplete | Open |
-| WP011-R04 | Blocking | Active clarification projection assumes an entity pending reference | Open |
-| WP011-R05 | Required clarification | Reusable fields, enums, reference scopes and bounds not fully defined | Open |
-| WP011-R06 | Required clarification | Staged resolution validity and revision association incomplete | Policy B accepted; technical integration/review pending |
+| ID        | Classification           | Finding                                                                    | Status                                                          |
+| --------- | ------------------------ | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| WP011-R01 | Blocking until re-review | Continuation lifecycle and compound-request ownership                      | Design specified; follow-up consolidation and re-review pending |
+| WP011-R02 | Blocking                 | Reservation accounting for unresolved multi-person replacements incomplete | Policy A accepted; technical integration/review pending         |
+| WP011-R03 | Blocking                 | Cross-group dependency and conflict policy incomplete                      | Open                                                            |
+| WP011-R04 | Blocking                 | Active clarification projection assumes an entity pending reference        | Open                                                            |
+| WP011-R05 | Required clarification   | Reusable fields, enums, reference scopes and bounds not fully defined      | Open                                                            |
+| WP011-R06 | Required clarification   | Staged resolution validity and revision association incomplete             | Policy B accepted; technical integration/review pending         |
 
 The user requested an overview of all R findings before further implementation. All six topics have been discussed; R02/A and R06/B were explicitly accepted. Next consolidate the existing contract and targeted technical clarifications once, not new product-decision rounds for already settled rules. No automatic closure or application implementation follows from this record.
 
@@ -149,11 +149,11 @@ For each finding, record the revised contract location, reviewed examples/tests,
 
 No application implementation is authorized by this record. Close or explicitly and safely defer every finding before requesting the affected implementation approval. Update the main plan/specification with accepted resolutions; do not let this checklist become a competing contract. This update records decisions and review progress only; it does not complete the consolidated contract or change parser instructions.
 
-| Finding | Resolution location | Design review / closure commit | Implementation evidence |
-| --- | --- | --- | --- |
-| WP011-R01 | Plan section 4.1; two follow-up clarifications above | Design specified; follow-up consolidation/re-review pending | Not implemented; seven plan scenarios not run; eighth pending incorporation |
-| WP011-R02 | Decision supplement section 4 | Policy A accepted 2026-11-17; technical integration/review pending | Not implemented |
-| WP011-R03 | Pending | Open | Not implemented |
-| WP011-R04 | Pending | Open | Not implemented |
-| WP011-R05 | Pending | Open | Not implemented |
-| WP011-R06 | Decision supplement section 5 | Policy B accepted 2026-11-17; technical integration/review pending | Not implemented |
+| Finding   | Resolution location                                  | Design review / closure commit                                     | Implementation evidence                                                     |
+| --------- | ---------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| WP011-R01 | Plan section 4.1; two follow-up clarifications above | Design specified; follow-up consolidation/re-review pending        | Not implemented; seven plan scenarios not run; eighth pending incorporation |
+| WP011-R02 | Decision supplement section 4                        | Policy A accepted 2026-11-17; technical integration/review pending | Not implemented                                                             |
+| WP011-R03 | Pending                                              | Open                                                               | Not implemented                                                             |
+| WP011-R04 | Pending                                              | Open                                                               | Not implemented                                                             |
+| WP011-R05 | Pending                                              | Open                                                               | Not implemented                                                             |
+| WP011-R06 | Decision supplement section 5                        | Policy B accepted 2026-11-17; technical integration/review pending | Not implemented                                                             |
