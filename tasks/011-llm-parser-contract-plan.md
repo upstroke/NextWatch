@@ -206,7 +206,7 @@ Atomic compound acceptance receives the current expected state/session associati
 | Semantic guardrail schema/domain                                                         | Eligible offered-source subset, complete replacement context, projected question-kind mappings; preserve existing year/keyword behavior.                                                |
 | Person session/correction/lifecycle/action/selection modules                             | Inspect exact callers/tests; explicit non-first targeting and cleanup reconciliation without reordering unrelated wishes or duplicating question state.                                 |
 | Existing genre compatibility/catalog/application modules                                 | Confirm targeted/whole-selection mapping and active/inactive order; no invented provider IDs. Inspect concrete paths before editing.                                                    |
-| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, discovered callers/tests | Preserve independent search-state, candidate-group and known-title limits; the former constant migration was withdrawn on 2026-11-17. |
+| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, discovered callers/tests | Preserve independent search-state, candidate-group and known-title limits; the former constant migration was withdrawn on 2026-11-17.                                                   |
 
 No automatic barrel exports, catch-all types.ts, provider dependency, route, UI scaffolding or unused implementation files. Reuse and extend current tests/fixtures before introducing new shared helpers.
 
