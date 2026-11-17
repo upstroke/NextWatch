@@ -42,6 +42,8 @@ pnpm typecheck
 
 The foundation includes project configuration, Zod contracts and server-side TMDb support for Trending, Discover Movie and Discover TV. TMDb transport, response validation, mapping and error handling are separated. Errors are created through `createTmdbError`, with a derived error type and a private WeakSet-based guard.
 
+WP 011 currently continues on `feat/011-shared-change-adapter` from baseline `b742dd8`. Parser schemas, JSON Schema export code, pure request composition and response validation are present; the complete shared application adapter remains open. The former branch is retained for reference rather than merged wholesale. See [AGENTS](AGENTS.md) for working rules and [branch progress](tasks/011-llm-parser-contract-progress.md) for the actual implementation/check status.
+
 Unit tests and direct handler tests use shared handler mocks and synthetic raw TMDb fixtures. Direct handler tests do not start a Nuxt/Nitro server and are not HTTP integration tests.
 
 The application UI has not yet been built. UI fallback behavior for missing content is being discussed, not implemented. Further UI, Ollama and HTTP integration-test work require separately agreed tasks.

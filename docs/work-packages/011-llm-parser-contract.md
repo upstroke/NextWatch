@@ -10,14 +10,14 @@ This is the authoritative consolidated product specification. The [implementatio
 
 ### Scope and ownership
 
-- WP 011: parser contracts, fixed instruction/context composition, JSON-schema response contract, deterministic validation, pure mixed-change adapter, directly necessary separately approved schema/domain extensions and shared person-limit cleanup.
+- WP 011: parser contracts, fixed instruction/context composition, JSON-schema response contract, deterministic validation, pure mixed-change adapter and directly necessary separately approved schema/domain extensions.
 - Reuse `SearchState`, accepted identity records, pending operations, controlled acceptance, correction, genre compatibility and stale-response guards. Apply supported filters through `applyIntent()` and pending commands through `applyPendingQueryCommand()`; extend only concrete gaps through an approved file-level plan.
 - Keep `ChatIntentSchema` as the existing filter-application boundary. Do not weaken it to apply arbitrary changes under clarification status, or permit chat intents to set accepted people/person IDs.
 - WP 014: live person/keyword resolution, uniqueness policy, candidate continuation and transient resolution retries.
 - WP 012: explicit execution readiness/confirmation, separate Movie/TV execution paths, executed snapshots/results and transient search retries.
 - WP 013: title disambiguation and providers. UI/wizard rendering remains the [deferred task](../../tasks/clarificaton-wizzard-flow.md).
 - No live provider client, parser HTTP endpoint, CLI implementation, network side effects, retry timers, persistence, UI or title execution in this documentation task. Dependency order remains WP 011 → WP 014 → WP 012.
-- Remove `MAX_PERSON_CLARIFICATION_CANDIDATES` during approved implementation; migrate all actual application/test references to `MAX_PERSON_IDS`, keeping value five and the separate known-title limit unchanged. Verify the reference inventory rather than assuming it complete.
+- Keep `MAX_PERSON_IDS` and `MAX_PERSON_CLARIFICATION_CANDIDATES` independent, currently five each: search-state capacity differs from alternatives offered for one pending request. Keep `MAX_PERSON_CLARIFICATION_KNOWN_TITLES` at two. The user withdrew the former migration requirement on 2026-11-17; it is not an outstanding implementation or removal-oriented reference-inventory task.
 
 ### Extraction and preserved meaning
 
@@ -115,7 +115,7 @@ This is the authoritative consolidated product specification. The [implementatio
 
 ## Validation and acceptance
 
-Test synthetic composition/validation and pure adapter scenarios with real internal transitions and mocked external boundaries. Cover mixed requests, incomplete names, AND intent, unchanged media type, targeting/refinement, no-match retention, source ambiguity, duplicates, multi-replacement capacity, whole-selection atomicity, active/inactive genres, typo hints, overflow retention, reference/revision/replay checks and absence of implicit execution/retry. Test constant migration through a real reference inventory. Do not duplicate generic Zod behavior or already covered domain rules.
+Test synthetic composition/validation and pure adapter scenarios with real internal transitions and mocked external boundaries. Cover mixed requests, incomplete names, AND intent, unchanged media type, targeting/refinement, no-match retention, source ambiguity, duplicates, multi-replacement capacity, whole-selection atomicity, active/inactive genres, typo hints, overflow retention, reference/revision/replay checks and absence of implicit execution/retry. Preserve the independent person-capacity, candidate-group and known-title limits. Do not duplicate generic Zod behavior or already covered domain rules.
 
 Add focused acceptance coverage for protected existing reservations versus later wishes, new related capacity competition without arbitrary subsets, retained validated unchanged-child facts, invalidation after refinement, stale incoming responses, interruption/resumption and current-state revalidation before atomic acceptance. These are required implementation checks, not tests executed by this specification update.
 
@@ -123,11 +123,11 @@ During implementation run relevant suites, `pnpm test`, `pnpm test:coverage`, `p
 
 ## Execution status
 
-- WP 010 remains complete; WP 011 is in technical design, not runtime completion.
-- Consolidated the 2026-11-16 decisions, including the `1374785` supplement and subsequently approved spelling policy. This revision supersedes older blanket reference prohibitions and one-slot assumptions for multi-replacement.
-- On 2026-11-17, incorporated the explicitly accepted A/R02 reservation and B/R06 staged-result policies from decision record `a2c548e` into this authoritative specification. This does not close any review finding or complete the technical contract/adapter design.
-- English instruction draft `0.1.1-draft` exists at `166e144`; it is not connected to runtime or automatically aligned with the concrete draft.
-- Field-level design, examples, file map and remaining gates are in the linked plan. Documentation approval is not application-code approval.
-- Prior review history: integration review `26aefe9`, initial read-only baseline `5c85d69`, follow-up `a6fe74b`, prompt/JSON specification `a8dbca0`. These do not establish current passing tests or exhaustive caller coverage.
-- This revision changes only this specification. The technical plan, decision supplement, review protocol and parser instructions are not updated by this commit. No validation commands, application changes, live lookups, PR or merge. Remote inspection does not prove local cleanliness or absence of unpushed work.
-- Downstream WP 012/WP 014 and wizard-task alignment remains a separately reviewed documentation follow-up; do not claim those files were updated.
+- Updated 2026-11-17: active branch is `feat/011-shared-change-adapter`, created at `b742dd84b52a3a3d710d9a7e86a4cf23734bb7ae` immediately before `db830a50`. The former branch remains a reference; its later implementation is not imported here.
+- The original shared-adapter direction remains valid. This update does not replace the implementation plan or review, or declare the original product specification incorrect. Their earlier branch/status references describe their historical design context; current implementation evidence is in the [active-branch progress record](../../tasks/011-llm-parser-contract-progress.md).
+- WP 010 remains accepted. Parser schemas/export code, pure request composition, response validation and synthetic unit suites are present through `b2e8407`, `0400ce4`, `4eac220` and baseline formatting `b742dd8`. The complete shared mixed-change adapter remains open.
+- English instruction draft is `0.1.2-draft` from `348091d`; it is not provider-connected. Existing schema/composition code does not prove every modeled capability or downstream mapping is implemented.
+- The later constant migration was withdrawn. The separate existing constants and known-title limit remain unchanged. Historical migration instructions, including in the retained plan, are superseded; the preparatory inventory is not claimed complete.
+- Accepted A/R02 and B/R06 policies remain binding. Existing technical designs and R01–R06 verification gates are not automatically approved or closed. Continue by reviewing the full shared-adapter scenario and actual affected APIs, not by automatically restoring later criterion-specific wrappers.
+- This status/decision alignment changes only documentation. No runtime code, schemas, tests, constants, prompt, wizard UI, provider/HTTP/CLI, persistence, retries or title execution changed. No validation commands ran, no PR or merge. Remote access does not prove local cleanliness or unpushed work.
+- Downstream WP 012/WP 014 and wizard-task wording alignment remain separately scoped where concrete integration requires it.

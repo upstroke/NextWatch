@@ -2,9 +2,9 @@
 
 ## Status and authority
 
-- Recorded: 2026-11-16; approved R02/R06 policies and consolidation references updated 2026-11-17.
+- Recorded: 2026-11-16; approved R02/R06 policies and consolidation references updated 2026-11-17. Sections 6–7 record the later migration withdrawal and branch restart.
 - This is the decision history, not a competing product specification, technical plan or review checklist. Product authority remains [WP 011 — LLM parser contract](011-llm-parser-contract.md).
-- Records the explicitly approved internal-reference, one-to-many person replacement and whole-selection replacement decisions, plus the R02 reservation and R06 staged-result policies. Their substance is unchanged by this reference update. These are requirements, not implemented capabilities.
+- Records the explicitly approved internal-reference, one-to-many person replacement and whole-selection replacement decisions, plus the R02 reservation and R06 staged-result policies. Their substance is unchanged by this update. These are requirements, not implemented capabilities.
 - Sections 1–3 were consolidated into the parent specification in `5fa186d`. Sections 4–5 were recorded in `a2c548e` and incorporated into the authoritative specification in `113a5ab`. The R01–R06 technical directions were consolidated into the [implementation plan](../../tasks/011-llm-parser-contract-plan.md) in `3a8942a`.
 - The existing English [parser instruction draft](../../src/lib/parser/instructions.ts) was aligned in `348091d`, revision `0.1.2-draft`. It is not connected to a provider/caller and is not a complete executable contract.
 - The [review protocol](../../tasks/011-llm-parser-contract-review.md), reconciled in `cd2c728`, separates documented design from remaining contract verification and implementation evidence. No R finding is closed by this decision-history update.
@@ -21,7 +21,7 @@
 | B/R06 retained validated facts                             | [Specification: Staged resolution results and current-state acceptance](011-llm-parser-contract.md#staged-resolution-results-and-current-state-acceptance); [plan 4.4](../../tasks/011-llm-parser-contract-plan.md#44-r06--result-validity-and-current-acceptance) | `a2c548e`, `113a5ab`, `3a8942a` |
 | Model instructions and verification queue                  | [Instruction draft](../../src/lib/parser/instructions.ts); [review protocol](../../tasks/011-llm-parser-contract-review.md)                                                                                                                                        | `348091d`, `cd2c728`            |
 
-This map records integration of the decisions, not successful schema export, runtime behavior, provider compatibility or completion of review acceptance criteria.
+This map records integration of the decisions, not successful schema export, runtime behavior, provider compatibility or completion of review acceptance criteria. Current branch implementation status is recorded separately in the [progress record](../../tasks/011-llm-parser-contract-progress.md).
 
 ## Specification
 
@@ -94,6 +94,20 @@ Explicitly accepted by the user on 2026-11-17 as decision B.
 
 Example: in a replacement of Tom Hanks with Chris Evans and Brad Pitt, a validated Chris Evans result may remain while the other child is refined. The changed child's old candidates/results are invalid. The source stays accepted until the full current operation passes controlled atomic acceptance.
 
+### 6. Independent person-capacity and candidate-group constants
+
+On 2026-11-17 the user explicitly withdrew the planned migration from `MAX_PERSON_CLARIFICATION_CANDIDATES` to `MAX_PERSON_IDS`. Both remain independent, currently five each: search-state capacity and alternatives offered for one pending request are different limits. Alternatives do not each reserve a person slot. `MAX_PERSON_CLARIFICATION_KNOWN_TITLES` remains two.
+
+The migration is withdrawn, not implemented. Its preparatory reference inventory was incomplete and is not recorded as a completed audit. Earlier migration instructions, including in the retained technical plan, are superseded by this decision. Existing values already match the decision at baseline b742dd8; no constant or consumer changes are required by this documentation commit.
+
+### 7. Continue from the pre-continuation baseline
+
+On 2026-11-17 the user agreed to continue on `feat/011-shared-change-adapter` from `b742dd84b52a3a3d710d9a7e86a4cf23734bb7ae`, immediately before `db830a50`. The old branch remains available for comparison; no history reset, deletion or wholesale merge is implied.
+
+The original direction was already a shared pure change-application adapter, reusing existing state and clarification boundaries. The restart does not declare the whole original plan or specification wrong, or cancel decisions 1–5. Criterion-specific domain behavior remains appropriate where actually necessary; common application coordination and user-facing wizard flow are not duplicated per criterion.
+
+The later continuation/registry/bound-person implementation and uncommitted separate result-store proposal are not automatically adopted. Existing plan/review remain unchanged historical design documents; their exact mechanisms are proposals requiring verification, not mandatory implementation merely because they were written down. Current implementation status and the next concrete review gate are in the active-branch progress record. This records the agreed continuation, not a new executable schema or blanket architecture/code approval.
+
 ## Technical draft consolidation — not an approved schema
 
 The summary below preserves the original design direction. The current field/variant proposal, bounds, clarification mappings and adapter directions are maintained in the linked plan rather than separately evolved here. Illustrated structures and documented directions are not implemented APIs.
@@ -140,4 +154,4 @@ Historical decision acceptance is not final design closure. The specification, p
 
 Documentation integration trail: original sections 1–3 in `1374785`, specification consolidation `5fa186d`, accepted A/R02 and B/R06 in `a2c548e`, authoritative policy integration `113a5ab`, R01–R06 technical consolidation `3a8942a`, English prompt alignment `348091d` (0.1.2-draft), and review reconciliation `cd2c728`.
 
-This update changes only this decision-history file: consolidation links and progress wording, not accepted decision substance. Specification, plan, instructions, review protocol, application behavior and tests are unchanged by this commit. No finding is closed and no implementation readiness is claimed. No tests, coverage, ESLint, typecheck, schema-export check or model evaluation ran. No PR or merge included.
+Update 2026-11-17: sections 6–7 record the later independent-limit decision and new active branch. AGENTS, README, current WP execution status and the new progress record are aligned in the same documentation change. Existing plan/review are not replaced; accepted product decisions 1–5 remain intact. No runtime code, tests, constants or prompt changes; no validation commands, model evaluation, PR or merge. No finding is closed or implementation readiness claimed.

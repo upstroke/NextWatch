@@ -8,38 +8,56 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 
 - The active work package is
   [WP 011 — LLM parser contract](docs/work-packages/011-llm-parser-contract.md).
-- The working branch is `feat/011-llm-parser-contract`.
+- The working branch is `feat/011-shared-change-adapter`, based on
+  `b742dd84b52a3a3d710d9a7e86a4cf23734bb7ae`, immediately before `db830a50`.
+  The former `feat/011-llm-parser-contract` branch remains a reference; its later
+  implementation is not automatically imported, approved or present here.
 - WP 010 is complete in its accepted clarification/guardrail contract and
   domain scope. Do not reopen it or treat later UI, live resolution or search
   execution as unfinished WP 010 implementation.
 - WP 011 decisions are recorded in its work-package specification. Read that
   file before continuing; do not reconstruct settled decisions from chat memory.
-- The implementation plan is
-  [tasks/011-llm-parser-contract-plan.md](tasks/011-llm-parser-contract-plan.md),
-  saved in commit `99b5a2dfb9b1470c8b67686e5db55abc6e229264`.
-  Its status is Draft — awaiting approval. Saving the plan does not authorize
-  application implementation, a later code commit, a pull request or a merge.
+- The [implementation plan](tasks/011-llm-parser-contract-plan.md) already proposes
+  one shared pure application adapter. That original goal remains; this restart
+  does not declare the original specification or whole plan incorrect. The plan
+  and [review](tasks/011-llm-parser-contract-review.md) retain their historical
+  design/status context and are not rewritten by this status alignment.
+- Read the [active-branch progress record](tasks/011-llm-parser-contract-progress.md)
+  for present parser code, missing integration and historical versus current checks.
+  Parser schemas, JSON Schema export code, composition, response validation and
+  unit suites exist. The full mixed-change adapter is not implemented. Do not
+  infer current validation from historical reports or describe all parser code as missing.
+- Continue through the existing shared change-application direction. Reuse
+  FilterChange/ChatIntent, applyIntent(), pending operations and controlled
+  acceptance; specialize only actual criterion-dependent domain rules. User
+  decisions follow the existing wizard flow, not another per-criterion workflow.
+  This is a clarification of the agreed direction, not approval of new schemas,
+  a separate result store or the reference branch's later technical architecture.
 - Before implementation, complete the plan's targeted caller/test inventory
   and concrete schema/adapter design gates. Reuse WP 009 state, pending
   operations and controlled person acceptance, and WP 010 clarification and
   guardrails. Do not rebuild them or introduce a competing state model.
 - Document existing behavior with file references and distinguish between
   available, partially available, missing and contradictory capabilities.
-- WP 011 owns parser extraction contracts and the pure application adapter,
-  directly necessary approved schema/domain extensions and the shared person
-  limit constant cleanup. Live person/keyword resolution belongs to WP 014;
-  title-search execution belongs to WP 012; title disambiguation and providers
-  remain in WP 013. Dependency order is WP 011 → WP 014 → WP 012.
+- WP 011 owns parser extraction contracts and the pure application adapter
+  and directly necessary approved schema/domain extensions. Live person/keyword
+  resolution belongs to WP 014; title-search execution belongs to WP 012; title
+  disambiguation and providers remain in WP 013. Dependency order is WP 011 → WP 014 → WP 012.
+- On 2026-11-17 the user withdrew the constant migration. Keep
+  MAX_PERSON_IDS and MAX_PERSON_CLARIFICATION_CANDIDATES independent, currently
+  five each; MAX_PERSON_CLARIFICATION_KNOWN_TITLES remains two. Historical
+  migration tasks are superseded, not completed. No exhaustive inventory is claimed.
 - Candidate/clarification context remains separate from accepted criteria.
   Independently accepted criteria changes do not execute a title search.
   Execution requires explicit “Search now” confirmation; preserve the distinction
   between edited criteria and the last executed search/results.
-- The wizard UI is deferred to [tasks/clarificaton-flow.md](tasks/clarificaton-wizzard-flow.md).
+- The wizard UI is deferred to
+  [tasks/clarificaton-wizzard-flow.md](tasks/clarificaton-wizzard-flow.md).
   WP 011 does not authorize UI rendering, live provider lookups, retry
   orchestration, search execution or a full LLM/provider implementation.
-- Cross-package documentation alignment, the WP 011 backlink to its plan and
-  wizard-task alignment remain follow-ups identified in the plan; this status
-  update does not claim those files were updated or their work implemented.
+- Cross-package and wizard-task alignment remain follow-ups where concrete
+  inconsistencies affect integration. The WP 011 backlink to its plan already exists.
+  This update does not claim downstream files or their implementation were completed.
 - Work package 009 is completed by explicit user acceptance on 2026-11-15
   and merged into `main` through PR #11 in commit
   `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
