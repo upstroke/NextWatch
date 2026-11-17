@@ -4,21 +4,39 @@ import {
   MAX_PARSER_CONTINUATION_QUERIES,
   MAX_PARSER_INPUT_LENGTH,
 } from '@lib/config/domain';
-import { ParserContinuationSchema, validateParserContinuation } from '@lib/schemas/parser-continuation';
+import {
+  ParserContinuationSchema,
+  validateParserContinuation,
+} from '@lib/schemas/parser-continuation';
 import type { ParserContinuation } from '@lib/schemas/parser-continuation';
 import type { PendingEntityQueries } from '@lib/schemas/search-state';
 
 function replacement() {
   return {
-    intentions: [{
-      ref: 'replace-tom', criterion: 'person', operation: 'replace', generation: 1,
-      inputExcerpt: 'Replace Tom with Chris and Brad',
-      source: { mode: 'unresolved', description: 'Tom' },
-      children: [
-        { ownership: 'continuation', ref: 'chris', generation: 1, query: { text: 'Chris', correction: null } },
-        { ownership: 'continuation', ref: 'brad', generation: 0, query: { text: 'Brad', correction: null } },
-      ],
-    }],
+    intentions: [
+      {
+        ref: 'replace-tom',
+        criterion: 'person',
+        operation: 'replace',
+        generation: 1,
+        inputExcerpt: 'Replace Tom with Chris and Brad',
+        source: { mode: 'unresolved', description: 'Tom' },
+        children: [
+          {
+            ownership: 'continuation',
+            ref: 'chris',
+            generation: 1,
+            query: { text: 'Chris', correction: null },
+          },
+          {
+            ownership: 'continuation',
+            ref: 'brad',
+            generation: 0,
+            query: { text: 'Brad', correction: null },
+          },
+        ],
+      },
+    ],
   } satisfies ParserContinuation;
 }
 
@@ -31,11 +49,17 @@ function pending(): PendingEntityQueries {
 
 function linked(criterion: 'person' | 'keyword', ref: string) {
   return {
-    intentions: [{
-      ref: 'linked-addition', criterion, operation: 'add', generation: 0,
-      inputExcerpt: 'Add another selection', source: null,
-      children: [{ ownership: 'canonical', ref }],
-    }],
+    intentions: [
+      {
+        ref: 'linked-addition',
+        criterion,
+        operation: 'add',
+        generation: 0,
+        inputExcerpt: 'Add another selection',
+        source: null,
+        children: [{ ownership: 'canonical', ref }],
+      },
+    ],
   } satisfies ParserContinuation;
 }
 
@@ -56,10 +80,17 @@ describe('parser continuation ownership', () => {
   it('supports a supplied source reference and spelling hint', () => {
     const input = replacement();
     const entry = input.intentions[0]!;
-    const proposal = { intentions: [{
-      ...entry, source: { mode: 'reference', ref: 'accepted-tom' },
-      children: [{ ...entry.children[0]!, query: { text: 'Chris Evnas', correction: 'Chris Evans' } }],
-    }] };
+    const proposal = {
+      intentions: [
+        {
+          ...entry,
+          source: { mode: 'reference', ref: 'accepted-tom' },
+          children: [
+            { ...entry.children[0]!, query: { text: 'Chris Evnas', correction: 'Chris Evans' } },
+          ],
+        },
+      ],
+    };
     expect(ParserContinuationSchema.parse(proposal)).toEqual(proposal);
   });
 
@@ -87,7 +118,11 @@ describe('parser continuation ownership', () => {
   // Branch coverage: whole-person selection replacement is not a supported operation.
   it('rejects person replace_all', () => {
     const entry = replacement().intentions[0]!;
-    expect(ParserContinuationSchema.safeParse({ intentions: [{ ...entry, operation: 'replace_all', source: null }] }).success).toBe(false);
+    expect(
+      ParserContinuationSchema.safeParse({
+        intentions: [{ ...entry, operation: 'replace_all', source: null }],
+      }).success,
+    ).toBe(false);
   });
 
   // Statement coverage: complete keyword and genre selections can remain owned and unresolved.
@@ -108,18 +143,30 @@ describe('parser continuation ownership', () => {
   it('rejects aggregate child overflow across intentions', () => {
     const entry = replacement().intentions[0]!;
     const children = Array.from({ length: MAX_PARSER_CONTINUATION_QUERIES }, (_, index) => ({
-      ...entry.children[0]!, ref: `child-${index}`,
+      ...entry.children[0]!,
+      ref: `child-${index}`,
     }));
-    const input = { intentions: [{ ...entry, children }, { ...entry, ref: 'overflow-parent', children: [entry.children[1]!] }] };
+    const input = {
+      intentions: [
+        { ...entry, children },
+        { ...entry, ref: 'overflow-parent', children: [entry.children[1]!] },
+      ],
+    };
     expect(ParserContinuationSchema.safeParse(input).success).toBe(false);
   });
 
   // Branch coverage: bounded non-query work cannot grow without limit.
   it('rejects intention overflow', () => {
     const entry = replacement().intentions[0]!;
-    const intentions = Array.from({ length: MAX_PARSER_CONTINUATION_INTENTIONS + 1 }, (_, index) => ({
-      ...entry, ref: `remove-${index}`, operation: 'remove', children: [],
-    }));
+    const intentions = Array.from(
+      { length: MAX_PARSER_CONTINUATION_INTENTIONS + 1 },
+      (_, index) => ({
+        ...entry,
+        ref: `remove-${index}`,
+        operation: 'remove',
+        children: [],
+      }),
+    );
     expect(ParserContinuationSchema.safeParse({ intentions }).success).toBe(false);
   });
 
@@ -127,7 +174,10 @@ describe('parser continuation ownership', () => {
   it('rejects aggregate retained text overflow', () => {
     const entry = replacement().intentions[0]!;
     const intentions = Array.from({ length: 9 }, (_, index) => ({
-      ...entry, ref: `remove-${index}`, operation: 'remove', children: [],
+      ...entry,
+      ref: `remove-${index}`,
+      operation: 'remove',
+      children: [],
       inputExcerpt: 'x'.repeat(MAX_PARSER_INPUT_LENGTH),
     }));
     expect(ParserContinuationSchema.safeParse({ intentions }).success).toBe(false);
@@ -158,14 +208,20 @@ describe('parser continuation canonical bindings', () => {
   // Branch coverage: a canonical replacement cannot masquerade as an addition.
   it('rejects an operation mismatch', () => {
     const canonical = pending();
-    canonical.personQueries = [{ ref: 'canonical-chris', query: 'Chris', operation: 'replace', targetPersonId: 1 }];
-    expect(validateParserContinuation(linked('person', 'canonical-chris'), canonical).success).toBe(false);
+    canonical.personQueries = [
+      { ref: 'canonical-chris', query: 'Chris', operation: 'replace', targetPersonId: 1 },
+    ];
+    expect(validateParserContinuation(linked('person', 'canonical-chris'), canonical).success).toBe(
+      false,
+    );
   });
 
   // Branch coverage: compound replacement destinations cannot be independent canonical additions.
   it('rejects a canonical child under a replacement', () => {
     const entry = replacement().intentions[0]!;
-    const input = { intentions: [{ ...entry, children: [{ ownership: 'canonical', ref: 'canonical-chris' }] }] };
+    const input = {
+      intentions: [{ ...entry, children: [{ ownership: 'canonical', ref: 'canonical-chris' }] }],
+    };
     expect(validateParserContinuation(input, pending()).success).toBe(false);
   });
 
@@ -181,7 +237,8 @@ describe('parser continuation canonical bindings', () => {
   it('counts canonical queries once alongside owned children', () => {
     const entry = replacement().intentions[0]!;
     const children = Array.from({ length: MAX_PARSER_CONTINUATION_QUERIES - 2 }, (_, index) => ({
-      ...entry.children[0]!, ref: `owned-${index}`,
+      ...entry.children[0]!,
+      ref: `owned-${index}`,
     }));
     const linkedEntry = linked('person', 'canonical-chris').intentions[0]!;
     const input = { intentions: [{ ...entry, children }, linkedEntry] };

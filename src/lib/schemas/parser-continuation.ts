@@ -15,10 +15,14 @@ const source = z.union([
 ]);
 const child = z.discriminatedUnion('ownership', [
   z.object({ ownership: z.literal('canonical'), ref: reference }).strict(),
-  z.object({
-    ownership: z.literal('continuation'), ref: reference,
-    generation, query: ParserQuerySchema,
-  }).strict(),
+  z
+    .object({
+      ownership: z.literal('continuation'),
+      ref: reference,
+      generation,
+      query: ParserQuerySchema,
+    })
+    .strict(),
 ]);
 const base = {
   ref: reference,
@@ -31,7 +35,9 @@ const intention = z.discriminatedUnion('operation', [
   z.object({ ...base, operation: z.literal('add'), source: z.null(), children }).strict(),
   z.object({ ...base, operation: z.literal('replace'), source, children }).strict(),
   z.object({ ...base, operation: z.literal('replace_all'), source: z.null(), children }).strict(),
-  z.object({ ...base, operation: z.literal('remove'), source, children: z.array(child).max(0) }).strict(),
+  z
+    .object({ ...base, operation: z.literal('remove'), source, children: z.array(child).max(0) })
+    .strict(),
 ]);
 
 /**
@@ -39,35 +45,43 @@ const intention = z.discriminatedUnion('operation', [
  * Nested owned children have exactly one parent; canonical children store only refs.
  * Staged results, question bindings, allocation lifetime and transitions are separate.
  */
-export const ParserContinuationSchema = z.object({
-  intentions: z.array(intention).max(MAX_PARSER_CONTINUATION_INTENTIONS),
-}).strict().superRefine((continuation, ctx) => {
-  const refs = new Set<string>();
-  let queryCount = 0;
-  let textLength = 0;
-  const fail = () => ctx.addIssue({ code: 'custom', message: 'Inconsistent continuation ownership or bounds' });
-  const register = (ref: string) => {
-    if (refs.has(ref)) fail();
-    refs.add(ref);
-  };
-  for (const entry of continuation.intentions) {
-    register(entry.ref);
-    textLength += entry.inputExcerpt.length;
-    if (entry.source?.mode === 'unresolved') textLength += entry.source.description.length;
-    if (entry.operation === 'replace_all' && entry.criterion === 'person') fail();
-    for (const query of entry.children) {
-      register(query.ref);
-      queryCount += 1;
-      if (query.ownership === 'canonical') {
-        if (entry.operation !== 'add' || entry.criterion === 'genre') fail();
-      } else {
-        if (query.generation > entry.generation) fail();
-        textLength += query.query.text.length + (query.query.correction?.length ?? 0);
+export const ParserContinuationSchema = z
+  .object({
+    intentions: z.array(intention).max(MAX_PARSER_CONTINUATION_INTENTIONS),
+  })
+  .strict()
+  .superRefine((continuation, ctx) => {
+    const refs = new Set<string>();
+    let queryCount = 0;
+    let textLength = 0;
+    const fail = () =>
+      ctx.addIssue({ code: 'custom', message: 'Inconsistent continuation ownership or bounds' });
+    const register = (ref: string) => {
+      if (refs.has(ref)) fail();
+      refs.add(ref);
+    };
+    for (const entry of continuation.intentions) {
+      register(entry.ref);
+      textLength += entry.inputExcerpt.length;
+      if (entry.source?.mode === 'unresolved') textLength += entry.source.description.length;
+      if (entry.operation === 'replace_all' && entry.criterion === 'person') fail();
+      for (const query of entry.children) {
+        register(query.ref);
+        queryCount += 1;
+        if (query.ownership === 'canonical') {
+          if (entry.operation !== 'add' || entry.criterion === 'genre') fail();
+        } else {
+          if (query.generation > entry.generation) fail();
+          textLength += query.query.text.length + (query.query.correction?.length ?? 0);
+        }
       }
     }
-  }
-  if (queryCount > MAX_PARSER_CONTINUATION_QUERIES || textLength > MAX_PARSER_CONTINUATION_TEXT_LENGTH) fail();
-});
+    if (
+      queryCount > MAX_PARSER_CONTINUATION_QUERIES ||
+      textLength > MAX_PARSER_CONTINUATION_TEXT_LENGTH
+    )
+      fail();
+  });
 export type ParserContinuation = z.infer<typeof ParserContinuationSchema>;
 
 /**
@@ -80,15 +94,35 @@ export type ParserContinuation = z.infer<typeof ParserContinuationSchema>;
  */
 export function validateParserContinuation(input: unknown, canonicalPending: PendingEntityQueries) {
   const canonical = new Map([
-    ...canonicalPending.personQueries.map((query) => [query.ref, {
-      criterion: 'person', operation: query.operation, query: query.query,
-    }] as const),
-    ...canonicalPending.keywordQueries.map((query) => [query.ref, {
-      criterion: 'keyword', operation: 'add', query: query.query,
-    }] as const),
+    ...canonicalPending.personQueries.map(
+      (query) =>
+        [
+          query.ref,
+          {
+            criterion: 'person',
+            operation: query.operation,
+            query: query.query,
+          },
+        ] as const,
+    ),
+    ...canonicalPending.keywordQueries.map(
+      (query) =>
+        [
+          query.ref,
+          {
+            criterion: 'keyword',
+            operation: 'add',
+            query: query.query,
+          },
+        ] as const,
+    ),
   ]);
   return ParserContinuationSchema.superRefine((continuation, ctx) => {
-    const fail = () => ctx.addIssue({ code: 'custom', message: 'Continuation does not match canonical pending work' });
+    const fail = () =>
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Continuation does not match canonical pending work',
+      });
     let queryCount = canonical.size;
     let textLength = [...canonical.values()].reduce((sum, query) => sum + query.query.length, 0);
     for (const entry of continuation.intentions) {
@@ -98,7 +132,12 @@ export function validateParserContinuation(input: unknown, canonicalPending: Pen
       for (const query of entry.children) {
         if (query.ownership === 'canonical') {
           const target = canonical.get(query.ref);
-          if (!target || target.criterion !== entry.criterion || target.operation !== entry.operation) fail();
+          if (
+            !target ||
+            target.criterion !== entry.criterion ||
+            target.operation !== entry.operation
+          )
+            fail();
         } else {
           if (canonical.has(query.ref)) fail();
           queryCount += 1;
@@ -106,6 +145,10 @@ export function validateParserContinuation(input: unknown, canonicalPending: Pen
         }
       }
     }
-    if (queryCount > MAX_PARSER_CONTINUATION_QUERIES || textLength > MAX_PARSER_CONTINUATION_TEXT_LENGTH) fail();
+    if (
+      queryCount > MAX_PARSER_CONTINUATION_QUERIES ||
+      textLength > MAX_PARSER_CONTINUATION_TEXT_LENGTH
+    )
+      fail();
   }).safeParse(input);
 }
