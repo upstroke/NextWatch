@@ -117,7 +117,8 @@ Open:
 - Complete the field-by-field comparison between plan, executable context/proposal contracts, fixtures and application mappings. Verify source/meaning/discard and mixed-operation examples rather than treating named scenarios as complete fixtures.
 - Verify remaining JSON Schema/export combinations and document actual limitations without weakening local domain contracts. Earlier export implementation does not validate every later schema or provider.
 - Canonical pending queries cannot retain a distinct spelling correction. Current `unsupported-correction` rejection avoids silent loss but leaves the original-plus-hint requirement unfinished. Preserve a single query owner when extending it.
-- Complete the agreed shared-person-limit migration after the actual affected reference inventory. At this baseline `MAX_PERSON_CLARIFICATION_CANDIDATES` still exists alongside `MAX_PERSON_IDS`; both are five. Preserve `MAX_PERSON_CLARIFICATION_KNOWN_TITLES = 2`.
+
+Constant decision update, 2026-11-17: the user withdrew the former migration task. `MAX_PERSON_IDS` and `MAX_PERSON_CLARIFICATION_CANDIDATES` intentionally remain separate, currently five each; `MAX_PERSON_CLARIFICATION_KNOWN_TITLES` remains two. This is not an open R05 migration requirement or evidence of a completed reference inventory. See decision supplement section 6.
 
 ## WP011-R06 — Bindings, staged validity and acceptance
 
@@ -142,7 +143,7 @@ Pure proposals require caller-controlled atomic persistence and concurrency excl
 ## Prioritized implementation and verification queue
 
 1. Complete current typecheck, ESLint and statement-coverage evidence before calling the latest code fully green. Tests are user-reported passing; the assistant has not run validation.
-2. This focused review reconciliation, followed by a separate shared-person-limit migration after reference inventory.
+2. The focused review reconciliation is recorded in `528bc21`; the subsequently withdrawn constant migration is not part of the remaining queue.
 3. Bound canonical single-person acceptance with continuation/question/registry coordination, reusing existing trusted selection/acceptance validation.
 4. Owned-target result/question contracts and staging, together with concrete lifetime/invalidation design.
 5. Protected reservation arithmetic and competition, then full atomic compound/whole-selection acceptance.
@@ -155,8 +156,8 @@ The queue is not blanket authorization for every file change or commit. Resolve 
 
 ## Execution status
 
-This change updates only this review protocol. It supersedes the former blanket statement that all implementation evidence remains pending. No R01–R06 finding is finally closed. Existing implementations and user reports remain bounded by the scopes above and the progress ledger.
+The review reconciliation in `528bc21` superseded the former blanket statement that all implementation evidence remains pending. No R01–R06 finding is finally closed. Existing implementations and user reports remain bounded by the scopes above and the progress ledger. This later documentation amendment records the explicit withdrawal of the constant migration and removes it from active review work.
 
-The current constant-migration inspection has directly confirmed the definition and clarification-schema consumer plus existing five/six-candidate and two/three-known-title boundary tests. This is not a complete reference inventory and does not mark the migration implemented.
+The earlier preparatory inspection confirmed the definition and clarification-schema consumer plus existing five/six-candidate and two/three-known-title boundary tests. It was not a complete reference inventory. The user ended the migration task; do not continue an inventory for removal of a constant that must now remain independent.
 
-No runtime code, tests, product specification, prompt, other documents, provider integration, HTTP/CLI/UI, persistence, title execution, PR or merge is changed by this documentation commit. The assistant ran no validation commands. WP 011 remains incomplete; dependency order remains WP 011 → WP 014 → WP 012. Downstream package/wizard alignment and exhaustive reference/caller work remain explicit follow-ups where not completed.
+Only the six related documentation files are aligned by this amendment. No runtime code, tests, prompt, provider integration, HTTP/CLI/UI, persistence, title execution, PR or merge is changed. The assistant ran no validation commands. WP 011 remains incomplete; dependency order remains WP 011 → WP 014 → WP 012. Other downstream package/wizard alignment and unrelated reference/caller work remain explicit follow-ups where not completed.

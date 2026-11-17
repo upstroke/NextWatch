@@ -7,13 +7,14 @@
 - Target branch: `feat/011-llm-parser-contract`; current documentation baseline: `ed48ad3a9c43d6d4bb1f47d2778dca10c62f24a9`.
 - Product authority: [WP 011 specification](../docs/work-packages/011-llm-parser-contract.md), including accepted reservation/result-validity rules integrated in `113a5ab`.
 - [Decision history](../docs/work-packages/011-parser-contract-decisions.md): A/R02 and B/R06 explicitly accepted and recorded in `a2c548e`; do not reopen those decisions. [Review checklist](011-llm-parser-contract-review.md) tracks verification, not another product contract.
+- Decision update 2026-11-17: the user withdrew the person-limit constant migration. Keep `MAX_PERSON_IDS` and `MAX_PERSON_CLARIFICATION_CANDIDATES` independent, currently five each, and the known-title limit at two. See decision history section 6. This task is withdrawn, not completed.
 - This change consolidates the discussed technical directions. It does not approve application implementation or assert that R01–R06 are closed, tested or implemented. Prompt and review-file alignment are separate next steps.
 - Follow [AGENTS](../AGENTS.md), [Typing](../docs/typing.md) and [Testing](../docs/testing.md). Reuse completed WP 009/010 rather than reopening them.
 - Deferred UI task: [clarification wizard flow](clarificaton-wizzard-flow.md), renamed by the user and verified at `ed48ad3`. Use this exact filename. Its older commit/skip/parser-status wording still needs a separately scoped alignment.
 
 ## 1. Scope, existing evidence and limitations
 
-WP 011 owns dedicated parser contracts, pure request composition/response validation, the pure application adapter, necessary explicitly planned domain extensions and the shared person-limit migration. No provider client, HTTP endpoint, CLI implementation, live identity lookup, retry timers, persistence, UI, browser journey or title-search execution is authorized here. Dependency order: WP 011 → WP 014 → WP 012; title disambiguation/providers remain WP 013.
+WP 011 owns dedicated parser contracts, pure request composition/response validation, the pure application adapter and necessary explicitly planned domain extensions. No provider client, HTTP endpoint, CLI implementation, live identity lookup, retry timers, persistence, UI, browser journey or title-search execution is authorized here. Dependency order: WP 011 → WP 014 → WP 012; title disambiguation/providers remain WP 013.
 
 Historical evidence: initial review `5c85d69`, follow-up `a6fe74b`, initial plan `99b5a2d`, prompt/schema alignment `a8dbca0`, instruction draft `d4138d9`, English instruction revision `0.1.1-draft` in `166e144`, consolidated contract `5fa186d`, R01 design `b984463`. The recorded identical-tree comparison concerns the initial/follow-up baselines only. No exhaustive caller inventory, local cleanliness, installed runtime or passing validation follows from it.
 
@@ -205,7 +206,7 @@ Atomic compound acceptance receives the current expected state/session associati
 | Semantic guardrail schema/domain                                                         | Eligible offered-source subset, complete replacement context, projected question-kind mappings; preserve existing year/keyword behavior.                                                |
 | Person session/correction/lifecycle/action/selection modules                             | Inspect exact callers/tests; explicit non-first targeting and cleanup reconciliation without reordering unrelated wishes or duplicating question state.                                 |
 | Existing genre compatibility/catalog/application modules                                 | Confirm targeted/whole-selection mapping and active/inactive order; no invented provider IDs. Inspect concrete paths before editing.                                                    |
-| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, discovered callers/tests | Migrate MAX_PERSON_CLARIFICATION_CANDIDATES to MAX_PERSON_IDS, keep five and preserve MAX_PERSON_CLARIFICATION_KNOWN_TITLES. Perform actual repository reference inventory.             |
+| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, discovered callers/tests | Preserve independent search-state, candidate-group and known-title limits; the former constant migration was withdrawn on 2026-11-17. |
 
 No automatic barrel exports, catch-all types.ts, provider dependency, route, UI scaffolding or unused implementation files. Reuse and extend current tests/fixtures before introducing new shared helpers.
 
@@ -221,7 +222,7 @@ Then, under an approved file-level code scope:
 4. Add dependency tests: TV plus unresolved replacement; same-target replace/remove; whole genres plus add; split year bounds; explicit removal needed for capacity; self-correction versus actual conflict.
 5. Add staged-result tests: refine self/sibling, unrelated scalar change, capacity/source change, pause/resume, reset/recreate same name, duplicate/late response and stale incoming versus already validated fact.
 6. Implement only the approved pure domain extensions and adapter with real existing transitions; test working-copy rejection and mutation isolation.
-7. Extend explicit non-first targeting/source-offer subset paths and migrate the shared constant with all actual references.
+7. Extend explicit non-first targeting/source-offer subset paths; preserve independent person-capacity and candidate-group limits.
 8. Run focused suites, then current project scripts for test, coverage, lint and typecheck; report actual results and commands not run. Seek approval before application-code commit/PR/merge.
 
 Proposed test locations: `tests/unit/schemas/parser.spec.ts`, `parser-application.spec.ts`, parser composition/validation unit suites and `tests/unit/domain/search/apply-parser-result.spec.ts`, plus existing affected regressions. Verify exact local naming before creation. Synthetic context/provenance fixtures only; mock external boundaries, not the module or its domain collaborators. Unit tests need the required Statement coverage/Branch coverage comment immediately above the declaration; unit tests do not need integration IDs. Do not duplicate generic Zod missing-field/primitive behavior as standalone tests.
@@ -248,3 +249,5 @@ The first later interactive test surface remains a real-LLM CLI with initially m
 ## Execution status
 
 This revision updates only this technical plan and uses the verified new `clarificaton-wizzard-flow.md` filename. It consolidates the existing R01 design/follow-up and discussed R02–R06 directions under the accepted specification; it does not modify the prompt, review checklist, decision record, application code, tests or other work packages. No tests, coverage, ESLint, typecheck, schema-export check or provider call ran. No PR or merge. Remote evidence does not establish local cleanliness or absence of unpushed changes.
+
+Decision amendment 2026-11-17: the former migration instruction in this plan is withdrawn by explicit user decision. Both constants remain independent and unchanged, with the known-title limit separate. The six related documents are aligned in the same documentation commit; runtime code is not changed. The incomplete preparatory inventory is not claimed completed. Current implementation/check evidence remains in the progress ledger rather than inferred from this historical design sequence.

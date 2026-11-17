@@ -69,10 +69,16 @@ NextWatch is a controlled search application. The LLM proposes structured filter
 - Document existing behavior with file references and distinguish between
   available, partially available, missing and contradictory capabilities.
 - WP 011 owns parser extraction contracts and the pure application adapter,
-  directly necessary approved schema/domain extensions and the shared person
-  limit constant cleanup. Live person/keyword resolution belongs to WP 014;
+  and directly necessary approved schema/domain extensions. Live person/keyword
+  resolution belongs to WP 014;
   title-search execution belongs to WP 012; title disambiguation and providers
   remain in WP 013. Dependency order is WP 011 → WP 014 → WP 012.
+- On 2026-11-17 the user withdrew the planned person-limit constant migration.
+  Keep `MAX_PERSON_IDS` and `MAX_PERSON_CLARIFICATION_CANDIDATES` independent:
+  search-state capacity and offered candidate-group size are different limits,
+  currently both five. Keep `MAX_PERSON_CLARIFICATION_KNOWN_TITLES` at two.
+  This is a withdrawn task, not a completed migration or reference inventory.
+  See the decision supplement, section 6; do not revive the historical migration plan.
 - Candidate/clarification context remains separate from accepted criteria.
   Independently accepted criteria changes do not execute a title search.
   Execution requires explicit “Search now” confirmation; preserve the distinction

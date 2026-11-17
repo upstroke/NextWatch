@@ -73,6 +73,14 @@ This is an alternative entry point while the original question is still live, no
 
 Tests reuse the synthetic parser fixture and real domain/binding helpers. Scenarios include linked/unlinked edits, replacement-source preservation, no-ops at counter limits, revision/generation exhaustion, parser rejection without consumption, unsupported/misdirected interpretation, original invocation mismatch, stale authority, replay after completion, rejection after deferred consumption and input isolation. These are unit-level scenarios, not end-to-end/runtime guarantees.
 
+## Withdrawn constant migration
+
+On 2026-11-17 the user explicitly withdrew the migration from `MAX_PERSON_CLARIFICATION_CANDIDATES` to `MAX_PERSON_IDS`. Search-state person capacity and offered candidate-group size remain independent rules, currently five each; `MAX_PERSON_CLARIFICATION_KNOWN_TITLES` stays at two. See decision supplement section 6.
+
+`1591fb4` documented the domain constants; `fefbf7a` corrected the comments to state their independence. Neither changed names, values or runtime behavior. The migration is withdrawn, not completed. Its preparatory reference inspection was incomplete and is not recorded as a completed audit; removal-oriented inventory work is no longer required for this cancelled task.
+
+`528bc21` reconciled implemented portions of R01–R06 without closing the findings. This documentation amendment removes the withdrawn migration from the active specification, plan, review and follow-up queue while preserving the other implementation and validation gaps.
+
 ## Validation evidence and next gate
 
 - On 2026-11-17 the user reported all tests passing for `ab704c3`. Fresh `pnpm typecheck`, `pnpm lint` and `pnpm test:coverage` results remain unreported for this latest code. Do not infer them from older checks.
@@ -87,7 +95,6 @@ Tests reuse the synthetic parser fixture and real domain/binding helpers. Scenar
 3. Integrate resolution-result/identity-selection handling and complete invocation lifetime, routing and allocator safeguards. Bound structured actions, parsed refinement and edit reconciliation do not prove end-to-end replay safety or complete pause/reset/resume.
 4. Add authoritative owned-target/non-person questions, staged trusted results and unchanged-child retention/reconciliation, then current-state atomic replacement/whole-selection acceptance.
 5. Implement protected reservations, capacity competition, ownership transfer and mixed-change adapter coupling/unsupported retention.
-6. Migrate MAX_PERSON_CLARIFICATION_CANDIDATES to MAX_PERSON_IDS after an actual caller/test inventory; preserve five and the known-title limit.
-7. Align technical-plan/checklist/downstream documentation without blanket review closure or exhaustive-inventory claims.
+6. Align technical-plan/checklist/downstream documentation without blanket review closure or exhaustive-inventory claims. The withdrawn constant migration is not an open follow-up.
 
 WP 011 remains incomplete. Dependency order remains WP 011 → WP 014 → WP 012. No PR, merge, provider integration, HTTP/browser journey, persistence or title-search execution is part of these slices.
