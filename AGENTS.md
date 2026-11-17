@@ -2,44 +2,23 @@
 
 ## Purpose
 
-NextWatch is a controlled search application. The LLM proposes structured filter changes; the application validates and executes them.
+NextWatch is a controlled search application. The LLM proposes structured changes to one general search draft; the application validates, resolves and executes them.
+
+The authoritative product direction is [Product and search flow](docs/work-packages/000-product-and-search-flow.md). Reuse the existing `SearchState`; derive Movie/TV requests instead of maintaining separate editable search objects. Keep provider-specific work in focused server-side helpers.
 
 ## Current project status
 
-- The active work package is
-  `docs/work-packages/010-clarification-and-guardrails.md`.
-- Work package 009 is completed by explicit user acceptance on 2026-11-15
-  and merged into `main` through PR #11 in commit
-  `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
-- WP 009 was accepted with a complete repository-wide reference inventory
-  still outstanding as a documented, non-blocking follow-up. Do not claim
-  that inventory was completed or that all possible references were ruled out.
-- Work package 008 is completed by user acceptance and merged into `main`
-  in commit `05c45d86430acb2e62e7395df8848de5ce8ed095`.
-- The working branch for work package 010 is
-  `feat/010-clarification-and-guardrails`, created from `main` at
-  `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
-- Before implementing work package 010, perform a targeted read-only review
-  of existing clarification contracts, search-state schemas, domain functions
-  and relevant tests on this branch. Reuse completed WP 009 state, pending
-  operations and controlled person acceptance; do not rebuild them.
-- Document existing behavior with file references and distinguish between
-  available, partially available, missing and contradictory capabilities.
-- Read the active work-package boundaries. WP 010 owns clarification and
-  guardrail contracts; WP 009 supplies domain state and pure transitions.
-  Parser extraction belongs to WP 011, provider person/keyword resolution
-  to WP 014, and search execution to WP 012. Candidate/clarification state
-  must remain separate from active criteria.
-- WP 010 may prepare contracts with synthetic resolution outcomes; live
-  provider-resolution integration depends on WP 014. This does not authorize
-  UI rendering, provider lookups or search execution in WP 010.
-- Prepare an implementation plan with affected files and obtain user approval
-  before implementation. Branch creation and this status update do not
-  approve an implementation plan or claim any WP 010 code is implemented.
-- The branch `feat/003-multi-step-search-orchestration` was discarded.
-  Do not restore, reference or continue its architecture.
-- Do not treat “Task 003a” as an official work package. It was only a
-  temporary label for restarting the search-flow work.
+- WP 009 and WP 010 are completed and merged. Their existing state, transitions, clarification and guardrail contracts are the implementation foundation, not a requirement to retain every abstraction unchanged.
+- WP 009 was accepted with a complete repository-wide reference inventory still outstanding as a documented, non-blocking follow-up. Do not claim that inventory was completed or that all possible references were ruled out.
+- WP 008 is completed and merged.
+- The current task is documentation alignment with the unified search-draft direction. This does not authorize runtime changes, file deletions, provider calls, UI work or an implementation plan by itself.
+- The next implementation package is [WP 011](docs/work-packages/011-llm-parser-contract.md), followed by [WP 014](docs/work-packages/014-entity-resolution.md), then [WP 012](docs/work-packages/012-search-execution-and-discover.md). Keep existing package numbers.
+- WP 011 owns validated parser extraction and application to the existing draft. WP 014 owns live person/keyword identity resolution. WP 012 owns execution readiness, explicit search confirmation, technical Movie/TV mapping, TV-person execution helpers and result handling. WP 010 supplies existing clarification and guardrails.
+- Person identity resolution is not TV-credit retrieval. Accepted identity belongs in the draft; credits are execution data, not a second persisted criteria collection.
+- Movie, TV and both use the same draft. Apply existing media/genre transitions and derive the relevant request shapes; do not introduce a general matcher that synchronizes two mutable search objects.
+- Before implementation, inspect affected code, callers, schemas, tests and documents. Classify concrete items as keep, adapt, merge or remove. Preserve required behavior rather than obsolete implementation structure.
+- Detailed work-package and entry-document alignment is still pending after the initial product-document update. Do not present the direction as implemented or all documentation as reconciled.
+- Prepare a file-level implementation plan and obtain approval before changing runtime code, schemas or tests. No speculative framework, store or registry is authorized.
 
 ## Non-negotiables
 
@@ -91,17 +70,18 @@ Read the active work package and its referenced specifications before changing A
 - Include unimported application modules in coverage; do not hide files merely to improve percentages.
 - No speculative framework layers or unused files.
 - Preserve existing callers during refactoring or update every caller and its tests together.
+- Remove obsolete tests with retired interfaces only after checking that required behavior remains covered. Do not remove failing tests merely to make checks pass.
+- Keep schemas with distinct validated responsibilities; merge redundant contracts only with all affected callers and tests accounted for.
 
 ## Workflow
 
-1. Establish the active work package and current repository state before
-   proposing implementation work.
+1. Establish the active work package and current repository state before proposing implementation work.
 2. Define the task.
 3. Read the relevant specification, schemas and tests.
 4. Create a plan with affected files.
 5. Obtain user approval.
 6. Implement only the approved scope, test-first where executable.
-7. Run automated validation; report commands not run honestly.
+7. Run automated validation; report commands not run honestly. For implementation changes, green means tests, coverage, ESLint and typecheck.
 8. Review against specifications and guardrails.
 9. Obtain user approval before committing or opening a pull request.
 
@@ -121,4 +101,6 @@ Read the active work package and its referenced specifications before changing A
 - Keep the README as an evolving entry point with current setup and implemented scope. Keep shared development rules in one authoritative document and link to it rather than duplicating rules.
 - Work packages live in `docs/work-packages/`. Each work-package file contains a stable `## Specification` section and a current `## Execution status` section. Update the execution status as implementation progresses.
 - Link to the authoritative documentation rather than duplicating rules. Add specialized coding-agent configuration only for an agreed need, referencing these shared rules.
+- Document the current direction without references to other branches or a parallel migration narrative. Do not create a competing concept document.
+- Remove or consolidate superseded documentation only after preserving still-valid decisions and checking references. No blanket deletion is authorized by the direction change.
 - Obtain explicit approval for each GitHub write action with its exact target and content. Approval to create a branch is not approval to commit, open a pull request or merge.

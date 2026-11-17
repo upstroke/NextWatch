@@ -1,149 +1,109 @@
 # NextWatch — Produktziel und Suchfluss
 
-## Zielsetzung
+## Specification
 
-NextWatch ist eine kontrollierte Film- und Seriensuche mit einem lokalen LLM als semantischem Parser.
+### Zielsetzung
 
-Der Nutzer beschreibt einen Suchwunsch in natürlicher Sprache. Das LLM übersetzt diese Eingabe in einen strukturierten Vorschlag für Filteränderungen oder meldet Klärungsbedarf. Die Anwendung validiert den Vorschlag, berechnet fachliche Folgen, ruft TMDb auf und zeigt die Ergebnisse an.
+NextWatch ist eine einfache, kontrollierte Film- und Seriensuche mit einem LLM als semantischem Parser. Der Nutzer beschreibt seinen Suchwunsch in natürlicher Sprache. Die Anwendung bildet diesen Wunsch auf einen allgemeinen Suchzustand ab, klärt notwendige Angaben und erzeugt erst für die bestätigte Suche die passenden technischen Anfragen.
 
-Das LLM ist kein autonomer Agent. Es wählt keine TMDb-Endpunkte aus, führt keine Suchketten aus, bewertet keine Treffer und formuliert keine freien Ergebnisantworten.
+Das LLM ist kein autonomer Agent. Es schlägt strukturierte Änderungen vor, erfindet keine Provider-IDs, wählt keine Endpunkte aus und führt keine Suchketten aus. Validierung, Zustandsänderungen, Auflösung und Suchausführung liegen bei der Anwendung.
 
-## Grundprinzip
+### Verbindlicher Ablauf
 
-Die Verantwortlichkeiten sind klar getrennt:
+1. Der Nutzer beschreibt oder verändert einen Suchwunsch.
+2. Der Parser liefert einen strukturierten Vorschlag für Kriterien und noch aufzulösende Begriffe.
+3. Die Anwendung validiert den Vorschlag und übernimmt gültige Änderungen über die vorhandenen Domain-Funktionen.
+4. Serverseitige Hilfsfunktionen lösen Personen und Keywords auf. Bei notwendiger Nutzerentscheidung verwendet die Anwendung die vorhandene Klärungslogik; deren UI-Integration bleibt gesonderte Arbeit.
+5. Die Anwendung zeigt den geklärten Suchwunsch zur abschließenden Prüfung. Offene oder nicht unterstützte Anforderungen dürfen nicht stillschweigend entfallen.
+6. Der Nutzer bestätigt die ausführbare Suche ausdrücklich. Die letzte Klärungsantwort startet nicht automatisch die Suche.
+7. Der Server leitet die Movie- und/oder TV-Anfragen ab, führt die benötigten Aufrufe aus und liefert einheitliche Ergebnisse.
 
-1. Der Nutzer sendet Freitext.
-2. Das LLM erzeugt einen strukturierten Vorschlag.
-3. Zod und Guardrails validieren den Vorschlag.
-4. Die Anwendungslogik berechnet den nächsten gültigen Suchzustand.
-5. Die Anwendung führt gegebenenfalls TMDb-Lookups aus.
-6. Die Anwendung ruft Discover auf.
-7. Die Anwendung zeigt Ergebnisse, Filter-Pillen und Statusmeldungen an.
+Ein natürlichsprachliches Eingabefeld ist nicht gleichbedeutend mit einer unveränderten Weitergabe des Textes an TMDb Search. Filterwünsche werden zuerst strukturiert.
 
-Das LLM darf niemals unvalidierte IDs, Endpoints oder Parameter ausführen.
+### Ein allgemeiner Suchzustand
 
-## Begriffsabgrenzung
+Der vorhandene `SearchState` aus [WP 009](009-search-state-and-filter-catalog.md) ist die maßgebliche Quelle für den Suchentwurf. Es entsteht kein zweiter parallel gepflegter Entwurf.
 
-### Trending
+- `filters` hält die unterstützten Filterkriterien einschließlich Medientyp.
+- `people` hält bestätigte Personen mit ID und Anzeigename. Technische Personen-ID-Listen werden daraus abgeleitet, nicht zusätzlich im Zustand gespeichert.
+- `pendingQueries` hält strukturierte, noch offene Personen- und Keyword-Anfragen.
+- `inactiveGenres` erhält im aktuellen Medientyp nicht aktive Genre-Wünsche nach den bestehenden Kompatibilitätsregeln.
+- `revision` ordnet Änderungen und asynchrone Antworten dem passenden Zustand zu.
 
-Trending ist der Startmodus der Anwendung.
+Die Darstellung eines allgemeinen Objekts in Beispielen ersetzt nicht das vorhandene Schema. Parser-Ausgabe, fachlicher Zustand und technische Provider-Parameter haben unterschiedliche Aufgaben, bilden aber keine unabhängig gepflegten Kopien derselben Suche.
 
-Ohne konkrete URL-Kriterien zeigt NextWatch die wöchentlichen Trends für Filme und Serien. Dieser Modus benötigt keinen LLM-Aufruf.
+Bestätigte Kriterien und offene Wünsche bleiben unterscheidbar. Der bearbeitete Suchentwurf und die zuletzt ausgeführte Anfrage mit ihren Ergebnissen bleiben ebenfalls unterscheidbar; alte Ergebnisse dürfen nach einer Änderung nicht als neue Treffer erscheinen.
 
-Trending ist keine gefilterte Suche. Sobald der Nutzer individuelle Kriterien nennt, wechselt die Anwendung nach definierten Regeln in den Discover-Modus.
+### Movie- und TV-Referenzobjekte
 
-### Discover
+Die technischen Referenzobjekte beschreiben die zulässigen Zielformen für Movie- beziehungsweise TV-Anfragen. Gemeinsame Felder werden gemeinsam definiert, soweit Bedeutung und Validierung tatsächlich übereinstimmen. Medienspezifische Felder bleiben explizit. Sie werden aus dem allgemeinen Suchzustand abgeleitet und nicht unabhängig von ihm bearbeitet oder gespeichert.
 
-Discover ist die eigentliche Ergebnissuche.
+Die genaue Feldzuordnung und die Validierung der ausführbaren Anfragen gehören zu [WP 012](012-search-execution-and-discover.md). Dort werden insbesondere Jahresgrenzen, Genres, Keywords, Personen, Mindestbewertung und unterstützte Sortierung ohne stillen Kriterienverlust abgebildet. Fehlende optionale Werte werden nicht vorsorglich mit erfundenen Werten ergänzt.
 
-Discover erhält konkrete Filter wie Medientyp, Genre, Personen-IDs, Keyword-IDs, Bewertung und Jahresbereich. Die Anwendung ruft entweder den Movie- oder den TV-Discover-Endpoint auf.
+Die TMDb-Dokumentation bestimmt die Provider-Verträge, erweitert aber nicht automatisch den Produktumfang. Laufzeit, Provider-Auswahl, Sprache oder Ausschlüsse werden nicht allein deshalb zu neuen Nutzerfiltern, weil ein Endpunkt entsprechende Parameter kennt.
 
-Discover liefert die Ergebnisliste. Er entscheidet nicht über den Suchzustand, Filterkompatibilität oder den Übergang vom Trending-Modus.
+### Medienwechsel und Auswahl beider Medientypen
 
-### Search-Domäne
+Movie, TV und die Auswahl beider Medientypen verwenden denselben fachlichen Suchentwurf. Ein Medienwechsel ändert den Medientyp über die vorhandenen Domain-Regeln. Die technische Anfrage wird daraus neu abgeleitet; es ist kein allgemeiner Matcher zur Synchronisierung zweier gespeicherter Suchobjekte erforderlich.
 
-`search` bezeichnet nicht einen zusätzlichen HTTP-Endpoint, sondern die fachliche Logik für den Suchzustand.
+- Bestätigte Personen und weiterhin gültige Wünsche bleiben erhalten.
+- Genre-Kompatibilität und inaktive Rückkehrwerte verwenden die bestehenden Regeln. Keine ungeprüfte Gleichsetzung unterschiedlicher Genres.
+- Ein Wechsel allein löst weder eine erneute Namensklärung noch eine Suche aus. Asynchrone Antworten müssen weiterhin zum gültigen Kontext gehören.
+- Bei der Auswahl beider Medientypen erzeugt der Server die beiden passenden Ausführungspfade aus derselben bestätigten Anfrage.
 
-Die künftige Search-Domäne unter `src/lib/domain/search` verwaltet:
+### Gezielte serverseitige Hilfsfunktionen
 
-- den aktiven Suchzustand,
-- aktive Filter,
-- inaktive Rückkehrwerte,
-- den aktuellen Modus,
-- die Revision,
-- Kompatibilitätsregeln zwischen Filtern,
-- Übergänge zwischen Trending und Discover.
+Identitätsauflösung und Ergebnissuche sind getrennte Aufgaben.
 
-Die Search-Domäne entscheidet, welche Discover-Abfrage als nächstes ausgeführt wird. Discover führt die Abfrage aus.
+[WP 014](014-entity-resolution.md) löst Personennamen und Keyword-Begriffe in vertrauenswürdig zugeordnete Identitäten auf. Mehrdeutigkeit, kein Treffer und technische Fehler sind unterschiedliche Ergebnisse. Das Modell darf keine IDs raten oder einen populären Treffer eigenmächtig auswählen.
 
-### Personen-Lookup
+[WP 012](012-search-execution-and-discover.md) verarbeitet die bestätigten Identitäten für die Suche:
 
-Personen sind kein eigener Discover-Modus.
+- Movie verwendet den dafür geeigneten Discover-Pfad mit erforderlicher Rollenprüfung.
+- TV ohne Personen verwendet den TV-Discover-Pfad.
+- TV mit Personen verwendet eine gezielte Hilfsfunktion auf Basis der Person-TV-Credits und wendet die weiteren angefragten Kriterien an.
+- Bei mehreren Personen gilt gemeinsame qualifizierte Schauspielbeteiligung. Serien-IDs werden dedupliziert und zwischen den Personen geschnitten; dieselbe Episode ist nicht erforderlich. Crew-Arbeit und Auftritte als man selbst erfüllen diese Bedingung nicht. Unzureichende Rolleninformationen dürfen nicht als sicher klassifiziert gelten.
 
-Ein Personenname wird zunächst über die Personensuche in eine TMDb-`personId` aufgelöst. Diese ID wird anschließend als Discover-Filter verwendet.
+TV-Credits sind Ausführungsdaten, kein dauerhaftes zusätzliches Feld im Suchentwurf und kein erfundener TV-Discover-Parameter. Benötigte weitere Daten werden gezielt serverseitig beschafft. Kein angefragter Filter darf wegen des anderen Ausführungspfads stillschweigend verloren gehen.
 
-```text
-"Brad Pitt"
-  → Personensuche
-  → personId
-  → Discover mit personIds
-```
+### Ergebnisse und Pagination
 
-Bei mehreren plausiblen Treffern bleibt die bestehende Suche unverändert. Die Anwendung zeigt eine vorbereitete Rückfrage mit definierten Optionen an.
+Die API liefert eine gemeinsame Ergebnisdarstellung mit Medientyp und Provider-ID; die Kombination identifiziert den Treffer. Titel- und Datumsfelder werden für die Darstellung vereinheitlicht. Die Oberfläche muss keine TMDb-Aufrufe koordinieren.
 
-### Keyword-Lookup
+Für die Auswahl beider Medientypen werden unabhängige Aufrufe nach Möglichkeit parallel ausgeführt. Geladene Treffer dürfen gemeinsam sortiert werden; dies ist ohne weitergehende Umsetzung keine Garantie einer globalen Rangfolge über alle noch nicht geladenen Treffer.
 
-Keywords sind ebenfalls kein eigener Discover-Modus.
+WP 012 definiert Pagination, Nachladen, Anfragebudgets und Fehlerbehandlung vor der Implementierung. Treffer dürfen nicht durch Abschneiden und Nachladen verloren gehen. Provider-Trefferzahlen dürfen nicht ungeprüft als Trefferzahlen nach zusätzlichen Abgleichen ausgegeben werden. Ein Teilausfall oder eine vorzeitig begrenzte Verarbeitung ist kein verifiziert leeres oder vollständiges Ergebnis.
 
-Ein Begriff wird zunächst über die Keyword-Suche in eine TMDb-`keywordId` aufgelöst. Diese ID wird anschließend als Discover-Filter verwendet.
+### Trending, Titelsuche und Detailansicht
 
-```text
-"Zeitreise"
-  → Keyword-Suche
-  → keywordId
-  → Discover mit keywordIds
-```
+Trending bleibt der Startmodus ohne individuelle Suchkriterien und benötigt keinen LLM-Aufruf. Der Domain-Modus `discover` bezeichnet die kriterienbasierte Suche, nicht die Zusicherung, dass technisch genau ein Discover-Aufruf genügt.
 
-Eine Keyword-ID darf nur verwendet werden, wenn sie zuvor über die Keyword-Suche ermittelt und serverseitig als bekannt markiert wurde. Das Modell darf keine Keyword-IDs raten.
+TMDb Search unterstützt Identitäts- und Titel-Lookups. Multi-Search ist kein Ersatz für die kriterienbasierte Hauptsuche. Titeldisambiguierung und Provider-Darstellung bleiben Gegenstand von [WP 013](013-title-disambiguation-and-providers.md).
 
-### Multi-Search
+Die Detailansicht lädt die Informationen zum ausgewählten Film oder zur Serie über unsere API. Sie ist vom Suchentwurf getrennt.
 
-Der Multi-Endpoint dient der Titel-Disambiguierung.
+### Einfachheit und Verantwortlichkeiten
 
-Er durchsucht Filme, Serien und Personen gleichzeitig. Er wird verwendet, wenn ein Nutzer einen Titel nennt und unklar ist, ob ein Film, eine Serie oder eine Person gemeint ist.
+- Ein maßgeblicher Suchentwurf; keine separat gepflegten Movie-/TV-Entwürfe.
+- Kleine, explizite Funktionen für Zustandsänderung, Auflösung, Abbildung und Ausführung statt eines spekulativen allgemeinen Koordinationsframeworks.
+- Nur tatsächlich notwendiger temporärer Klärungs- und Ausführungskontext; keine zusätzlichen Stores oder Registries ohne nachgewiesenen Bedarf und gesonderte Zustimmung.
+- Reine Domain-Logik ohne Netzwerkzugriff; TMDb-Aufrufe ausschließlich serverseitig, Zugangsdaten niemals im Browser.
+- Validierte Parser-Ausgaben und Provider-Antworten; Zod-Verträge mit daraus abgeleiteten TypeScript-Typen.
+- Keine Ausführung durch unvalidierte Modellvorschläge, keine agentischen Modell-Tool-Schleifen und keine implizite Suchfreigabe.
 
-Der Multi-Endpoint ist kein Ersatz für Discover und kein Bestandteil des gefilterten Discover-Flows.
+### Umsetzung und Bereinigung
 
-## Mehrdeutigkeit und Klärung
+Die Reihenfolge bleibt WP 011 → WP 014 → WP 012. WP 011 verarbeitet Parser-Vorschläge für den bestehenden Zustand; WP 014 liefert Identitätsauflösung; WP 012 erzeugt und verarbeitet die ausführbaren Anfragen. WP 010 liefert die bestehende Grundlage für Klärung und Guardrails.
 
-Bei wesentlicher Mehrdeutigkeit setzt die Anwendung den Status `needsClarification`.
+Vor Implementierungsänderungen werden betroffene Dateien als behalten, anpassen, zusammenführen oder entfernen eingeordnet. Auch bestehende Abstraktionen werden geprüft; ihr bloßes Vorhandensein verpflichtet nicht zur Übernahme. Weiterhin gültiges Verhalten und Schutzregeln bleiben erhalten.
 
-Dabei gilt:
+Tests sichern das gewünschte Verhalten, nicht überholte Implementierungsstrukturen. Tests entfallender Schnittstellen werden mit diesen entfernt oder angepasst; erforderliche Verhaltensprüfungen werden an die neue Grenze übernommen. Schemas ohne eigene Aufgabe, doppelte Dokumentation und veraltete Verweise werden gezielt bereinigt. Keine Löschung allein zur Herstellung grüner Tests oder besserer Coverage.
 
-- Die bestehende Suche bleibt unverändert.
-- Die Anwendung zeigt eine vorbereitete Frage an.
-- Die Frage enthält definierte Optionen.
-- Der Nutzer wählt eine Option.
-- Erst nach der Auswahl wird der Suchzustand geändert.
-- Erst danach wird gegebenenfalls eine neue Discover-Abfrage ausgelöst.
+Code, Aufrufer, Tests und Dokumentation werden in kleinen zusammenhängenden Schritten aktualisiert. Für Implementierungsschritte umfasst „grün“ Tests, Coverage-Prüfung, ESLint und Typecheck. Ein Dokumentationsbeschluss ist weder Implementierung noch Validierungsnachweis.
 
-Nicht unterstützte Wünsche erhalten den Status `unsupported`. Die Anwendung erfindet keine Ersatzfilter und startet keine alternativen Suchketten.
+## Execution status
 
-## Detailansicht
-
-Die Detailansicht lädt Basisinformationen zu einem Film oder einer Serie.
-
-Watch-Providers sind ein separater Endpoint und kein Teil des Basis-Detailabrufs. Reviews und Similar Titles gehören zur späteren B10-Ausbaustufe und sind nicht Teil des MVP-Suchkerns.
-
-## Architektur-Grenzen
-
-- TMDb-Aufrufe erfolgen ausschließlich über Nitro-Server-Routen.
-- Der Client ruft TMDb nicht direkt auf.
-- API-Keys bleiben im Server.
-- Zod ist die Single Source of Truth für Datenverträge.
-- TypeScript-Typen werden über `z.infer` abgeleitet.
-- Services erhalten explizite Dependencies.
-- Die Search-Domäne enthält reine Logik ohne Netzwerkzugriff.
-- Es gibt keine agentischen Suchabläufe, Modell-Tool-Loops oder automatische Retry-Ketten.
-
-## Offene Umsetzung
-
-Der aktuelle `main`-Stand enthält bereits:
-
-- Trending,
-- Movie-, TV-, Multi-, Personen- und Keyword-Suche,
-- Movie- und TV-Discover,
-- Movie- und TV-Details,
-- Movie- und TV-Watch-Providers.
-
-Noch nicht vorhanden ist der kontrollierte Suchfluss:
-
-- LLM-Parser-Endpunkt,
-- strukturierter Parser-Vertrag,
-- Guardrails,
-- Search-Domäne mit Reducer,
-- Klärungsflow,
-- Verbindung von Personen- und Keyword-Lookups zu Discover,
-- Übergang von Trending zu Discover.
-
-Diese Lücken sind Grundlage für die folgenden Umsetzungstasks.
+- 2026-11-17: Gemeinsamer Suchzustand und daraus abgeleitete Movie-/TV-Anfragen als Zielbild festgelegt.
+- WP 009 und WP 010 bilden die bestehende Implementierungsgrundlage. Diese Festlegung bestätigt keine vollständige produktive Parser-, Auflösungs-, Such- oder UI-Integration.
+- Nächster Dokumentationsschritt: WP 011, WP 014 und WP 012 sowie betroffene Einstiegsdokumente gezielt an dieses Zielbild angleichen. Detailverträge und dateigenaue Bereinigung bleiben zu prüfen.
+- Diese Änderung betrifft nur Dokumentation. Keine Schemas, Tests oder Laufzeitimplementierungen geändert; keine Tests, Coverage, ESLint oder Typecheck ausgeführt.
