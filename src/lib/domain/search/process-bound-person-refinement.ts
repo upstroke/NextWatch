@@ -17,11 +17,26 @@ import {
 } from './parser-continuation-binding';
 import type { ParserContinuationBindingContext } from './parser-continuation-binding';
 
-type BindingReason = Extract<ReturnType<typeof checkParserContinuationBinding>, { status: 'rejected' }>['reason'];
-type ActionReason = Extract<ReturnType<typeof applyPersonClarificationAction>, { status: 'rejected' }>['reason'];
-type ParserReason = Extract<ReturnType<typeof validateParserResponse>, { status: 'rejected' }>['reason'];
-type TransitionReason = Extract<ReturnType<typeof applyParserContinuationCommand> | ReturnType<typeof applyPendingQueryCommand>, { status: 'rejected' }>['reason'];
-type ReconcileReason = Extract<ReturnType<typeof reconcileParserContinuationBindings>, { status: 'rejected' }>['reason'];
+type BindingReason = Extract<
+  ReturnType<typeof checkParserContinuationBinding>,
+  { status: 'rejected' }
+>['reason'];
+type ActionReason = Extract<
+  ReturnType<typeof applyPersonClarificationAction>,
+  { status: 'rejected' }
+>['reason'];
+type ParserReason = Extract<
+  ReturnType<typeof validateParserResponse>,
+  { status: 'rejected' }
+>['reason'];
+type TransitionReason = Extract<
+  ReturnType<typeof applyParserContinuationCommand> | ReturnType<typeof applyPendingQueryCommand>,
+  { status: 'rejected' }
+>['reason'];
+type ReconcileReason = Extract<
+  ReturnType<typeof reconcileParserContinuationBindings>,
+  { status: 'rejected' }
+>['reason'];
 
 export type ProcessBoundPersonRefinementResult =
   | {
@@ -41,7 +56,11 @@ export type ProcessBoundPersonRefinementResult =
   | { status: 'rejected'; stage: 'action'; reason: ActionReason | 'unexpected-action-outcome' }
   | { status: 'rejected'; stage: 'invocation'; reason: 'invocation-mismatch' }
   | { status: 'rejected'; stage: 'parser'; reason: ParserReason }
-  | { status: 'rejected'; stage: 'interpretation'; reason: 'unsupported-interpretation' | 'target-mismatch' | 'unsupported-correction' }
+  | {
+      status: 'rejected';
+      stage: 'interpretation';
+      reason: 'unsupported-interpretation' | 'target-mismatch' | 'unsupported-correction';
+    }
   | { status: 'rejected'; stage: 'transition'; reason: TransitionReason }
   | { status: 'rejected'; stage: 'reconciliation'; reason: ReconcileReason }
   | { status: 'rejected'; stage: 'result'; reason: 'invalid-result' };
@@ -74,14 +93,25 @@ export function processBoundPersonRefinement(
   const stored = BoundPersonRefinementRequestSchema.safeParse(originalRequestInput);
   if (!stored.success) return { status: 'rejected', stage: 'request', reason: 'invalid-request' };
   const { association, action, invocation } = stored.data;
-  const checked = checkParserContinuationBinding(context, registryInput, association, 'question_answer');
-  if (checked.status === 'rejected') return { status: 'rejected', stage: 'binding', reason: checked.reason };
+  const checked = checkParserContinuationBinding(
+    context,
+    registryInput,
+    association,
+    'question_answer',
+  );
+  if (checked.status === 'rejected')
+    return { status: 'rejected', stage: 'binding', reason: checked.reason };
   const session = PersonClarificationSessionSchema.safeParse(context.personSession);
   const current = validateParserContinuation(context.continuation, context.state.pendingQueries);
   if (!session.success || !current.success)
     return { status: 'rejected', stage: 'binding', reason: 'invalid-context' };
-  const actionOutcome = applyPersonClarificationAction(context.state, session.data.activeQuestion, action);
-  if (actionOutcome.status === 'rejected') return { status: 'rejected', stage: 'action', reason: actionOutcome.reason };
+  const actionOutcome = applyPersonClarificationAction(
+    context.state,
+    session.data.activeQuestion,
+    action,
+  );
+  if (actionOutcome.status === 'rejected')
+    return { status: 'rejected', stage: 'action', reason: actionOutcome.reason };
   if (actionOutcome.status !== 'follow-up')
     return { status: 'rejected', stage: 'action', reason: 'unexpected-action-outcome' };
 
@@ -91,20 +121,29 @@ export function processBoundPersonRefinement(
     invocation.baseRevision !== context.state.revision ||
     invocation.sessionSequence !== session.data.sequence ||
     invocation.userInput !== action.text ||
-    active?.kind !== 'person' || active.pendingRef !== action.ref ||
-    originalTarget?.scope !== 'query' || originalTarget.criterion !== 'person' ||
+    active?.kind !== 'person' ||
+    active.pendingRef !== action.ref ||
+    originalTarget?.scope !== 'query' ||
+    originalTarget.criterion !== 'person' ||
     originalTarget.status !== 'needs_clarification' ||
     originalTarget.operation !== actionOutcome.request.operation ||
     originalTarget.query.text !== actionOutcome.request.query ||
     originalTarget.query.correction !== null
-  ) return { status: 'rejected', stage: 'invocation', reason: 'invocation-mismatch' };
+  )
+    return { status: 'rejected', stage: 'invocation', reason: 'invocation-mismatch' };
 
   const response = validateParserResponse(responseInput, invocation);
-  if (response.status === 'rejected') return { status: 'rejected', stage: 'parser', reason: response.reason };
+  if (response.status === 'rejected')
+    return { status: 'rejected', stage: 'parser', reason: response.reason };
   const items = response.proposal.groups.flatMap((group) => group.items);
   const item = items[0];
-  if (response.proposal.groups.length !== 1 || items.length !== 1 ||
-      item?.kind !== 'entity' || item.entityType !== 'person' || item.operation !== 'refine')
+  if (
+    response.proposal.groups.length !== 1 ||
+    items.length !== 1 ||
+    item?.kind !== 'entity' ||
+    item.entityType !== 'person' ||
+    item.operation !== 'refine'
+  )
     return { status: 'rejected', stage: 'interpretation', reason: 'unsupported-interpretation' };
   if (item.pendingRef !== action.ref)
     return { status: 'rejected', stage: 'interpretation', reason: 'target-mismatch' };
@@ -114,31 +153,49 @@ export function processBoundPersonRefinement(
   let state = context.state;
   let continuation = current.data;
   let queryChanged = false;
-  const invalidated: { queryRefs: string[]; intentionRefs: string[] } = { queryRefs: [], intentionRefs: [] };
-  const parent = continuation.intentions.find((entry) => entry.children.some(
-    (child) => child.ownership === 'canonical' && child.ref === action.ref,
-  ));
+  const invalidated: { queryRefs: string[]; intentionRefs: string[] } = {
+    queryRefs: [],
+    intentionRefs: [],
+  };
+  const parent = continuation.intentions.find((entry) =>
+    entry.children.some((child) => child.ownership === 'canonical' && child.ref === action.ref),
+  );
   if (parent) {
     const edit = applyParserContinuationCommand(state, continuation, {
-      operation: 'refine', baseRevision: state.revision, intentionRef: parent.ref,
-      expectedGeneration: parent.generation, queryRef: action.ref, query: item.query,
+      operation: 'refine',
+      baseRevision: state.revision,
+      intentionRef: parent.ref,
+      expectedGeneration: parent.generation,
+      queryRef: action.ref,
+      query: item.query,
     });
-    if (edit.status === 'rejected') return { status: 'rejected', stage: 'transition', reason: edit.reason };
+    if (edit.status === 'rejected')
+      return { status: 'rejected', stage: 'transition', reason: edit.reason };
     if (edit.status === 'applied') {
-      state = edit.state; continuation = edit.continuation; queryChanged = true;
+      state = edit.state;
+      continuation = edit.continuation;
+      queryChanged = true;
       invalidated.queryRefs = edit.invalidated.queryRefs;
       invalidated.intentionRefs = edit.invalidated.intentionRefs;
     }
   } else {
-    if (item.query.text.trim() !== actionOutcome.request.query && state.revision === Number.MAX_SAFE_INTEGER)
+    if (
+      item.query.text.trim() !== actionOutcome.request.query &&
+      state.revision === Number.MAX_SAFE_INTEGER
+    )
       return { status: 'rejected', stage: 'transition', reason: 'invalid-result' };
     const edit = applyPendingQueryCommand(state, {
-      entity: 'person', operation: 'change', baseRevision: state.revision,
+      entity: 'person',
+      operation: 'change',
+      baseRevision: state.revision,
       request: { ...actionOutcome.request, query: item.query.text },
     });
-    if (edit.status === 'rejected') return { status: 'rejected', stage: 'transition', reason: edit.reason };
+    if (edit.status === 'rejected')
+      return { status: 'rejected', stage: 'transition', reason: edit.reason };
     if (edit.status === 'applied') {
-      state = edit.state; queryChanged = true; invalidated.queryRefs.push(action.ref);
+      state = edit.state;
+      queryChanged = true;
+      invalidated.queryRefs.push(action.ref);
     }
   }
   const validState = SearchStateSchema.safeParse(state);
@@ -146,19 +203,36 @@ export function processBoundPersonRefinement(
   if (!validState.success || !validContinuation.success)
     return { status: 'rejected', stage: 'result', reason: 'invalid-result' };
 
-  const consumed = consumeParserContinuationBinding(context, registryInput, association, 'question_answer');
-  if (consumed.status === 'rejected') return { status: 'rejected', stage: 'consumption', reason: consumed.reason };
+  const consumed = consumeParserContinuationBinding(
+    context,
+    registryInput,
+    association,
+    'question_answer',
+  );
+  if (consumed.status === 'rejected')
+    return { status: 'rejected', stage: 'consumption', reason: consumed.reason };
   session.data.activeQuestion = null;
-  const reconciled = reconcileParserContinuationBindings({
-    expectedSessionRef: context.expectedSessionRef, state: validState.data,
-    continuation: validContinuation.data, personSession: session.data,
-  }, consumed.registry, invalidated.queryRefs);
+  const reconciled = reconcileParserContinuationBindings(
+    {
+      expectedSessionRef: context.expectedSessionRef,
+      state: validState.data,
+      continuation: validContinuation.data,
+      personSession: session.data,
+    },
+    consumed.registry,
+    invalidated.queryRefs,
+  );
   if (reconciled.status === 'rejected')
     return { status: 'rejected', stage: 'reconciliation', reason: reconciled.reason };
   return {
-    status: 'applied', queryChanged, requestRef: invocation.requestRef,
-    state: validState.data, continuation: validContinuation.data, session: session.data,
-    registry: reconciled.registry, consumedBindingRef: consumed.binding.bindingRef,
+    status: 'applied',
+    queryChanged,
+    requestRef: invocation.requestRef,
+    state: validState.data,
+    continuation: validContinuation.data,
+    session: session.data,
+    registry: reconciled.registry,
+    consumedBindingRef: consumed.binding.bindingRef,
     retiredBindingRefs: reconciled.status === 'reconciled' ? reconciled.retiredBindingRefs : [],
     invalidated,
   };

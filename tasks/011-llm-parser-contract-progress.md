@@ -6,19 +6,19 @@ The [work-package specification](../docs/work-packages/011-llm-parser-contract.m
 
 ## Implemented slices
 
-| Commit | Scope | Validation evidence |
-| --- | --- | --- |
-| `b2e8407` | Parser schemas, JSON Schema export, composition, response validation and tests | Subsequent user report after follow-ups |
-| `0400ce4` | Keyword-reference and capacity-context tests | Included in subsequent local green report |
-| `4eac220` | Explicit nullable-source guard | User confirmed warning gone and checks green; parser statement coverage reported as 87% |
-| `db830a5` | Bounded continuation ownership and canonical associations with tests | User reported checks green; no new numeric coverage |
-| `4e2a719` | Refine/discard schema, pure transition and tests | User-reported tests/typecheck/ESLint; historical green convention included coverage threshold |
-| `da318aa` | Person-session application function and tests | Historical tests passing; later foundation baseline reported green |
-| `ebe4c41` | Bounded binding schemas, pure helpers, limit and two unit suites | Foundation reported green after correction |
-| `c5d4b3e` | Removed unused domain Zod import only | Historical foundation checks green, including coverage under agreed convention |
-| `f6d9db2` | Registry reconciliation in edit application and extended tests | User-confirmed tests/typecheck/ESLint; coverage remained unconfirmed |
-| `fa026dc` | Bound canonical-person clarification actions and unit tests | User reported all tests passing; fresh typecheck/ESLint/coverage unreported |
-| `ab704c3` | Original-request schema, bound parsed person refinement and unit tests | User reported all tests passing; fresh typecheck/ESLint/coverage unreported |
+| Commit    | Scope                                                                          | Validation evidence                                                                           |
+| --------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `b2e8407` | Parser schemas, JSON Schema export, composition, response validation and tests | Subsequent user report after follow-ups                                                       |
+| `0400ce4` | Keyword-reference and capacity-context tests                                   | Included in subsequent local green report                                                     |
+| `4eac220` | Explicit nullable-source guard                                                 | User confirmed warning gone and checks green; parser statement coverage reported as 87%       |
+| `db830a5` | Bounded continuation ownership and canonical associations with tests           | User reported checks green; no new numeric coverage                                           |
+| `4e2a719` | Refine/discard schema, pure transition and tests                               | User-reported tests/typecheck/ESLint; historical green convention included coverage threshold |
+| `da318aa` | Person-session application function and tests                                  | Historical tests passing; later foundation baseline reported green                            |
+| `ebe4c41` | Bounded binding schemas, pure helpers, limit and two unit suites               | Foundation reported green after correction                                                    |
+| `c5d4b3e` | Removed unused domain Zod import only                                          | Historical foundation checks green, including coverage under agreed convention                |
+| `f6d9db2` | Registry reconciliation in edit application and extended tests                 | User-confirmed tests/typecheck/ESLint; coverage remained unconfirmed                          |
+| `fa026dc` | Bound canonical-person clarification actions and unit tests                    | User reported all tests passing; fresh typecheck/ESLint/coverage unreported                   |
+| `ab704c3` | Original-request schema, bound parsed person refinement and unit tests         | User reported all tests passing; fresh typecheck/ESLint/coverage unreported                   |
 
 Earlier green reports included coverage under the historical convention. The latest test-only report is not silently expanded to other checks. No fresh numeric coverage percentage or command logs were supplied. The assistant did not execute validation commands.
 

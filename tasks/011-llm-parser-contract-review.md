@@ -29,14 +29,14 @@ The assistant did not run tests, coverage, lint, typecheck, model evaluations or
 
 Original severity is retained for traceability, not as a claim that nothing has been implemented.
 
-| Finding | Original classification | Existing implementation evidence | Remaining closure work |
-| --- | --- | --- | --- |
-| WP011-R01 | Blocking | Bounded ownership, refine/discard transitions and person-session/registry coordination; bound actions and canonical parsed refinement | Linked acceptance, owned-result lifecycle, ownership transfer, pause/resume and compound acceptance |
-| WP011-R02 | Blocking | Existing canonical pending limits and bounded continuation storage | Protected reservation arithmetic, new competition, transfer and current-state acceptance mappings |
-| WP011-R03 | Blocking | Existing atomic domain transitions; narrow single-refinement response application | General mixed-result adapter, dependency/conflict units and retained unsupported/clarification work |
-| WP011-R04 | Blocking | Kind-specific parser context contracts; canonical person question binding, action processing and parsed refinement | Full response-to-action mappings, owned/non-person question authority and caller routing |
-| WP011-R05 | Required clarification | Dedicated parser schemas, JSON Schema export function, composer, validator, fixtures and unit suites | Complete field/fixture/caller alignment, canonical correction metadata and remaining export/acceptance verification |
-| WP011-R06 | Required clarification | Binding registry primitives, edit reconciliation and bounded person action/refinement consumption | Trusted result staging, complete invocation lifetime and current-state compound acceptance |
+| Finding   | Original classification | Existing implementation evidence                                                                                                      | Remaining closure work                                                                                              |
+| --------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| WP011-R01 | Blocking                | Bounded ownership, refine/discard transitions and person-session/registry coordination; bound actions and canonical parsed refinement | Linked acceptance, owned-result lifecycle, ownership transfer, pause/resume and compound acceptance                 |
+| WP011-R02 | Blocking                | Existing canonical pending limits and bounded continuation storage                                                                    | Protected reservation arithmetic, new competition, transfer and current-state acceptance mappings                   |
+| WP011-R03 | Blocking                | Existing atomic domain transitions; narrow single-refinement response application                                                     | General mixed-result adapter, dependency/conflict units and retained unsupported/clarification work                 |
+| WP011-R04 | Blocking                | Kind-specific parser context contracts; canonical person question binding, action processing and parsed refinement                    | Full response-to-action mappings, owned/non-person question authority and caller routing                            |
+| WP011-R05 | Required clarification  | Dedicated parser schemas, JSON Schema export function, composer, validator, fixtures and unit suites                                  | Complete field/fixture/caller alignment, canonical correction metadata and remaining export/acceptance verification |
+| WP011-R06 | Required clarification  | Binding registry primitives, edit reconciliation and bounded person action/refinement consumption                                     | Trusted result staging, complete invocation lifetime and current-state compound acceptance                          |
 
 ## WP011-R01 — Continuation ownership and lifecycle
 

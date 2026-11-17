@@ -1,4 +1,7 @@
-import { ParserContinuationSchema, validateParserContinuation } from '@lib/schemas/parser-continuation';
+import {
+  ParserContinuationSchema,
+  validateParserContinuation,
+} from '@lib/schemas/parser-continuation';
 import type { ParserContinuation } from '@lib/schemas/parser-continuation';
 import { PersonClarificationSessionSchema } from '@lib/schemas/person-clarification-session';
 import type { PersonClarificationSession } from '@lib/schemas/person-clarification-session';
@@ -7,13 +10,26 @@ import type { SearchState } from '@lib/schemas/search-state';
 import type { ParserContinuationBindingRegistry } from '@lib/schemas/parser-continuation-binding';
 import { applyPersonClarificationAction } from './apply-person-clarification-action';
 import type { ApplyPersonClarificationActionResult } from './apply-person-clarification-action';
-import { checkParserContinuationBinding, consumeParserContinuationBinding, reconcileParserContinuationBindings } from './parser-continuation-binding';
+import {
+  checkParserContinuationBinding,
+  consumeParserContinuationBinding,
+  reconcileParserContinuationBindings,
+} from './parser-continuation-binding';
 import type { ParserContinuationBindingContext } from './parser-continuation-binding';
 
-type BindingReason = Extract<ReturnType<typeof checkParserContinuationBinding>, { status: 'rejected' }>['reason'];
-type ReconcileReason = Extract<ReturnType<typeof reconcileParserContinuationBindings>, { status: 'rejected' }>['reason'];
+type BindingReason = Extract<
+  ReturnType<typeof checkParserContinuationBinding>,
+  { status: 'rejected' }
+>['reason'];
+type ReconcileReason = Extract<
+  ReturnType<typeof reconcileParserContinuationBindings>,
+  { status: 'rejected' }
+>['reason'];
 type ActionReason = Extract<ApplyPersonClarificationActionResult, { status: 'rejected' }>['reason'];
-type FollowUp = Pick<Extract<ApplyPersonClarificationActionResult, { status: 'follow-up' }>, 'action' | 'request'>;
+type FollowUp = Pick<
+  Extract<ApplyPersonClarificationActionResult, { status: 'follow-up' }>,
+  'action' | 'request'
+>;
 type CompleteProposal = {
   state: SearchState;
   continuation: ParserContinuation;
@@ -28,7 +44,11 @@ export type ProcessBoundPersonClarificationActionResult =
   | (CompleteProposal & { status: 'follow-up'; followUp: FollowUp })
   | { status: 'rejected'; stage: 'context' | 'binding' | 'consumption'; reason: BindingReason }
   | { status: 'rejected'; stage: 'action'; reason: ActionReason | 'unexpected-action-outcome' }
-  | { status: 'rejected'; stage: 'continuation'; reason: 'generation-exhausted' | 'invalid-continuation' }
+  | {
+      status: 'rejected';
+      stage: 'continuation';
+      reason: 'generation-exhausted' | 'invalid-continuation';
+    }
   | { status: 'rejected'; stage: 'reconciliation'; reason: ReconcileReason }
   | { status: 'rejected'; stage: 'result'; reason: 'invalid-result' };
 
@@ -52,9 +72,19 @@ export function processBoundPersonClarificationAction(
   associationInput: unknown,
   actionInput: unknown,
 ): ProcessBoundPersonClarificationActionResult {
-  const checked = checkParserContinuationBinding(context, registryInput, associationInput, 'question_answer');
+  const checked = checkParserContinuationBinding(
+    context,
+    registryInput,
+    associationInput,
+    'question_answer',
+  );
   if (checked.status === 'rejected') {
-    const stage = checked.reason === 'invalid-registry' || checked.reason === 'invalid-context' || checked.reason === 'session-mismatch' ? 'context' : 'binding';
+    const stage =
+      checked.reason === 'invalid-registry' ||
+      checked.reason === 'invalid-context' ||
+      checked.reason === 'session-mismatch'
+        ? 'context'
+        : 'binding';
     return { status: 'rejected', stage, reason: checked.reason };
   }
   if (checked.binding.purpose !== 'question_answer')
@@ -64,8 +94,13 @@ export function processBoundPersonClarificationAction(
   if (!continuation.success || !session.success)
     return { status: 'rejected', stage: 'context', reason: 'invalid-context' };
 
-  const outcome = applyPersonClarificationAction(context.state, session.data.activeQuestion, actionInput);
-  if (outcome.status === 'rejected') return { status: 'rejected', stage: 'action', reason: outcome.reason };
+  const outcome = applyPersonClarificationAction(
+    context.state,
+    session.data.activeQuestion,
+    actionInput,
+  );
+  if (outcome.status === 'rejected')
+    return { status: 'rejected', stage: 'action', reason: outcome.reason };
   if (outcome.status !== 'applied' && outcome.status !== 'follow-up')
     return { status: 'rejected', stage: 'action', reason: 'unexpected-action-outcome' };
 
@@ -75,12 +110,18 @@ export function processBoundPersonClarificationAction(
   if (outcome.status === 'applied') {
     const ref = checked.binding.target.queryRef;
     invalidated.queryRefs.push(ref);
-    const parent = nextContinuation.intentions.find((entry) => entry.children.some((child) => child.ownership === 'canonical' && child.ref === ref));
+    const parent = nextContinuation.intentions.find((entry) =>
+      entry.children.some((child) => child.ownership === 'canonical' && child.ref === ref),
+    );
     if (parent) {
-      const children = parent.children.filter((child) => child.ownership !== 'canonical' || child.ref !== ref);
+      const children = parent.children.filter(
+        (child) => child.ownership !== 'canonical' || child.ref !== ref,
+      );
       invalidated.intentionRefs.push(parent.ref);
       if (children.length === 0) {
-        nextContinuation.intentions = nextContinuation.intentions.filter((entry) => entry.ref !== parent.ref);
+        nextContinuation.intentions = nextContinuation.intentions.filter(
+          (entry) => entry.ref !== parent.ref,
+        );
       } else {
         if (parent.generation === Number.MAX_SAFE_INTEGER)
           return { status: 'rejected', stage: 'continuation', reason: 'generation-exhausted' };
@@ -93,26 +134,44 @@ export function processBoundPersonClarificationAction(
   if (!validContinuation.success)
     return { status: 'rejected', stage: 'continuation', reason: 'invalid-continuation' };
 
-  const consumed = consumeParserContinuationBinding(context, registryInput, associationInput, 'question_answer');
+  const consumed = consumeParserContinuationBinding(
+    context,
+    registryInput,
+    associationInput,
+    'question_answer',
+  );
   if (consumed.status === 'rejected')
     return { status: 'rejected', stage: 'consumption', reason: consumed.reason };
   session.data.activeQuestion = null;
-  const reconciled = reconcileParserContinuationBindings({
-    expectedSessionRef: context.expectedSessionRef, state: nextState,
-    continuation: validContinuation.data, personSession: session.data,
-  }, consumed.registry, invalidated.queryRefs);
+  const reconciled = reconcileParserContinuationBindings(
+    {
+      expectedSessionRef: context.expectedSessionRef,
+      state: nextState,
+      continuation: validContinuation.data,
+      personSession: session.data,
+    },
+    consumed.registry,
+    invalidated.queryRefs,
+  );
   if (reconciled.status === 'rejected')
     return { status: 'rejected', stage: 'reconciliation', reason: reconciled.reason };
 
   const validState = SearchStateSchema.safeParse(nextState);
   if (!validState.success) return { status: 'rejected', stage: 'result', reason: 'invalid-result' };
   const proposal: CompleteProposal = {
-    state: validState.data, continuation: validContinuation.data, session: session.data,
-    registry: reconciled.registry, consumedBindingRef: consumed.binding.bindingRef,
+    state: validState.data,
+    continuation: validContinuation.data,
+    session: session.data,
+    registry: reconciled.registry,
+    consumedBindingRef: consumed.binding.bindingRef,
     retiredBindingRefs: reconciled.status === 'reconciled' ? reconciled.retiredBindingRefs : [],
     invalidated,
   };
   return outcome.status === 'follow-up'
-    ? { status: 'follow-up', ...proposal, followUp: { action: outcome.action, request: outcome.request } }
+    ? {
+        status: 'follow-up',
+        ...proposal,
+        followUp: { action: outcome.action, request: outcome.request },
+      }
     : { status: 'applied', ...proposal };
 }
