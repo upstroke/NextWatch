@@ -2,49 +2,52 @@
 
 ## Status and scope
 
-- Recorded: 2026-11-16.
+- Recorded: 2026-11-16; R01 design progress recorded 2026-11-17.
 - Reviewed branch: `feat/011-llm-parser-contract`.
 - Reviewed baseline: `5fa186d4a52ed267b70691f5c117e4b5ca1cc8f4`.
-- Verdict: not ready for schema/adapter implementation; four blocking design gaps and two additional required clarifications remain open.
+- Verdict: not ready for schema/adapter implementation. R01 design is specified for re-review; no finding is closed by this update.
 - Product authority: [WP 011 specification](../docs/work-packages/011-llm-parser-contract.md).
 - Review target: [implementation plan and concrete contract draft](011-llm-parser-contract-plan.md).
-- This file tracks findings and closure evidence, not an alternative product specification. Proposed remedies are not approved schema designs or implemented behavior. Settled product decisions remain unchanged.
-- Recording findings does not approve their fixes, application implementation, a PR or a merge.
+- This file tracks findings and closure evidence, not an alternative product specification. Settled product decisions remain unchanged. R01's accepted direction is recorded in plan section 4.1; other proposed remedies are not approved schema designs or implemented behavior.
+- Recording findings or an accepted design direction does not approve application implementation, a PR or a merge.
 
-The review was static and read-only. Directly read at the baseline: the specification, plan, `src/lib/schemas/search-state.ts`, `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/pending-operations.ts`, `src/lib/domain/search/apply-intent.ts` and `src/lib/domain/search/extraction.ts`. This was a targeted contract review, not a complete caller/test audit. No tests, coverage, ESLint, typecheck, schema export or live provider checks ran. Remote inspection does not establish local working-tree cleanliness.
+The original review was static and read-only. Directly read at the baseline: the specification, plan, `src/lib/schemas/search-state.ts`, `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/pending-operations.ts`, `src/lib/domain/search/apply-intent.ts` and `src/lib/domain/search/extraction.ts`. This was a targeted contract review, not a complete caller/test audit. No tests, coverage, ESLint, typecheck, schema export or live provider checks ran. Remote inspection does not establish local working-tree cleanliness.
 
 ## Work queue
 
-All findings are open. Blocking means the affected design cannot safely be implemented as currently specified; the additional clarifications are also required before final contract approval.
+No finding is closed. Blocking means the affected design cannot safely be implemented as currently specified; the additional clarifications are also required before final contract approval.
 
-| ID        | Classification         | Finding                                                                    | Status |
-| --------- | ---------------------- | -------------------------------------------------------------------------- | ------ |
-| WP011-R01 | Blocking               | Continuation lifecycle and compound-request ownership incomplete           | Open   |
-| WP011-R02 | Blocking               | Reservation accounting for unresolved multi-person replacements incomplete | Open   |
-| WP011-R03 | Blocking               | Cross-group dependency and conflict policy incomplete                      | Open   |
-| WP011-R04 | Blocking               | Active clarification projection assumes an entity pending reference        | Open   |
-| WP011-R05 | Required clarification | Reusable fields, enums, reference scopes and bounds not fully defined      | Open   |
-| WP011-R06 | Required clarification | Staged resolution validity and revision association incomplete             | Open   |
+| ID | Classification | Finding | Status |
+| --- | --- | --- | --- |
+| WP011-R01 | Blocking until re-review | Continuation lifecycle and compound-request ownership | Design specified; re-review pending |
+| WP011-R02 | Blocking | Reservation accounting for unresolved multi-person replacements incomplete | Open |
+| WP011-R03 | Blocking | Cross-group dependency and conflict policy incomplete | Open |
+| WP011-R04 | Blocking | Active clarification projection assumes an entity pending reference | Open |
+| WP011-R05 | Required clarification | Reusable fields, enums, reference scopes and bounds not fully defined | Open |
+| WP011-R06 | Required clarification | Staged resolution validity and revision association incomplete | Open |
 
 Suggested order: R01 and R04 establish ownership/context; R02 and R06 establish capacity/result validity; R03 completes coordination; R05 consolidates the final field matrix. These topics can be designed together where they depend on each other. Do not close a finding just because a paragraph was added.
 
 ## WP011-R01 — Continuation lifecycle and compound-request ownership
 
-Location: plan sections 2 and 4.
+Original location: plan sections 2 and 4. Resolution design: [plan section 4.1](011-llm-parser-contract-plan.md#41-r01--continuation-ownership-and-lifecycle).
 
-Finding: The draft names compound intentions, child references and staged resolutions without a complete record/lifecycle contract. Existing `PendingPersonQuerySchema` carries one query and, for a replacement, one accepted source. Multiple independently accepted requests do not preserve atomic one-to-many replacement.
+Finding: The draft named compound intentions, child references and staged resolutions without a complete record/lifecycle contract. Existing `PendingPersonQuerySchema` carries one query and, for a replacement, one accepted source. Multiple independently accepted requests do not preserve atomic one-to-many replacement.
 
 Risk: refinement, discard or completion could lose a destination, detach a child from its parent or remove the accepted source too early.
 
-Proposed direction: define a bounded continuation record with the common operation, ordered child queries, source binding, processing states and question association. Reference canonical accepted state; do not duplicate accepted criteria or create hidden slots.
+Progress on 2026-11-17: the user accepted the proposed single-owner parent/child design. Plan section 4.1 specifies simple canonical pending requests versus continuation-owned compound intentions, operation-specific source binding, three child states, generations, question association, refinement/discard/pause/commit/transfer behavior and bounds. No runtime implementation or tests were performed. R02, R03, R04, R05 and R06 remain open; their rules must not be inferred from R01.
 
-Closure checklist:
+Design authoring checklist (checked means specified, not independently re-reviewed or implemented):
 
-- [ ] Specify required fields and allowed states for parent intentions and child queries.
-- [ ] Define parent/child reference uniqueness, target types and discard/refinement scope.
-- [ ] Define completion, cancellation, invalidation and transfer to existing transitions.
-- [ ] Specify bounds and unchanged-state behavior at full capacity without truncation or dropped wishes.
-- [ ] Add contract examples/test cases for refining and discarding a child while preserving the parent operation and unrelated work.
+- [x] Specify required conceptual fields and allowed states for parent intentions and child queries.
+- [x] Define parent/child reference uniqueness, target types and discard/refinement scope.
+- [x] Define completion, cancellation, invalidation and transfer to existing transitions, with compound acceptance explicitly requiring an extension.
+- [x] Specify bounds and unchanged-state behavior at full capacity without truncation or dropped wishes.
+- [x] Add contract examples/test cases for refining and discarding a child while preserving the parent operation and unrelated work.
+- [ ] Re-review section 4.1 and all seven scenarios against the specification and adjacent findings before design closure.
+
+Seven specified scenarios: partial resolution retains source; refining one child preserves siblings; discarding one child preserves the replacement; discarding the final child retains the accepted source; pause/resume rejects the old question; ownership transfer creates no duplicate query/reservation; full capacity rejects without eviction and still permits cleanup. These are expected contract outcomes, not automated test results.
 
 ## WP011-R02 — Multi-replacement reservation accounting
 
@@ -143,11 +146,11 @@ For each finding, record the revised contract location, reviewed examples/tests,
 
 No application implementation is authorized by this record. Close or explicitly and safely defer every finding before requesting the affected implementation approval. Update the main plan/specification with accepted resolutions; do not let this checklist become a competing contract.
 
-| Finding   | Resolution location | Design review / closure commit | Implementation evidence |
-| --------- | ------------------- | ------------------------------ | ----------------------- |
-| WP011-R01 | Pending             | Open                           | Not implemented         |
-| WP011-R02 | Pending             | Open                           | Not implemented         |
-| WP011-R03 | Pending             | Open                           | Not implemented         |
-| WP011-R04 | Pending             | Open                           | Not implemented         |
-| WP011-R05 | Pending             | Open                           | Not implemented         |
-| WP011-R06 | Pending             | Open                           | Not implemented         |
+| Finding | Resolution location | Design review / closure commit | Implementation evidence |
+| --- | --- | --- | --- |
+| WP011-R01 | Plan section 4.1 | Design specified 2026-11-17; re-review pending; no closure commit | Not implemented; seven scenarios specified, not run |
+| WP011-R02 | Pending | Open | Not implemented |
+| WP011-R03 | Pending | Open | Not implemented |
+| WP011-R04 | Pending | Open | Not implemented |
+| WP011-R05 | Pending | Open | Not implemented |
+| WP011-R06 | Pending | Open | Not implemented |

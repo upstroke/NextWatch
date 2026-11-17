@@ -4,6 +4,7 @@
 
 - Status: Draft — concrete contract proposed; application implementation awaiting approval.
 - Created and consolidated: 2026-11-16.
+- R01 continuation design specified: 2026-11-17, following explicit user acceptance of the proposed ownership/lifecycle design. Design re-review remains open; no runtime implementation is approved by this documentation change.
 - Target branch: `feat/011-llm-parser-contract`; documentation/review baseline: `13747850705c67df124976504b53fe19303a41d2`.
 - Product authority: [WP 011](../docs/work-packages/011-llm-parser-contract.md). The [supplement](../docs/work-packages/011-parser-contract-decisions.md) is retained as historical evidence, not a competing specification.
 - Saving this plan approves documentation only, not implementation, code commit, PR, merge or provider/CLI work. Proposed fields and limits below are not implemented APIs.
@@ -15,17 +16,17 @@ The earlier targeted review used `5c85d69`, with follow-up at `a6fe74b`. The rec
 
 Directly inspected for this consolidation at `1374785`: AGENTS, WP 011, the accessible current plan, `search-state.ts`, `search-transition.ts`, `tests/unit/domain/search/pending-operations.spec.ts`, plus original plan history and instruction translation diff. The current plan response was truncated in the file map; the original `99b5a2d` patch supplied the original remaining sequence, matrix and gates. Do not claim a complete read of every intervening plan revision or a full test/caller audit.
 
-| Area                    | Evidence and disposition                                                                                                                                                                                                                       |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Accepted/pending people | `search-state.ts` supports singular replacement query/target and one replacement per source. Multi-replacement requires a planned extension, not repeated independent acceptance.                                                              |
-| Trusted acceptance      | `search-transition.ts` accepts one person per request. `pending-operations.spec.ts` covers ID deduplication, source retention, one-to-one replacement, stale/wrong-kind references, bounds and mutation isolation. Preserve those regressions. |
-| Keywords                | Inspected state supports pending additions; inspected transition file has no controlled keyword acceptance. Targeted/whole-selection keyword replacement is a gap, not existing support.                                                       |
-| Existing application    | Prior review: `applyIntent()` applies filter groups atomically; `extraction.ts` whole-list replacement differs from targeted replacement. Reuse rather than bypass.                                                                            |
-| Clarification           | Prior review: lifecycle/correction paths assume the first pending person. Explicit non-first targeting needs focused caller/test inspection. Source offers need an eligible matching subset rather than every accepted person.                 |
-| Guardrails              | Reuse replacement-target, year-conflict and keyword-meaning guards. Preserve request, revision and question-sequence checks.                                                                                                                   |
-| Genres                  | Active/inactive genres form one unique bounded wish in the directly read state schema. Exact catalog, normalization and whole-selection mapping still need focused inspection.                                                                 |
-| Prompt                  | Translation commit `166e144` changed the saved draft to English, revision `0.1.1-draft`. The old plan's German/0.1.0 description was historical, not current. No runtime connection.                                                           |
-| Tooling                 | Prior review recorded Zod 4.6.7 and native `z.toJSONSchema()` as the starting approach. Installation and concrete export/provider compatibility remain unverified.                                                                             |
+| Area | Evidence and disposition |
+| --- | --- |
+| Accepted/pending people | `search-state.ts` supports singular replacement query/target and one replacement per source. Multi-replacement requires a planned extension, not repeated independent acceptance. |
+| Trusted acceptance | `search-transition.ts` accepts one person per request. `pending-operations.spec.ts` covers ID deduplication, source retention, one-to-one replacement, stale/wrong-kind references, bounds and mutation isolation. Preserve those regressions. |
+| Keywords | Inspected state supports pending additions; inspected transition file has no controlled keyword acceptance. Targeted/whole-selection keyword replacement is a gap, not existing support. |
+| Existing application | Prior review: `applyIntent()` applies filter groups atomically; `extraction.ts` whole-list replacement differs from targeted replacement. Reuse rather than bypass. |
+| Clarification | Prior review: lifecycle/correction paths assume the first pending person. Explicit non-first targeting needs focused caller/test inspection. Source offers need an eligible matching subset rather than every accepted person. |
+| Guardrails | Reuse replacement-target, year-conflict and keyword-meaning guards. Preserve request, revision and question-sequence checks. |
+| Genres | Active/inactive genres form one unique bounded wish in the directly read state schema. Exact catalog, normalization and whole-selection mapping still need focused inspection. |
+| Prompt | Translation commit `166e144` changed the saved draft to English, revision `0.1.1-draft`. The old plan's German/0.1.0 description was historical, not current. No runtime connection. |
+| Tooling | Prior review recorded Zod 4.6.7 and native `z.toJSONSchema()` as the starting approach. Installation and concrete export/provider compatibility remain unverified. |
 
 Remote inspection does not establish local cleanliness, unpushed changes or validation success. No runtime commands were run for this consolidation.
 
@@ -35,13 +36,13 @@ Use an internal request envelope and a separate model-visible projection. All ob
 
 ### Internal envelope, not model output
 
-| Field             | Proposed meaning                                                             |
-| ----------------- | ---------------------------------------------------------------------------- |
-| `requestRef`      | Application-issued parser invocation reference.                              |
-| `baseRevision`    | Existing state revision captured before the call.                            |
+| Field | Proposed meaning |
+| --- | --- |
+| `requestRef` | Application-issued parser invocation reference. |
+| `baseRevision` | Existing state revision captured before the call. |
 | `sessionSequence` | Application-owned generation for session-only changes and replay protection. |
-| `context`         | Immutable projection actually supplied to this invocation.                   |
-| `userInput`       | Current ephemeral input; never permanent conversation storage.               |
+| `context` | Immutable projection actually supplied to this invocation. |
+| `userInput` | Current ephemeral input; never permanent conversation storage. |
 
 Consume the invocation once. Validate both criteria and session association, including cancelled/replaced questions at unchanged criteria revision. A reset cannot revive old associations.
 
@@ -56,16 +57,16 @@ Context fields:
 - `capabilities`: allowed fields, operations and valid scalar values/ranges derived from the existing catalog; not blanket permission to emit identity IDs.
 - `criteria`: scalar values and relevant accepted criterion descriptors `{ref, criterion, label, activity}`. `criterion` is person/keyword/genre; `activity` is active/inactive. IDs remain in the application binding, not the model-facing descriptor.
 - `pending`: ordered descriptors `{ref, criterion, operation, queries, source, status}` derived from existing state/continuation records. `source` is null or a readable description and supplied accepted-target reference where known. No duplicate authoritative state store.
-- `activeClarification`: null or `{pendingRef, subject}`. A null value forbids interpreting a bare name as an answer to a closed question. UI candidate selection uses application actions, not model identity selection.
+- `activeClarification`: null or `{pendingRef, subject}`. A null value forbids interpreting a bare name as an answer to a closed question. UI candidate selection uses application actions, not model identity selection. This projection remains subject to R04; section 4.1 defines association only, not the missing clarification-kind variants.
 - `genreCatalogs`: complete application-supplied Movie/TV catalogs projected as supported labels/aliases and media-type association. Catalog mapping remains application-owned; do not collapse same labels across media types without validation.
 
 No authoritative revision, question token, credential, result cache or full history needs to be exposed to the model. Explicit reference to another pending request takes priority over the active question.
 
 ### Proposed technical bounds
 
-These require technical approval, not changes to product criterion limits: input 8,000 characters; query/label/target wording 512; opaque reference 128; at most 32 response groups, 64 total interpretation items and 64 total query entries per response; at most 64 retained continuation query entries and 64,000 retained text characters per session. Count all nesting, not only each array separately. Provider/output-byte bounds must also be configured before connection.
+Input 8,000 characters; query/label/target wording 512; opaque reference 128; at most 32 response groups, 64 total interpretation items and 64 total query entries per response. Response/input limits remain subject to the final field review. R01's accepted continuation bounds and full-capacity behavior are specified in section 4.1: 64 open intentions, 64 total owned/linked child queries counted once, and 64,000 characters of retained continuation text. None of these enlarges product criterion limits. Count all nesting, not only each array separately. Provider/output-byte bounds must also be configured before connection.
 
-Do not truncate input, names, response arrays or pending work to fit. Reject over-capacity composition/application without changing state/session; preserve the current input in the caller's ephemeral editor and return a structured capacity fact. Do not call the model if required context cannot be supplied intact. Finalize full-capacity UX and concrete schema bounds before coding the envelope.
+Do not truncate input, names, response arrays or pending work to fit. Reject over-capacity composition/application without changing state/session; preserve the current input in the caller's ephemeral editor and return a structured capacity fact. Do not call the model if required context cannot be supplied intact. Section 4.1 defines the continuation full-capacity rule; final wire-schema bounds remain part of R05.
 
 ## 3. Proposed response contract
 
@@ -81,24 +82,24 @@ Reusable accepted-source selector: either `{mode: "reference", ref}` for a suppl
 
 ### Operation-specific variants
 
-| Variant                 | Required additional fields                                                                                                                                                                                                   |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`, `set`         | `field` and typed `value`; mediaType movie/tv/all, minRating number 0–10, minYear/maxYear integer 1900–2100, sortBy one of the existing two values. Implement as field-dependent strict variants, not a broad cross-product. |
-| `filter`, `remove`      | `field` restricted to optional minRating/minYear/maxYear; no value. Reuse domain default/removal semantics after confirming the existing mapping. No undefined media type or sort order.                                     |
-| `entity`, `add`         | `entityType` person/keyword and non-empty `queries` array. Related additions remain together for overflow handling.                                                                                                          |
-| `entity`, `refine`      | `entityType`, supplied `pendingRef` and one `query`. Reference must designate the exact refinable pending query, including an application-projected child query of a compound intention.                                     |
-| `entity`, `replace`     | `entityType`, `source` selector and non-empty `queries`. One person source may have several replacements. Keyword mapping requires the planned extension.                                                                    |
-| `entity`, `remove`      | `entityType`, `source` selector; no replacement queries.                                                                                                                                                                     |
-| `entity`, `discard`     | `entityType` and supplied `pendingRef`; no accepted source. Discard scope is exactly the referenced pending intention/query as described by the application, not all pending work.                                           |
-| `entity`, `replace_all` | `entityType` restricted to keyword and non-empty `queries`; implicit target is the complete keyword selection. No person replace_all is introduced.                                                                          |
-| `genre`, `add`          | Non-empty `queries`; query correction is a hint, mapping comes from supplied catalogs.                                                                                                                                       |
-| `genre`, `refine`       | Supplied genre `pendingRef` and one `query`, for retained unresolved genre intentions.                                                                                                                                       |
-| `genre`, `replace`      | Accepted-genre `source` selector and non-empty `queries`.                                                                                                                                                                    |
-| `genre`, `remove`       | Accepted-genre `source` selector.                                                                                                                                                                                            |
-| `genre`, `discard`      | Supplied genre `pendingRef`.                                                                                                                                                                                                 |
-| `genre`, `replace_all`  | Non-empty `queries`; applies to the complete active/inactive selection.                                                                                                                                                      |
-| `clarification`         | `subject`, `reason`, `relatedPendingRef` (supplied ref or null). Reasons: missing_value, ambiguous_meaning, ambiguous_reference. Subject identifies the criterion or workflow. No generated UI question/options.             |
-| `unsupported`           | `reason`: unsupported_criterion or unsupported_operation. The common excerpt preserves the requested part; no invented substitute.                                                                                           |
+| Variant | Required additional fields |
+| --- | --- |
+| `filter`, `set` | `field` and typed `value`; mediaType movie/tv/all, minRating number 0–10, minYear/maxYear integer 1900–2100, sortBy one of the existing two values. Implement as field-dependent strict variants, not a broad cross-product. |
+| `filter`, `remove` | `field` restricted to optional minRating/minYear/maxYear; no value. Reuse domain default/removal semantics after confirming the existing mapping. No undefined media type or sort order. |
+| `entity`, `add` | `entityType` person/keyword and non-empty `queries` array. Related additions remain together for overflow handling. |
+| `entity`, `refine` | `entityType`, supplied `pendingRef` and one `query`. Reference must designate the exact refinable pending query, including an application-projected child query of a compound intention. |
+| `entity`, `replace` | `entityType`, `source` selector and non-empty `queries`. One person source may have several replacements. Keyword mapping requires the planned extension. |
+| `entity`, `remove` | `entityType`, `source` selector; no replacement queries. |
+| `entity`, `discard` | `entityType` and supplied `pendingRef`; no accepted source. Discard scope is exactly the referenced pending intention/query as described by the application, not all pending work. |
+| `entity`, `replace_all` | `entityType` restricted to keyword and non-empty `queries`; implicit target is the complete keyword selection. No person replace_all is introduced. |
+| `genre`, `add` | Non-empty `queries`; query correction is a hint, mapping comes from supplied catalogs. |
+| `genre`, `refine` | Supplied genre `pendingRef` and one `query`, for retained unresolved genre intentions. |
+| `genre`, `replace` | Accepted-genre `source` selector and non-empty `queries`. |
+| `genre`, `remove` | Accepted-genre `source` selector. |
+| `genre`, `discard` | Supplied genre `pendingRef`. |
+| `genre`, `replace_all` | Non-empty `queries`; applies to the complete active/inactive selection. |
+| `clarification` | `subject`, `reason`, `relatedPendingRef` (supplied ref or null). Reasons: missing_value, ambiguous_meaning, ambiguous_reference. Subject identifies the criterion or workflow. No generated UI question/options. |
+| `unsupported` | `reason`: unsupported_criterion or unsupported_operation. The common excerpt preserves the requested part; no invented substitute. |
 
 An empty whole-selection replacement is not the encoding for removal of everything; an explicit clear-all contract is deferred. Preserve such input as clarification rather than guessing or advertising an unimplemented operation. Cancellation/reset/resumption and search are not arbitrary executable parser commands. Their exact free-text interpretation mapping remains a gate; labelled controls retain the existing application-owned workflow.
 
@@ -134,18 +135,85 @@ Validate completion/status, JSON, the entire external schema and request/context
 
 Use a single pure `apply-parser-result.ts` entry point with explicit state/session/context/catalog inputs and reference allocation dependency. Work on copies; return validated next state/session and outcome facts. Preserve transition-level revision semantics; synchronous new commands use the immediately preceding transition revision, never rebase old asynchronous results. Caller commits state/session together under concurrency control.
 
-Retain compound/overflow intentions in a bounded ephemeral envelope, referencing canonical state rather than copying accepted filters. Application-issued child references may address individual unresolved terms without losing their parent operation. Track the ordered original/corrected queries, source binding, staged trusted resolution facts and active question association. These are not extra accepted slots. Resolve exact envelope schema, session generation and full-capacity behavior before implementation.
+Section 4.1 specifies the accepted R01 ownership/lifecycle direction. It does not close R02 capacity reservations, R03 cross-group coordination, R04 clarification projections, R05 final wire fields or R06 staged-result validity. Do not implement those gaps by inference.
 
 Expected semantic blockers retain the entire affected group; independently valid groups may proceed. Unresolved replacements keep previous values. Unsupported parts are reported, never marked fulfilled or silently ignored at search readiness. Unexpected internal inconsistency rejects the entire working-copy result.
 
 Multi-person replacement must not be implemented by calling singular acceptance repeatedly: stage trusted resolutions, then validate/deduplicate the complete final set plus reservations and commit the source/removals/additions atomically. Handle destinations already accepted, equal names/different IDs, source included in destinations, overflow and stale staged results. Whole genre/keyword replacement likewise retains previous selection until complete validation. WP 014 supplies provenance; no model IDs cross acceptance.
+
+### 4.1 R01 — Continuation ownership and lifecycle
+
+Accepted direction: 2026-11-17. Design specified; re-review pending. Internal field names describe the contract design, not existing APIs or model-authoritative state.
+
+#### Single ownership
+
+Existing supported simple requests remain canonical in `SearchState.pendingQueries`. A continuation may link to such a request, but must not keep an independently editable copy of its query or resolution state. Compound replacements and intentions not yet admissible to regular pending state are owned by bounded ephemeral continuation context. Accepted criteria remain canonical in SearchState.
+
+A child is either owned by continuation or linked to a canonical pending request, never both. The application resolves a link to the canonical record; a missing/wrong-kind link is rejected. Parent metadata records grouping, not another accepted-state store. A transfer between owners removes the old record, installs the new one and updates bindings in one validated state/session transition. Reject the whole transfer if validation fails; never leave a duplicate or a dangling child. Reuse existing transitions where supported; compound atomic acceptance needs the already planned extension.
+
+A compound replacement's children are not independently inserted as pending additions, since that would change the operation and capacity semantics. Simple requests require no artificial parent unless grouping is actually needed.
+
+#### Intention structure
+
+An open continuation intention requires `ref`, `criterion`, `operation`, `source`, ordered `children` and `generation`. Criterion is person, keyword or genre. Supported operations follow the operation matrix; no generic arbitrary action is added.
+
+Use operation-specific source shapes: targeted replacement requires either a valid application binding to its accepted source or the preserved unresolved source description. Additions and whole-selection replacements have no individual replacement source. The exact serialized discriminants are finalized under R05. Accepted records are referenced, never copied as an alternative authority.
+
+`children` is non-empty for every stored open intention. Each child has its own application-issued reference and generation. An owned child carries the original query plus nullable correction hint and one of three exclusive states:
+
+- `unresolved`: no currently valid resolution fact.
+- `needs_clarification`: ambiguity or no match, with the matching reason/context.
+- `resolved`: a trusted resolution fact has been staged; this does not mean accepted as a search criterion.
+
+A linked child reads its query/lifecycle from canonical pending state rather than duplicating those fields. Trusted results are internal application facts, never model-supplied identities. Exact provenance/result validity is R06. Transport attempt state remains with processing orchestration; a technical error does not discard the request or impersonate no-match.
+
+Expose blockers such as unresolved source, unresolved child or capacity question as an evaluation of current intention/state, not an independently editable competing lifecycle status. Multiple blockers may apply. Ready means every remaining child is validly resolved and all operation prerequisites pass; readiness alone does not authorize search.
+
+#### References and question association
+
+Parent and child references are application-issued, unique across the session's open-request namespace and not reused during the same session lifetime. A linked child uses the canonical request reference rather than allocating a second identity for the same query. Scope is explicit: a parent reference targets the whole intention; a child reference targets that part only.
+
+Bind an active question to its parent when present, its child when applicable, and the relevant generation. The existing clarification mechanism owns the question; continuation does not store a second independently mutable question. R04 defines the complete question-kind projections. A fresh session association must not let old answers become valid after reset; detailed stale-result rules remain R06.
+
+#### Lifecycle transitions
+
+1. Create: allocate references, preserve query order and source wording/binding, validate bounds and ownership before recording anything. An ambiguous source is clarified first without losing destination queries.
+2. Refine a child: update only its query, advance its generation and the parent's generation, invalidate that child's candidates/result and retire any question bound to the old affected context. Preserve siblings and source. No source is removed. R06 determines validity of retained sibling facts after other changes.
+3. Resolve a child: record a trusted result for that child without accepting one destination of a compound replacement. A no-match/ambiguous outcome keeps the same child for clarification.
+4. Discard a child: remove exactly that requirement, advance the parent generation, retire affected bindings and reevaluate the remaining common operation. Never turn its remaining destinations into unrelated additions. If no children remain, discard the parent; an empty replacement is never interpreted as removal of the source.
+5. Discard a parent: remove its owned children and detach/remove its own linked pending requests through validated transitions, plus their question/result associations. Preserve unrelated work and accepted criteria. A child cannot be shared by two parents with competing ownership.
+6. Pause clarification: preserve intention and children, close the active question and require deliberate resumption. Pause is not discard and does not silently reactivate a sibling question. A bare new input cannot answer the closed question.
+7. Commit: after all remaining children are resolved, revalidate source, current capacity and other prerequisites, then apply the full replacement/selection and remove its continuation and related bindings in the same controlled transition. A sequence of independently committed singular replacements is forbidden. Independent additions retain their existing semantics; this rule does not make every list of additions an atomic replacement.
+8. Finish: completed/discarded intentions are absent from open work. Return bounded outcome facts to the caller, not a permanent conversation/event history. Prevent reference reuse through application allocation/session association rather than unbounded retained terminal records.
+
+#### Bounds and full-capacity behavior
+
+At most 64 open continuation intentions, 64 total owned or linked child queries counted once, and 64,000 characters of retained continuation text. References to the same canonical query do not duplicate its text or its reservation. These are continuation processing bounds, not extra person/genre/keyword slots; R02 owns reservation arithmetic.
+
+Count the complete proposed continuation, including relevant source wording/query/correction text, before committing. Do not truncate, evict an existing wish or select a subset. If recording the affected input would exceed bounds, reject without changing state/session and preserve the input in the caller's ephemeral editor with a capacity outcome. Existing discard/cleanup actions must remain usable at full capacity. Any refinement or transfer that exceeds bounds is likewise rejected atomically. R05 finalizes field-level encoding and length accounting consistently.
+
+#### R01 design scenarios
+
+These are specified expectations for later automated tests, not tests that have run.
+
+| Case | Expected contract behavior |
+| --- | --- |
+| Replace Tom Hanks with Chris Evans and Brad Pitt; only Chris resolves | Keep Tom Hanks accepted; stage Chris only; Brad remains part of the same replacement. |
+| Refine Chris Evans to Chris Pine | Invalidate the changed child's old result/candidates and affected question; preserve Brad and the source; reevaluate the parent. |
+| Discard Brad Pitt | Retain the intention Tom Hanks to Chris; do not convert Chris into an independent addition. |
+| Discard the final child | Discard the replacement intention; Tom Hanks remains accepted. |
+| Pause, then deliberately resume | No active old question or accidental bare-name answer; retained work resumes under fresh valid question association. |
+| Transfer canonical/continuation ownership | One canonical query before and after; no duplicate records, dangling references or duplicate reservations; failure leaves both state and session unchanged. |
+| Full continuation capacity | No truncation or eviction; rejected input remains editable; explicit discard/cleanup still works. |
+
+R01 design closure requires re-review of this section and these scenarios against the specification and adjacent findings. It is not automatic implementation approval, a passing test report or closure of R02–R06.
 
 ## 5. Affected files and focused inspection
 
 Proposed new files only when used:
 
 - `src/lib/schemas/parser.ts`: dedicated request/proposal schemas, inferred types, normalized response outcomes and derived JSON Schema. Verify native `z.toJSONSchema()` conversion of the actual strict variants; no added converter dependency without approval.
-- `src/lib/schemas/parser-application.ts`: bounded continuation/context association; reuse canonical schemas.
+- `src/lib/schemas/parser-application.ts`: bounded continuation/context association; reuse canonical schemas. Section 4.1 specifies R01 ownership and lifecycle, subject to final wire fields and adjacent gates.
 - `src/lib/parser/compose-request.ts`: pure projection/composition, no network.
 - `src/lib/parser/validate-response.ts`: completion/JSON/schema boundary, no repair/retry.
 - `src/lib/domain/search/apply-parser-result.ts`: pure adapter and real-transition coordination.
@@ -164,9 +232,9 @@ Tests: extend existing affected regressions; proposed parser/parser-application 
 ## 6. Implementation sequence, tests and gates
 
 1. Review this concrete contract before coding. Complete the targeted caller/test inventory only for proposed changes; inspect current package scripts, typing/testing rules and genre/numeric semantics. Do not repeat the full audit.
-2. Finalize exact continuation schema, bounds/full-capacity outcome, source subset policy, group dependency classification and free-text workflow mapping. Resolve any gap as a safe explicit unsupported/clarification outcome, not silent omission. Clear-all/empty-list replacement remains deferred.
+2. Re-review section 4.1 for R01, then resolve reservation arithmetic, source subset policy, group dependency classification, clarification projections, final field shapes and staged-result validity under the remaining findings. Resolve any gap as a safe explicit unsupported/clarification outcome, not silent omission. Clear-all/empty-list replacement remains deferred.
 3. Add failing composition/response tests, then implement strict schemas, JSON-schema derivation and pure validators.
-4. Add failing continuation/reference/replay tests; implement minimal session contracts.
+4. Add failing continuation/reference/replay tests, including all seven R01 scenarios; implement minimal session contracts only after the affected gates are approved.
 5. Add failing multi-replacement/whole-selection tests, then approved domain extensions and adapter with real transitions.
 6. Extend non-first clarification/source-subset paths; preserve ordering, cancellation and stale-candidate rules.
 7. Migrate the shared limit through a repository-wide reference inventory.
@@ -178,7 +246,8 @@ Use focused runs during development, then `pnpm test`, `pnpm test:coverage`, `pn
 
 ## 7. Downstream and approval log
 
-- Only documentation consolidation and concrete design drafting were requested for this step; code implementation is not approved by saving it.
+- Documentation consolidation and concrete design drafting were requested; code implementation is not approved by saving this plan.
+- On 2026-11-17 the user accepted the R01 ownership/lifecycle proposal and requested its implementation in the contract design. Section 4.1 records that direction. R01 design re-review and the other findings remain open; no runtime code is changed or claimed complete.
 - The historical instruction artifact `d4138d9` was narrowly approved; its English translation is `166e144`. Neither authorizes the rest of the plan or runtime use.
 - Existing AGENTS already identifies WP 011 and the branch; do not report the original stale-WP-010 finding as current. Its historical plan-commit/backlink-follow-up wording may need a separate small alignment; do not rewrite shared rules incidentally.
 - WP 012/WP 014 and the wizard task require separately reviewed alignment for confirmation, snapshots, retries and cancellation/resumption. Their files were not updated or fully audited here.
