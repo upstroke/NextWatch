@@ -7,16 +7,25 @@ import { applyPendingQueryCommand } from './pending-operations';
 
 export type ParserContinuationTransitionResult =
   | {
-      status: 'applied'; state: SearchState; continuation: ParserContinuation;
+      status: 'applied';
+      state: SearchState;
+      continuation: ParserContinuation;
       invalidated: { intentionRefs: string[]; queryRefs: string[] };
     }
   | { status: 'unchanged'; reason: 'no-effective-change' }
   | {
       status: 'rejected';
-      reason: 'invalid-input' | 'invalid-continuation' | 'stale-revision' |
-        'unknown-intention' | 'stale-generation' | 'unknown-query' |
-        'generation-exhausted' | 'unsupported-correction' |
-        'canonical-transition-rejected' | 'invalid-result';
+      reason:
+        | 'invalid-input'
+        | 'invalid-continuation'
+        | 'stale-revision'
+        | 'unknown-intention'
+        | 'stale-generation'
+        | 'unknown-query'
+        | 'generation-exhausted'
+        | 'unsupported-correction'
+        | 'canonical-transition-rejected'
+        | 'invalid-result';
     };
 
 /**
@@ -54,17 +63,25 @@ export function applyParserContinuationCommand(
     const query = entry.children.find((item) => item.ref === command.queryRef);
     if (!query) return { status: 'rejected', reason: 'unknown-query' };
     if (query.ownership === 'continuation') {
-      if (query.query.text === command.query.text && query.query.correction === command.query.correction)
+      if (
+        query.query.text === command.query.text &&
+        query.query.correction === command.query.correction
+      )
         return { status: 'unchanged', reason: 'no-effective-change' };
-      if (entry.generation === Number.MAX_SAFE_INTEGER || query.generation === Number.MAX_SAFE_INTEGER)
+      if (
+        entry.generation === Number.MAX_SAFE_INTEGER ||
+        query.generation === Number.MAX_SAFE_INTEGER
+      )
         return { status: 'rejected', reason: 'generation-exhausted' };
       query.query = { ...command.query };
       query.generation += 1;
     } else {
       if (command.query.correction !== null)
         return { status: 'rejected', reason: 'unsupported-correction' };
-      const requests = entry.criterion === 'person'
-        ? workingState.pendingQueries.personQueries : workingState.pendingQueries.keywordQueries;
+      const requests =
+        entry.criterion === 'person'
+          ? workingState.pendingQueries.personQueries
+          : workingState.pendingQueries.keywordQueries;
       const request = requests.find((item) => item.ref === query.ref);
       if (!request) return { status: 'rejected', reason: 'invalid-continuation' };
       if (request.query === command.query.text.trim())
@@ -74,7 +91,9 @@ export function applyParserContinuationCommand(
       if (workingState.revision >= Number.MAX_SAFE_INTEGER)
         return { status: 'rejected', reason: 'invalid-result' };
       const outcome = applyPendingQueryCommand(workingState, {
-        entity: entry.criterion, operation: 'change', baseRevision: workingState.revision,
+        entity: entry.criterion,
+        operation: 'change',
+        baseRevision: workingState.revision,
         request: { ...request, query: command.query.text },
       });
       if (outcome.status !== 'applied')
@@ -84,8 +103,10 @@ export function applyParserContinuationCommand(
     entry.generation += 1;
     invalidatedQueries.push(query.ref);
   } else {
-    const targets = command.scope === 'intention'
-      ? [...entry.children] : entry.children.filter((query) => query.ref === command.queryRef);
+    const targets =
+      command.scope === 'intention'
+        ? [...entry.children]
+        : entry.children.filter((query) => query.ref === command.queryRef);
     if (command.scope === 'query' && targets.length === 0)
       return { status: 'rejected', reason: 'unknown-query' };
     const removesParent = command.scope === 'intention' || targets.length === entry.children.length;
@@ -96,7 +117,9 @@ export function applyParserContinuationCommand(
         if (workingState.revision >= Number.MAX_SAFE_INTEGER)
           return { status: 'rejected', reason: 'invalid-result' };
         const outcome = applyPendingQueryCommand(workingState, {
-          entity: entry.criterion, operation: 'remove', ref: query.ref,
+          entity: entry.criterion,
+          operation: 'remove',
+          ref: query.ref,
           baseRevision: workingState.revision,
         });
         if (outcome.status !== 'applied')
@@ -119,7 +142,9 @@ export function applyParserContinuationCommand(
   const nextContinuation = validateParserContinuation(continuation, nextState.data.pendingQueries);
   if (!nextContinuation.success) return { status: 'rejected', reason: 'invalid-result' };
   return {
-    status: 'applied', state: nextState.data, continuation: nextContinuation.data,
+    status: 'applied',
+    state: nextState.data,
+    continuation: nextContinuation.data,
     invalidated: { intentionRefs: [entry.ref], queryRefs: invalidatedQueries },
   };
 }

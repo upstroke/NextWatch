@@ -6,13 +6,13 @@ The [work-package specification](../docs/work-packages/011-llm-parser-contract.m
 
 ## Implemented slices
 
-| Commit | Scope | Validation evidence |
-| --- | --- | --- |
-| `b2e8407` | Parser proposal/context/invocation/envelope schemas, JSON Schema export, composition, response validation and tests | Subsequent user report, after the follow-ups below |
-| `0400ce4` | Keyword-reference and capacity-context tests | Included in subsequent local green report |
-| `4eac220` | Explicit nullable-source guard | User confirmed IDE warning gone and all checks green; parser statement coverage reported as 87% |
-| `db830a5` | Bounded continuation ownership schema, canonical associations and tests | User reported all checks green; no new numeric coverage supplied |
-| `4e2a719` | Refine/discard command schema, pure transition and unit tests | Not yet locally validated/reported |
+| Commit    | Scope                                                                                                               | Validation evidence                                                                             |
+| --------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `b2e8407` | Parser proposal/context/invocation/envelope schemas, JSON Schema export, composition, response validation and tests | Subsequent user report, after the follow-ups below                                              |
+| `0400ce4` | Keyword-reference and capacity-context tests                                                                        | Included in subsequent local green report                                                       |
+| `4eac220` | Explicit nullable-source guard                                                                                      | User confirmed IDE warning gone and all checks green; parser statement coverage reported as 87% |
+| `db830a5` | Bounded continuation ownership schema, canonical associations and tests                                             | User reported all checks green; no new numeric coverage supplied                                |
+| `4e2a719` | Refine/discard command schema, pure transition and unit tests                                                       | Not yet locally validated/reported                                                              |
 
 A user report of green means tests, coverage threshold, ESLint and typecheck. The assistant did not execute those commands. Historical passing reports do not validate later commits.
 
