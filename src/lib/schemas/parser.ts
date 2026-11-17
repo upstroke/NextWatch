@@ -141,7 +141,8 @@ export const ParserPreparedContextSchema = z.object({
     if (entry.operation === 'replace' || entry.operation === 'remove') {
       if (entry.source === null) fail();
     } else if (entry.source !== null) fail();
-    if (entry.source?.mode === 'reference' && acceptedRefs.get(entry.source.ref)?.criterion !== entry.criterion) fail();
+    const entrySource = entry.source;
+    if (entrySource !== null && entrySource.mode === 'reference' && acceptedRefs.get(entrySource.ref)?.criterion !== entry.criterion) fail();
     if (entry.scope === 'query' && entry.parentRef !== null) {
       const parent = byRef.get(entry.parentRef);
       if (parent?.scope !== 'intention' || parent.criterion !== entry.criterion || parent.operation !== entry.operation || !parent.queryRefs.includes(entry.ref) || JSON.stringify(parent.source) !== JSON.stringify(entry.source)) fail();
