@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { MAX_PARSER_CONTINUATION_BINDINGS } from '@lib/config/domain';
 import { ParserInvocationSchema } from '@lib/schemas/parser';
 import { validateParserContinuation } from '@lib/schemas/parser-continuation';
