@@ -34,12 +34,11 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   query invalidations and retired binding references. Rejected/no-op edits
   do not reconcile or expose partial stores. No binding/question is issued
   and no lookup, retry or search starts automatically.
-- Validation of this integration is still pending: no fresh test, coverage,
-  ESLint or typecheck results have been reported for `f6d9db2`, and the assistant
-  did not execute those commands. Earlier green reports cover the binding
-  foundation, not this later integration. The immediate next step is validation,
-  followed by synchronizing the WP 011 execution status and progress ledger,
-  which currently still describe registry edit integration as proposed.
+- For `f6d9db2`, the user confirmed passing tests, typecheck and ESLint on
+  2026-11-17. Coverage validation for this integration remains unconfirmed;
+  earlier foundation coverage reports must not be carried forward as proof.
+  The assistant did not execute validation commands. Check current coverage
+  before describing the integration as fully green; details are in the ledger.
 - Response-processing integration, owned-target question support, result staging
   and complete pause/resume remain later scoped work. Returning coherent
   proposals does not implement persistence, concurrency control or end-to-end
