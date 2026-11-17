@@ -5,7 +5,10 @@ import type { PersonClarificationSession } from '@lib/schemas/person-clarificati
 import { SearchStateSchema } from '@lib/schemas/search-state';
 import type { SearchState } from '@lib/schemas/search-state';
 import { processPersonSelection } from './process-person-selection';
-import type { PersonSelectionIdentityValidator, ProcessPersonSelectionResult } from './process-person-selection';
+import type {
+  PersonSelectionIdentityValidator,
+  ProcessPersonSelectionResult,
+} from './process-person-selection';
 import {
   checkParserContinuationBinding,
   consumeParserContinuationBinding,
@@ -13,10 +16,16 @@ import {
 } from './parser-continuation-binding';
 import type { ParserContinuationBindingContext } from './parser-continuation-binding';
 
-type BindingReason = Extract<ReturnType<typeof checkParserContinuationBinding>, { status: 'rejected' }>['reason'];
+type BindingReason = Extract<
+  ReturnType<typeof checkParserContinuationBinding>,
+  { status: 'rejected' }
+>['reason'];
 type SelectionOutcome = Extract<ProcessPersonSelectionResult, { status: 'processed' }>['outcome'];
 type SelectionReason = Extract<SelectionOutcome, { status: 'rejected' }>['reason'];
-type ReconcileReason = Extract<ReturnType<typeof reconcileParserContinuationBindings>, { status: 'rejected' }>['reason'];
+type ReconcileReason = Extract<
+  ReturnType<typeof reconcileParserContinuationBindings>,
+  { status: 'rejected' }
+>['reason'];
 
 export type ProcessBoundPersonSelectionResult =
   | {
@@ -31,9 +40,17 @@ export type ProcessBoundPersonSelectionResult =
       invalidated: { queryRefs: string[]; intentionRefs: string[] };
     }
   | { status: 'rejected'; stage: 'binding' | 'consumption'; reason: BindingReason }
-  | { status: 'rejected'; stage: 'selection'; reason: SelectionReason | 'invalid-session' | 'unexpected-selection-outcome' }
+  | {
+      status: 'rejected';
+      stage: 'selection';
+      reason: SelectionReason | 'invalid-session' | 'unexpected-selection-outcome';
+    }
   | { status: 'rejected'; stage: 'acceptance'; reason: 'revision-exhausted' }
-  | { status: 'rejected'; stage: 'continuation'; reason: 'generation-exhausted' | 'invalid-continuation' }
+  | {
+      status: 'rejected';
+      stage: 'continuation';
+      reason: 'generation-exhausted' | 'invalid-continuation';
+    }
   | { status: 'rejected'; stage: 'reconciliation'; reason: ReconcileReason }
   | { status: 'rejected'; stage: 'result'; reason: 'invalid-result' };
 
@@ -66,7 +83,12 @@ export function processBoundPersonSelection(
   input: unknown,
   validateIdentity?: PersonSelectionIdentityValidator,
 ): ProcessBoundPersonSelectionResult {
-  const checked = checkParserContinuationBinding(context, registryInput, associationInput, 'question_answer');
+  const checked = checkParserContinuationBinding(
+    context,
+    registryInput,
+    associationInput,
+    'question_answer',
+  );
   if (checked.status === 'rejected')
     return { status: 'rejected', stage: 'binding', reason: checked.reason };
   if (context.state.revision >= Number.MAX_SAFE_INTEGER)
@@ -75,7 +97,12 @@ export function processBoundPersonSelection(
   if (!current.success)
     return { status: 'rejected', stage: 'continuation', reason: 'invalid-continuation' };
 
-  const selected = processPersonSelection(context.state, context.personSession, input, validateIdentity);
+  const selected = processPersonSelection(
+    context.state,
+    context.personSession,
+    input,
+    validateIdentity,
+  );
   if (selected.status === 'rejected')
     return { status: 'rejected', stage: 'selection', reason: selected.reason };
   if (selected.outcome.status === 'rejected')
@@ -86,11 +113,13 @@ export function processBoundPersonSelection(
   const queryRef = checked.binding.target.queryRef;
   const continuation = current.data;
   const invalidated = { queryRefs: [queryRef], intentionRefs: [] as string[] };
-  const parent = continuation.intentions.find((entry) => entry.children.some(
-    (child) => child.ownership === 'canonical' && child.ref === queryRef,
-  ));
+  const parent = continuation.intentions.find((entry) =>
+    entry.children.some((child) => child.ownership === 'canonical' && child.ref === queryRef),
+  );
   if (parent) {
-    const children = parent.children.filter((child) => child.ownership !== 'canonical' || child.ref !== queryRef);
+    const children = parent.children.filter(
+      (child) => child.ownership !== 'canonical' || child.ref !== queryRef,
+    );
     invalidated.intentionRefs.push(parent.ref);
     if (children.length === 0) {
       continuation.intentions = continuation.intentions.filter((entry) => entry.ref !== parent.ref);
@@ -107,18 +136,33 @@ export function processBoundPersonSelection(
   if (!validContinuation.success)
     return { status: 'rejected', stage: 'continuation', reason: 'invalid-continuation' };
 
-  const consumed = consumeParserContinuationBinding(context, registryInput, associationInput, 'question_answer');
+  const consumed = consumeParserContinuationBinding(
+    context,
+    registryInput,
+    associationInput,
+    'question_answer',
+  );
   if (consumed.status === 'rejected')
     return { status: 'rejected', stage: 'consumption', reason: consumed.reason };
-  const reconciled = reconcileParserContinuationBindings({
-    expectedSessionRef: context.expectedSessionRef, state: state.data,
-    continuation: validContinuation.data, personSession: selected.session,
-  }, consumed.registry, invalidated.queryRefs);
+  const reconciled = reconcileParserContinuationBindings(
+    {
+      expectedSessionRef: context.expectedSessionRef,
+      state: state.data,
+      continuation: validContinuation.data,
+      personSession: selected.session,
+    },
+    consumed.registry,
+    invalidated.queryRefs,
+  );
   if (reconciled.status === 'rejected')
     return { status: 'rejected', stage: 'reconciliation', reason: reconciled.reason };
   return {
-    status: 'applied', state: state.data, continuation: validContinuation.data,
-    session: selected.session, registry: reconciled.registry, completedQueryRef: queryRef,
+    status: 'applied',
+    state: state.data,
+    continuation: validContinuation.data,
+    session: selected.session,
+    registry: reconciled.registry,
+    completedQueryRef: queryRef,
     consumedBindingRef: consumed.binding.bindingRef,
     retiredBindingRefs: reconciled.status === 'reconciled' ? reconciled.retiredBindingRefs : [],
     invalidated,
