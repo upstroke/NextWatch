@@ -1,6 +1,9 @@
 import { z } from 'zod';
 import { MAX_PARSER_CONTEXT_LENGTH } from '@lib/config/domain';
-import { SEARCH_FILTER_CATALOG, SEARCH_FILTER_CATALOG_VERSION } from '@lib/domain/search/filter-catalog';
+import {
+  SEARCH_FILTER_CATALOG,
+  SEARCH_FILTER_CATALOG_VERSION,
+} from '@lib/domain/search/filter-catalog';
 import { PARSER_CONTRACT_VERSION, ParserInvocationSchema } from '@lib/schemas/parser';
 import type { ParserInvocation } from '@lib/schemas/parser';
 import { PARSER_INSTRUCTIONS, PARSER_INSTRUCTION_VERSION } from './instructions';
@@ -8,7 +11,12 @@ import { PARSER_INSTRUCTIONS, PARSER_INSTRUCTION_VERSION } from './instructions'
 export type ParserCompositionResult =
   | {
       status: 'composed';
-      request: { instructionVersion: string; instructions: string; contextJson: string; userInput: string };
+      request: {
+        instructionVersion: string;
+        instructions: string;
+        contextJson: string;
+        userInput: string;
+      };
       association: ParserInvocation;
     }
   | { status: 'rejected'; reason: 'invalid-input' | 'context-too-large' };
@@ -25,11 +33,13 @@ export function composeParserRequest(input: unknown): ParserCompositionResult {
   const { criteria, pending, activeClarification, genreCatalogs } = invocation.context;
   const scalars = Object.entries(SEARCH_FILTER_CATALOG).flatMap(([field, definition]) => {
     if (definition.kind !== 'scalar') return [];
-    return [{
-      field,
-      operations: definition.operations.includes('remove') ? ['set', 'remove'] : ['set'],
-      valueSchema: z.toJSONSchema(definition.valueSchema.unwrap()),
-    }];
+    return [
+      {
+        field,
+        operations: definition.operations.includes('remove') ? ['set', 'remove'] : ['set'],
+        valueSchema: z.toJSONSchema(definition.valueSchema.unwrap()),
+      },
+    ];
   });
   const contextJson = JSON.stringify({
     contractVersion: PARSER_CONTRACT_VERSION,
@@ -39,9 +49,12 @@ export function composeParserRequest(input: unknown): ParserCompositionResult {
       person: ['add', 'refine', 'replace', 'remove', 'discard'],
       keyword: ['add', 'refine', 'replace', 'replace_all', 'remove', 'discard'],
       genre: ['add', 'refine', 'replace', 'replace_all', 'remove', 'discard'],
-      clarificationAnswers: activeClarification?.kind === 'replacement_source'
-        ? ['select_source']
-        : activeClarification?.kind === 'keyword_meaning' ? ['select_meaning'] : [],
+      clarificationAnswers:
+        activeClarification?.kind === 'replacement_source'
+          ? ['select_source']
+          : activeClarification?.kind === 'keyword_meaning'
+            ? ['select_meaning']
+            : [],
       interpretations: ['clarification', 'unsupported'],
     },
     criteria,

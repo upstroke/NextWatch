@@ -13,13 +13,13 @@
 
 ## Consolidation map
 
-| Decision / artifact | Current location | Evidence |
-| --- | --- | --- |
-| Supplied references and trust boundary | [Specification: Internal references and trust](011-llm-parser-contract.md#internal-references-and-trust); plan sections 2–3 | `5fa186d`, `3a8942a` |
-| One-to-many replacement and complete selection replacement | [Specification: Replacement and duplicates](011-llm-parser-contract.md#replacement-and-duplicates); plan sections 3 and 4.1 | `5fa186d`, `3a8942a` |
-| A/R02 protected reservations | [Specification: Capacity and overflow](011-llm-parser-contract.md#capacity-and-overflow); [plan 4.2](../../tasks/011-llm-parser-contract-plan.md#42-r02--capacity-and-protected-reservations) | `a2c548e`, `113a5ab`, `3a8942a` |
-| B/R06 retained validated facts | [Specification: Staged resolution results and current-state acceptance](011-llm-parser-contract.md#staged-resolution-results-and-current-state-acceptance); [plan 4.4](../../tasks/011-llm-parser-contract-plan.md#44-r06--result-validity-and-current-acceptance) | `a2c548e`, `113a5ab`, `3a8942a` |
-| Model instructions and verification queue | [Instruction draft](../../src/lib/parser/instructions.ts); [review protocol](../../tasks/011-llm-parser-contract-review.md) | `348091d`, `cd2c728` |
+| Decision / artifact                                        | Current location                                                                                                                                                                                                                                                   | Evidence                        |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| Supplied references and trust boundary                     | [Specification: Internal references and trust](011-llm-parser-contract.md#internal-references-and-trust); plan sections 2–3                                                                                                                                        | `5fa186d`, `3a8942a`            |
+| One-to-many replacement and complete selection replacement | [Specification: Replacement and duplicates](011-llm-parser-contract.md#replacement-and-duplicates); plan sections 3 and 4.1                                                                                                                                        | `5fa186d`, `3a8942a`            |
+| A/R02 protected reservations                               | [Specification: Capacity and overflow](011-llm-parser-contract.md#capacity-and-overflow); [plan 4.2](../../tasks/011-llm-parser-contract-plan.md#42-r02--capacity-and-protected-reservations)                                                                      | `a2c548e`, `113a5ab`, `3a8942a` |
+| B/R06 retained validated facts                             | [Specification: Staged resolution results and current-state acceptance](011-llm-parser-contract.md#staged-resolution-results-and-current-state-acceptance); [plan 4.4](../../tasks/011-llm-parser-contract-plan.md#44-r06--result-validity-and-current-acceptance) | `a2c548e`, `113a5ab`, `3a8942a` |
+| Model instructions and verification queue                  | [Instruction draft](../../src/lib/parser/instructions.ts); [review protocol](../../tasks/011-llm-parser-contract-review.md)                                                                                                                                        | `348091d`, `cd2c728`            |
 
 This map records integration of the decisions, not successful schema export, runtime behavior, provider compatibility or completion of review acceptance criteria.
 

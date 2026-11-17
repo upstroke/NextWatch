@@ -33,14 +33,14 @@ Checked design items below mean that the stated rule is now documented at the li
 
 No finding is marked finally closed in this update. Original severity is retained for traceability, not as a claim that no resolution has been written. Finish one focused contract/file-level verification, not six new product-decision rounds. Report a new product question only for a concrete uncovered case that cannot safely follow existing rules.
 
-| ID | Original classification | Consolidated location | Current status |
-| --- | --- | --- | --- |
-| WP011-R01 | Blocking | Plan 4.1 | Design consolidated, including both follow-up rules and eighth scenario; verification/implementation pending |
-| WP011-R02 | Blocking | Specification Capacity and overflow; plan 4.2 | Policy A accepted; proposed calculation consolidated; arithmetic/mapping verification pending |
-| WP011-R03 | Blocking | Plan 4.3 | Dependency/conflict direction consolidated; fixture/adapter verification pending |
-| WP011-R04 | Blocking | Plan 3, kind-specific active clarification | Context/response mapping consolidated; exact contracts/caller verification pending |
-| WP011-R05 | Required clarification | Plan 2–3 | Common field rules/matrix consolidated; exact context shapes, fixtures and schema-export verification pending |
-| WP011-R06 | Required clarification | Specification Staged resolution results; plan 4.4 | Policy B accepted; validity direction consolidated; exact bindings/acceptance verification pending |
+| ID        | Original classification | Consolidated location                             | Current status                                                                                                |
+| --------- | ----------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| WP011-R01 | Blocking                | Plan 4.1                                          | Design consolidated, including both follow-up rules and eighth scenario; verification/implementation pending  |
+| WP011-R02 | Blocking                | Specification Capacity and overflow; plan 4.2     | Policy A accepted; proposed calculation consolidated; arithmetic/mapping verification pending                 |
+| WP011-R03 | Blocking                | Plan 4.3                                          | Dependency/conflict direction consolidated; fixture/adapter verification pending                              |
+| WP011-R04 | Blocking                | Plan 3, kind-specific active clarification        | Context/response mapping consolidated; exact contracts/caller verification pending                            |
+| WP011-R05 | Required clarification  | Plan 2–3                                          | Common field rules/matrix consolidated; exact context shapes, fixtures and schema-export verification pending |
+| WP011-R06 | Required clarification  | Specification Staged resolution results; plan 4.4 | Policy B accepted; validity direction consolidated; exact bindings/acceptance verification pending            |
 
 ## WP011-R01 — Continuation lifecycle and compound-request ownership
 

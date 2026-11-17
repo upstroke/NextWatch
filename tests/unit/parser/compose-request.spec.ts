@@ -32,16 +32,25 @@ describe('composeParserRequest', () => {
     const invocation = parserInvocationFixture();
     invocation.userInput = 'x'.repeat(MAX_PARSER_INPUT_LENGTH + 1);
     const snapshot = structuredClone(invocation);
-    expect(composeParserRequest(invocation)).toEqual({ status: 'rejected', reason: 'invalid-input' });
+    expect(composeParserRequest(invocation)).toEqual({
+      status: 'rejected',
+      reason: 'invalid-input',
+    });
     expect(invocation).toEqual(snapshot);
   });
 
   // Branch coverage: complete catalogs are not trimmed to make an oversized context appear valid.
   it('rejects an oversized serialized context without dropping catalog entries', () => {
     const invocation = parserInvocationFixture();
-    invocation.context.genreCatalogs.movie = Array.from({ length: 200 }, (_, index) => ({ id: index + 1, name: `${index}-${'x'.repeat(400)}` }));
+    invocation.context.genreCatalogs.movie = Array.from({ length: 200 }, (_, index) => ({
+      id: index + 1,
+      name: `${index}-${'x'.repeat(400)}`,
+    }));
     const snapshot = structuredClone(invocation);
-    expect(composeParserRequest(invocation)).toEqual({ status: 'rejected', reason: 'context-too-large' });
+    expect(composeParserRequest(invocation)).toEqual({
+      status: 'rejected',
+      reason: 'context-too-large',
+    });
     expect(invocation).toEqual(snapshot);
   });
 });

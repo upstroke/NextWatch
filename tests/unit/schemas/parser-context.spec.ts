@@ -14,21 +14,35 @@ function capacityContext(criterion: Criterion, maximum: number) {
   const { context } = parserInvocationFixture();
   context.criteria.people = [];
   for (let index = 0; index < maximum; index += 1) {
-    const accepted = { ref: `accepted-${criterion}-${index}`, label: `Accepted ${criterion} ${index}` };
+    const accepted = {
+      ref: `accepted-${criterion}-${index}`,
+      label: `Accepted ${criterion} ${index}`,
+    };
     if (criterion === 'person') context.criteria.people.push(accepted);
     else if (criterion === 'keyword') context.criteria.keywords.push(accepted);
     else context.criteria.genres.push({ ...accepted, activity: 'active' });
   }
-  context.pending = [{
-    scope: 'query', ref: 'capacity-query', criterion, operation: 'add', parentRef: null,
-    source: null, query: { text: 'Another selection', correction: null }, status: 'unresolved',
-  }];
+  context.pending = [
+    {
+      scope: 'query',
+      ref: 'capacity-query',
+      criterion,
+      operation: 'add',
+      parentRef: null,
+      source: null,
+      query: { text: 'Another selection', correction: null },
+      status: 'unresolved',
+    },
+  ];
   return {
     ...context,
     activeClarification: {
-      kind: 'capacity' as const, criterion,
+      kind: 'capacity' as const,
+      criterion,
       targets: [{ scope: 'query' as const, ref: 'capacity-query' }],
-      occupied: maximum, reserved: 0, maximum,
+      occupied: maximum,
+      reserved: 0,
+      maximum,
     },
   };
 }
@@ -38,10 +52,17 @@ describe('prepared parser context keyword references', () => {
   it('accepts a removal intention referencing an accepted keyword', () => {
     const { context } = parserInvocationFixture();
     context.criteria.keywords = [{ ref: 'accepted-keyword', label: 'Time travel' }];
-    context.pending = [{
-      scope: 'intention', ref: 'remove-keyword', criterion: 'keyword', operation: 'remove',
-      source: { mode: 'reference', ref: 'accepted-keyword' }, queryRefs: [], blockers: [],
-    }];
+    context.pending = [
+      {
+        scope: 'intention',
+        ref: 'remove-keyword',
+        criterion: 'keyword',
+        operation: 'remove',
+        source: { mode: 'reference', ref: 'accepted-keyword' },
+        queryRefs: [],
+        blockers: [],
+      },
+    ];
     expect(ParserPreparedContextSchema.parse(context)).toEqual(context);
   });
 
@@ -55,12 +76,15 @@ describe('prepared parser context keyword references', () => {
 
 describe('prepared parser context capacity clarifications', () => {
   // Statement/branch coverage: all three criteria accept their configured boundary.
-  it.each(capacityCases)('accepts a $criterion clarification at capacity', ({ criterion, maximum }) => {
-    const context = capacityContext(criterion, maximum);
-    const snapshot = structuredClone(context);
-    expect(ParserPreparedContextSchema.parse(context)).toEqual(snapshot);
-    expect(context).toEqual(snapshot);
-  });
+  it.each(capacityCases)(
+    'accepts a $criterion clarification at capacity',
+    ({ criterion, maximum }) => {
+      const context = capacityContext(criterion, maximum);
+      const snapshot = structuredClone(context);
+      expect(ParserPreparedContextSchema.parse(context)).toEqual(snapshot);
+      expect(context).toEqual(snapshot);
+    },
+  );
 
   // Branch coverage: a positive but incorrect maximum cannot override domain limits.
   it.each(capacityCases)('rejects an incorrect $criterion maximum', ({ criterion, maximum }) => {
@@ -70,11 +94,14 @@ describe('prepared parser context capacity clarifications', () => {
   });
 
   // Branch coverage: occupied and reserved slots jointly obey the configured limit.
-  it.each(capacityCases)('rejects $criterion occupancy plus reservations above capacity', ({ criterion, maximum }) => {
-    const context = capacityContext(criterion, maximum);
-    context.activeClarification.reserved = 1;
-    expect(ParserPreparedContextSchema.safeParse(context).success).toBe(false);
-  });
+  it.each(capacityCases)(
+    'rejects $criterion occupancy plus reservations above capacity',
+    ({ criterion, maximum }) => {
+      const context = capacityContext(criterion, maximum);
+      context.activeClarification.reserved = 1;
+      expect(ParserPreparedContextSchema.safeParse(context).success).toBe(false);
+    },
+  );
 
   // Branch coverage: a capacity target must exist in the supplied pending context.
   it('rejects an unknown target reference', () => {
@@ -117,13 +144,23 @@ describe('prepared parser context capacity clarifications', () => {
     context.criteria = prepared.criteria;
     context.pending = [
       {
-        scope: 'intention', ref: 'capacity-intention', criterion: 'person', operation: 'add',
-        source: null, queryRefs: ['capacity-query'], blockers: ['capacity'],
+        scope: 'intention',
+        ref: 'capacity-intention',
+        criterion: 'person',
+        operation: 'add',
+        source: null,
+        queryRefs: ['capacity-query'],
+        blockers: ['capacity'],
       },
       {
-        scope: 'query', ref: 'capacity-query', criterion: 'person', operation: 'add',
-        parentRef: 'capacity-intention', source: null,
-        query: { text: 'Another selection', correction: null }, status: 'unresolved',
+        scope: 'query',
+        ref: 'capacity-query',
+        criterion: 'person',
+        operation: 'add',
+        parentRef: 'capacity-intention',
+        source: null,
+        query: { text: 'Another selection', correction: null },
+        status: 'unresolved',
       },
     ];
     context.activeClarification = {

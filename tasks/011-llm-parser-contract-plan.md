@@ -17,17 +17,17 @@ WP 011 owns dedicated parser contracts, pure request composition/response valida
 
 Historical evidence: initial review `5c85d69`, follow-up `a6fe74b`, initial plan `99b5a2d`, prompt/schema alignment `a8dbca0`, instruction draft `d4138d9`, English instruction revision `0.1.1-draft` in `166e144`, consolidated contract `5fa186d`, R01 design `b984463`. The recorded identical-tree comparison concerns the initial/follow-up baselines only. No exhaustive caller inventory, local cleanliness, installed runtime or passing validation follows from it.
 
-| Existing boundary | Reuse / concrete gap |
-| --- | --- |
-| `SearchState`, `search-state.ts` | Accepted people are canonical ID/name records; pending requests have stable references. Singular replacement and shared pending-addition bounds exist; compound replacement is not implemented. |
-| `applyIntent()` / `extraction.ts` | Atomic filter-group application and complete active/inactive genre-wish handling exist. List set/replace is whole-list behavior, not targeted replacement. |
-| `applyPendingQueryCommand()` | Existing referenced person/keyword add/change/remove, stale guards and normalized no-ops remain authoritative. |
-| `acceptResolvedPerson()` | Trusted single-person acceptance removes its pending request atomically and deduplicates by ID. Do not call it repeatedly to simulate atomic multi-replacement. |
-| Keyword acceptance | Inspected pending schema represents additions; controlled acceptance and replacement require a planned extension, not model IDs through ordinary filter changes. |
-| WP 010 guardrails | Replacement-target, year-conflict and keyword-meaning sessions/actions exist. Reuse their question ownership and sequence checks. |
-| Person lifecycle/correction | Prior review found first-pending assumptions. Inspect affected callers/tests before adding explicit non-first targeting. |
-| Source clarification | Existing source offers need an application-validated eligible subset and preservation of the complete replacement intent. |
-| Tooling | Prior review recorded Zod 4.6.7. Verify actual dedicated-schema export with native `z.toJSONSchema()`; no converter dependency or provider compatibility is assumed. |
+| Existing boundary                 | Reuse / concrete gap                                                                                                                                                                            |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SearchState`, `search-state.ts`  | Accepted people are canonical ID/name records; pending requests have stable references. Singular replacement and shared pending-addition bounds exist; compound replacement is not implemented. |
+| `applyIntent()` / `extraction.ts` | Atomic filter-group application and complete active/inactive genre-wish handling exist. List set/replace is whole-list behavior, not targeted replacement.                                      |
+| `applyPendingQueryCommand()`      | Existing referenced person/keyword add/change/remove, stale guards and normalized no-ops remain authoritative.                                                                                  |
+| `acceptResolvedPerson()`          | Trusted single-person acceptance removes its pending request atomically and deduplicates by ID. Do not call it repeatedly to simulate atomic multi-replacement.                                 |
+| Keyword acceptance                | Inspected pending schema represents additions; controlled acceptance and replacement require a planned extension, not model IDs through ordinary filter changes.                                |
+| WP 010 guardrails                 | Replacement-target, year-conflict and keyword-meaning sessions/actions exist. Reuse their question ownership and sequence checks.                                                               |
+| Person lifecycle/correction       | Prior review found first-pending assumptions. Inspect affected callers/tests before adding explicit non-first targeting.                                                                        |
+| Source clarification              | Existing source offers need an application-validated eligible subset and preservation of the complete replacement intent.                                                                       |
+| Tooling                           | Prior review recorded Zod 4.6.7. Verify actual dedicated-schema export with native `z.toJSONSchema()`; no converter dependency or provider compatibility is assumed.                            |
 
 The earlier direct-read tests include pending operations, semantic guardrails, year-range and selected chat/search schema suites; this is not a full audit. All planned new checks below are unexecuted. The direct current plan fetch was truncated; R01 commit content, prior complete material and the `ed48ad3` formatting diff informed this consolidated rewrite. Do not represent that as a fresh complete read of every intervening revision.
 
@@ -72,13 +72,13 @@ Closed context subjects are person, keyword, genre, mediaType, minRating, minYea
 
 ### Kind-specific active clarification — R04
 
-| Kind | Relevant model-visible information | Controlled response mapping |
-| --- | --- | --- |
-| person | Exact pending query reference, original term/refinement context, parent/source operation where applicable; ambiguous/no-match reason | Refine that query; explicit addition remains separate. Identity selection still requires trusted resolution/selection validation. |
-| replacement_source | Retained intention, complete replacement terms and offered eligible accepted-source refs/labels | Interpret source reference, check offered membership/current binding, then continue the retained operation. No source removal yet. |
-| year_conflict | Contradictory proposed minYear/maxYear, distinct from accepted criteria | Interpret set/remove for the mentioned bounds; preserve unmentioned proposed bounds, validate the full pair, then map to the existing correct-years action. |
-| keyword_meaning | Pending query, original term and supplied option refs/labels/queries | Offered meaning selection or textual refinement; neither accepts a keyword ID. |
-| capacity | Affected intention/query refs and application-computed occupied/reserved/maximum counts for the criterion | Explicitly scoped discard/refinement or another supported proposed change, followed by capacity reevaluation. Do not invent a fully implemented capacity guardrail. |
+| Kind               | Relevant model-visible information                                                                                                   | Controlled response mapping                                                                                                                                         |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| person             | Exact pending query reference, original term/refinement context, parent/source operation where applicable; ambiguous/no-match reason | Refine that query; explicit addition remains separate. Identity selection still requires trusted resolution/selection validation.                                   |
+| replacement_source | Retained intention, complete replacement terms and offered eligible accepted-source refs/labels                                      | Interpret source reference, check offered membership/current binding, then continue the retained operation. No source removal yet.                                  |
+| year_conflict      | Contradictory proposed minYear/maxYear, distinct from accepted criteria                                                              | Interpret set/remove for the mentioned bounds; preserve unmentioned proposed bounds, validate the full pair, then map to the existing correct-years action.         |
+| keyword_meaning    | Pending query, original term and supplied option refs/labels/queries                                                                 | Offered meaning selection or textual refinement; neither accepts a keyword ID.                                                                                      |
+| capacity           | Affected intention/query refs and application-computed occupied/reserved/maximum counts for the criterion                            | Explicitly scoped discard/refinement or another supported proposed change, followed by capacity reevaluation. Do not invent a fully implemented capacity guardrail. |
 
 The exact question token, source revision and session sequence remain in the application invocation association. Never use an entity pendingRef for a year conflict that has no entity request. Prepared buttons bypass the LLM. Free-text source/meaning selection may return only a supplied target/option reference; application validation remains authoritative. No active question means a bare name cannot answer a closed question; explicit reference to other pending work takes precedence.
 
@@ -86,26 +86,26 @@ The exact question token, source revision and session sequence remain in the app
 
 Top level: required `contractVersion` and ordered `groups`; each group has a non-empty `items` array. Each item requires `kind` and `inputExcerpt`; action items additionally require the operation/action listed. Only listed variant fields are allowed. Groups suggest coupling, never authorize it. Empty groups means no extracted changes, not successful fulfillment or execution permission; caller must not report unsupported/uninterpreted content as fulfilled.
 
-| Variant | Required payload / scope |
-| --- | --- |
-| filter / set | `field`, field-dependent `value`: mediaType movie/tv/all; minRating number 0–10; year bounds integer 1900–2100; sortBy existing catalog value. Derive from existing schemas, not a loose field/value cross-product. |
-| filter / remove | `field` minRating/minYear/maxYear; no value. Reuse existing optional-scalar removal. |
-| entity / add | `entityType` person/keyword, non-empty `queries`. |
-| entity / refine | `entityType`, supplied query-scope `pendingRef`, one `query`; no source/operation replacement. |
-| entity / replace | `entityType`, `source`, non-empty `queries`. Preserve all destinations as one replacement. |
-| entity / remove | `entityType`, `source`; no queries. Unresolved source wording is retained for target clarification, not applied. |
-| entity / discard | `entityType`, `target` with `scope` intention/query and supplied `ref`; no accepted source. |
-| entity / replace_all | `entityType` keyword only, non-empty `queries`, no source. |
-| genre / add | Non-empty `queries`. |
-| genre / refine | Query-scope `pendingRef`, one `query`. |
-| genre / replace | `source`, non-empty `queries`. |
-| genre / remove | `source`; no replacement queries. |
-| genre / discard | `target` with intention/query scope and supplied ref. |
-| genre / replace_all | Non-empty `queries`, complete active/inactive wish, no source. |
-| clarification_answer / select_source | Supplied accepted `sourceRef` from the current offered source choices; question binding comes from the invocation. |
-| clarification_answer / select_meaning | Supplied `optionRef` from the current keyword-meaning choices; no identity ID. |
-| clarification | `subject` from the closed subject set, reason missing_value/ambiguous_meaning/ambiguous_reference, and `relatedTarget` null or a supplied intention/query target. No invented UI question/options. |
-| unsupported | Reason unsupported_criterion/unsupported_operation; preserve request excerpt, no substitute criterion. |
+| Variant                               | Required payload / scope                                                                                                                                                                                            |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| filter / set                          | `field`, field-dependent `value`: mediaType movie/tv/all; minRating number 0–10; year bounds integer 1900–2100; sortBy existing catalog value. Derive from existing schemas, not a loose field/value cross-product. |
+| filter / remove                       | `field` minRating/minYear/maxYear; no value. Reuse existing optional-scalar removal.                                                                                                                                |
+| entity / add                          | `entityType` person/keyword, non-empty `queries`.                                                                                                                                                                   |
+| entity / refine                       | `entityType`, supplied query-scope `pendingRef`, one `query`; no source/operation replacement.                                                                                                                      |
+| entity / replace                      | `entityType`, `source`, non-empty `queries`. Preserve all destinations as one replacement.                                                                                                                          |
+| entity / remove                       | `entityType`, `source`; no queries. Unresolved source wording is retained for target clarification, not applied.                                                                                                    |
+| entity / discard                      | `entityType`, `target` with `scope` intention/query and supplied `ref`; no accepted source.                                                                                                                         |
+| entity / replace_all                  | `entityType` keyword only, non-empty `queries`, no source.                                                                                                                                                          |
+| genre / add                           | Non-empty `queries`.                                                                                                                                                                                                |
+| genre / refine                        | Query-scope `pendingRef`, one `query`.                                                                                                                                                                              |
+| genre / replace                       | `source`, non-empty `queries`.                                                                                                                                                                                      |
+| genre / remove                        | `source`; no replacement queries.                                                                                                                                                                                   |
+| genre / discard                       | `target` with intention/query scope and supplied ref.                                                                                                                                                               |
+| genre / replace_all                   | Non-empty `queries`, complete active/inactive wish, no source.                                                                                                                                                      |
+| clarification_answer / select_source  | Supplied accepted `sourceRef` from the current offered source choices; question binding comes from the invocation.                                                                                                  |
+| clarification_answer / select_meaning | Supplied `optionRef` from the current keyword-meaning choices; no identity ID.                                                                                                                                      |
+| clarification                         | `subject` from the closed subject set, reason missing_value/ambiguous_meaning/ambiguous_reference, and `relatedTarget` null or a supplied intention/query target. No invented UI question/options.                  |
+| unsupported                           | Reason unsupported_criterion/unsupported_operation; preserve request excerpt, no substitute criterion.                                                                                                              |
 
 Year free-text answers use typed filter set/remove parts, not ambiguous null values. For proposed 2020–2010 and answer “Dann ab 2000”, retain proposed maxYear 2010 and validate 2000–2010 together. Existing correct-years output receives both bounds, with null only for explicitly removed bounds. Contradictory extracted bounds remain representable outside accepted state; do not reject the whole extraction merely for their joint conflict.
 
@@ -193,19 +193,19 @@ Atomic compound acceptance receives the current expected state/session associati
 
 ## 5. Implementation file map and targeted inspection
 
-| File/group | Planned work |
-| --- | --- |
-| `src/lib/schemas/parser.ts` | Strict external context/proposal/normalized outcome contracts, inferred types and native derived JSON Schema; verify actual export. |
-| `src/lib/schemas/parser-application.ts` | Bounded continuation and public application associations only where runtime validation is needed; no schema per internal helper. |
-| `src/lib/parser/compose-request.ts` | Pure minimal context projection and separated request parts. |
-| `src/lib/parser/validate-response.ts` | Status/JSON/schema rejection without repair/retry. |
-| `src/lib/domain/search/apply-parser-result.ts` | Pure ownership/dependency/reservation coordination using real transitions. |
-| `src/lib/parser/instructions.ts` | Later align the existing single English prompt, currently 0.1.1-draft, with final model fields and increment instruction revision. No internal ledger/staging implementation in prompt. |
-| `search-state.ts`, `search-transition.ts`, `pending-operations.ts` | Minimal explicitly reviewed compound acceptance, keyword acceptance/replacement and required state invariants. Preserve current duplicate/name retention and stale guards. |
-| Semantic guardrail schema/domain | Eligible offered-source subset, complete replacement context, projected question-kind mappings; preserve existing year/keyword behavior. |
-| Person session/correction/lifecycle/action/selection modules | Inspect exact callers/tests; explicit non-first targeting and cleanup reconciliation without reordering unrelated wishes or duplicating question state. |
-| Existing genre compatibility/catalog/application modules | Confirm targeted/whole-selection mapping and active/inactive order; no invented provider IDs. Inspect concrete paths before editing. |
-| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, discovered callers/tests | Migrate MAX_PERSON_CLARIFICATION_CANDIDATES to MAX_PERSON_IDS, keep five and preserve MAX_PERSON_CLARIFICATION_KNOWN_TITLES. Perform actual repository reference inventory. |
+| File/group                                                                               | Planned work                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/schemas/parser.ts`                                                              | Strict external context/proposal/normalized outcome contracts, inferred types and native derived JSON Schema; verify actual export.                                                     |
+| `src/lib/schemas/parser-application.ts`                                                  | Bounded continuation and public application associations only where runtime validation is needed; no schema per internal helper.                                                        |
+| `src/lib/parser/compose-request.ts`                                                      | Pure minimal context projection and separated request parts.                                                                                                                            |
+| `src/lib/parser/validate-response.ts`                                                    | Status/JSON/schema rejection without repair/retry.                                                                                                                                      |
+| `src/lib/domain/search/apply-parser-result.ts`                                           | Pure ownership/dependency/reservation coordination using real transitions.                                                                                                              |
+| `src/lib/parser/instructions.ts`                                                         | Later align the existing single English prompt, currently 0.1.1-draft, with final model fields and increment instruction revision. No internal ledger/staging implementation in prompt. |
+| `search-state.ts`, `search-transition.ts`, `pending-operations.ts`                       | Minimal explicitly reviewed compound acceptance, keyword acceptance/replacement and required state invariants. Preserve current duplicate/name retention and stale guards.              |
+| Semantic guardrail schema/domain                                                         | Eligible offered-source subset, complete replacement context, projected question-kind mappings; preserve existing year/keyword behavior.                                                |
+| Person session/correction/lifecycle/action/selection modules                             | Inspect exact callers/tests; explicit non-first targeting and cleanup reconciliation without reordering unrelated wishes or duplicating question state.                                 |
+| Existing genre compatibility/catalog/application modules                                 | Confirm targeted/whole-selection mapping and active/inactive order; no invented provider IDs. Inspect concrete paths before editing.                                                    |
+| `src/lib/config/domain.ts`, `src/lib/schemas/clarification.ts`, discovered callers/tests | Migrate MAX_PERSON_CLARIFICATION_CANDIDATES to MAX_PERSON_IDS, keep five and preserve MAX_PERSON_CLARIFICATION_KNOWN_TITLES. Perform actual repository reference inventory.             |
 
 No automatic barrel exports, catch-all types.ts, provider dependency, route, UI scaffolding or unused implementation files. Reuse and extend current tests/fixtures before introducing new shared helpers.
 
@@ -230,14 +230,14 @@ Use `pnpm test`, `pnpm test:coverage`, `pnpm lint`, `pnpm typecheck` after check
 
 ## 7. Remaining verification and downstream alignment
 
-| Finding | Consolidated design location | Remaining evidence |
-| --- | --- | --- |
-| R01 | 4.1, including both follow-up rules and eighth scenario | Consistency re-review and later executable tests; not closed here. |
-| R02 | 4.2; accepted A policy in authoritative specification | Verify arithmetic/multi-operation interactions and domain mapping with tests; not closed here. |
-| R03 | 4.3 | Validate complete examples and adapter grouping behavior; not closed here. |
-| R04 | 3, kind-specific context/response mapping | Align with actual WP 010 action contracts/callers and final schema; not closed here. |
-| R05 | 2–3 | Verify actual Zod export and aligned fixtures during approved implementation; no provider compatibility claim. |
-| R06 | 4.4; accepted B policy in authoritative specification | Review acceptance signatures and demonstrate stale/staged distinction through tests; not closed here. |
+| Finding | Consolidated design location                            | Remaining evidence                                                                                             |
+| ------- | ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| R01     | 4.1, including both follow-up rules and eighth scenario | Consistency re-review and later executable tests; not closed here.                                             |
+| R02     | 4.2; accepted A policy in authoritative specification   | Verify arithmetic/multi-operation interactions and domain mapping with tests; not closed here.                 |
+| R03     | 4.3                                                     | Validate complete examples and adapter grouping behavior; not closed here.                                     |
+| R04     | 3, kind-specific context/response mapping               | Align with actual WP 010 action contracts/callers and final schema; not closed here.                           |
+| R05     | 2–3                                                     | Verify actual Zod export and aligned fixtures during approved implementation; no provider compatibility claim. |
+| R06     | 4.4; accepted B policy in authoritative specification   | Review acceptance signatures and demonstrate stale/staged distinction through tests; not closed here.          |
 
 The next separate file steps are parser-instruction alignment, review-checklist reconciliation and decision-history backlinks. Do not start six new product-decision rounds or mark all findings closed just because this draft is saved. If a concrete unresolved product issue is discovered in targeted implementation design, identify only that issue; do not silently expand functionality.
 
