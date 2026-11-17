@@ -27,11 +27,23 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   validation precedence. Binding foundation primitives are implemented and
   locally reported green by the user; this is not complete runtime integration
   or assistant-executed validation. See the ledger for the validated baseline.
-- The next proposed slice is registry reconciliation in
-  `processParserContinuationCommand()`, returning state, continuation, person
-  session and registry together. It is not implemented yet and requires its
-  own concrete caller/test review, file-level scope and approval. No automatic
-  question, lookup, retry or search follows from binding reconciliation.
+- Registry reconciliation is implemented in `processParserContinuationCommand()`
+  with application tests in `f6d9db2`. A required fifth argument supplies the
+  trusted expected session reference and stored registry. Applied edits return
+  state, continuation, person session and reconciled registry together, with
+  query invalidations and retired binding references. Rejected/no-op edits
+  do not reconcile or expose partial stores. No binding/question is issued
+  and no lookup, retry or search starts automatically.
+- Validation of this integration is still pending: no fresh test, coverage,
+  ESLint or typecheck results have been reported for `f6d9db2`, and the assistant
+  did not execute those commands. Earlier green reports cover the binding
+  foundation, not this later integration. The immediate next step is validation,
+  followed by synchronizing the WP 011 execution status and progress ledger,
+  which currently still describe registry edit integration as proposed.
+- Response-processing integration, owned-target question support, result staging
+  and complete pause/resume remain later scoped work. Returning coherent
+  proposals does not implement persistence, concurrency control or end-to-end
+  invocation replay protection. WP 011 is not complete or ready for an implicit merge.
 - Before each further implementation slice, complete the relevant targeted
   caller/test inventory and concrete schema/adapter design gates. Do not claim
   all historical plan gates or repository-wide inventories are complete. Reuse
