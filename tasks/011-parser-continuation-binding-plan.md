@@ -42,10 +42,10 @@ Each binding contains `bindingRef`, `sessionRef`, `epoch`, `purpose`, `sourceRev
 
 `purpose` is `query_resolution` or `question_answer`; purposes are not interchangeable. Parser invocation acceptance/lifetime remains separate integration work.
 
-| Ownership | Required target fields | Authoritative lookup |
-| --- | --- | --- |
-| canonical | `ownership`, `criterion` person/keyword, `queryRef` | Current `SearchState.pendingQueries`; no copied query text or artificial parent |
-| continuation | `ownership`, `criterion` person/keyword/genre, `intentionRef`, `queryRef`, `queryGeneration` | Current continuation parent and owned child |
+| Ownership    | Required target fields                                                                       | Authoritative lookup                                                            |
+| ------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| canonical    | `ownership`, `criterion` person/keyword, `queryRef`                                          | Current `SearchState.pendingQueries`; no copied query text or artificial parent |
+| continuation | `ownership`, `criterion` person/keyword/genre, `intentionRef`, `queryRef`, `queryGeneration` | Current continuation parent and owned child                                     |
 
 Linked canonical children use the canonical variant, with no invented canonical generation. An owned child's parent generation is not an unconditional freshness requirement: refining a sibling advances the parent but does not itself alter this child. Source, criterion, ownership or operation changes must explicitly invalidate dependent bindings in their future atomic transitions; this slice cannot claim safety for unsupported mutations.
 
@@ -113,13 +113,13 @@ Caller-controlled atomic persistence uses compare-and-swap or equivalent concurr
 
 The exact discriminated data forms, outcome fields and validation precedence are specified in section 9. These are design contracts, not existing runtime exports.
 
-| Helper | Explicit inputs | Success status |
-| --- | --- | --- |
-| `issueParserContinuationBinding` | Current application context, stored registry, issuance command | `issued` |
-| `checkParserContinuationBinding` | Current application context, stored registry, incoming association, trusted expected purpose | `current` |
-| `consumeParserContinuationBinding` | Same inputs as check | `consumed` |
-| `reconcileParserContinuationBindings` | Current application context, stored registry, application-owned query invalidations | `unchanged` or `reconciled` |
-| `retireParserContinuationBindings` | Routed expected sessionRef, stored registry | `retired` |
+| Helper                                | Explicit inputs                                                                              | Success status              |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------- |
+| `issueParserContinuationBinding`      | Current application context, stored registry, issuance command                               | `issued`                    |
+| `checkParserContinuationBinding`      | Current application context, stored registry, incoming association, trusted expected purpose | `current`                   |
+| `consumeParserContinuationBinding`    | Same inputs as check                                                                         | `consumed`                  |
+| `reconcileParserContinuationBindings` | Current application context, stored registry, application-owned query invalidations          | `unchanged` or `reconciled` |
+| `retireParserContinuationBindings`    | Routed expected sessionRef, stored registry                                                  | `retired`                   |
 
 Application context references existing contracts; it is not a second editable state model. Workflow issuance permission is enforced by the caller; no speculative generic workflow object is added here. No runtime schema is required for every internal helper result.
 
@@ -162,9 +162,9 @@ All boundary objects and nested variants are strict. Missing required fields rej
 
 Discriminator: `ownership`.
 
-| Variant | Exact required fields |
-| --- | --- |
-| canonical | `ownership: canonical`, `criterion: person or keyword`, `queryRef` |
+| Variant      | Exact required fields                                                                                             |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| canonical    | `ownership: canonical`, `criterion: person or keyword`, `queryRef`                                                |
 | continuation | `ownership: continuation`, `criterion: person or keyword or genre`, `intentionRef`, `queryRef`, `queryGeneration` |
 
 Query text and parent generation are forbidden. Canonical targets have no intentionRef or queryGeneration. Owned queryGeneration is an expected current child generation, not a logical-key component.
@@ -175,15 +175,15 @@ Question form: exactly `kind` (`person-selection` or `person-no-match`) and `que
 
 The strict top-level command combines `allocation` with a purpose-discriminated payload:
 
-| `allocation.mode` | Exact allocation fields |
-| --- | --- |
-| create | `mode: create` |
-| renew | `mode: renew`, `expectedBindingRef` |
+| `allocation.mode` | Exact allocation fields             |
+| ----------------- | ----------------------------------- |
+| create            | `mode: create`                      |
+| renew             | `mode: renew`, `expectedBindingRef` |
 
-| `purpose` | Additional required command fields |
-| --- | --- |
-| query_resolution | `target` |
-| question_answer | `target`, `question` |
+| `purpose`        | Additional required command fields |
+| ---------------- | ---------------------------------- |
+| query_resolution | `target`                           |
+| question_answer  | `target`, `question`               |
 
 Thus each complete command has allocation, purpose and target, plus question only for question_answer. Resolution commands forbid question. Question commands structurally require a person target but may express either ownership; owned-person question commands reject semantically as unsupported-owned-question. This distinction makes the capability boundary explicit.
 
@@ -211,15 +211,15 @@ Reconciliation receives an explicit application-owned list of query references t
 
 Discriminator: status. Each row lists the only fields besides status.
 
-| Helper | status | Required fields |
-| --- | --- | --- |
-| issue | issued | registry, binding, retiredBindingRefs |
-| check | current | binding |
-| consume | consumed | registry, binding |
-| reconcile | unchanged | registry |
-| reconcile | reconciled | registry, retiredBindingRefs |
-| retire | retired | registry, retiredBindingRefs |
-| every helper | rejected | reason |
+| Helper       | status     | Required fields                       |
+| ------------ | ---------- | ------------------------------------- |
+| issue        | issued     | registry, binding, retiredBindingRefs |
+| check        | current    | binding                               |
+| consume      | consumed   | registry, binding                     |
+| reconcile    | unchanged  | registry                              |
+| reconcile    | reconciled | registry, retiredBindingRefs          |
+| retire       | retired    | registry, retiredBindingRefs          |
+| every helper | rejected   | reason                                |
 
 No rejected result includes proposed next stores. Returned binding/registry values do not alias mutable caller data. retiredBindingRefs is unique, follows original registry order, and includes a renewed old reference exactly once. issued uses this same form for creation and renewal; its retired list may be empty. reconciled requires at least one removed entry; unchanged forbids retiredBindingRefs. consumed removes exactly the returned binding, performs no unrelated cleanup and adds no redundant consumed-ref field. retired always advances epoch, even from an empty registry; its retired list may be empty. None of these results means an identity was accepted or persistence completed.
 
@@ -227,15 +227,15 @@ No rejected result includes proposed next stores. Returned binding/registry valu
 
 Use operation-specific subsets of these literal reasons, not one indiscriminate error type for every helper:
 
-| Category | reason literals |
-| --- | --- |
+| Category            | reason literals                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------- |
 | Structural boundary | invalid-registry, invalid-context, invalid-command, invalid-association, invalid-invalidations |
-| Lifetime | session-mismatch, epoch-mismatch |
-| Association | unknown-binding, purpose-mismatch, unknown-target, target-mismatch |
-| Freshness | stale-revision, stale-generation, stale-question |
-| Capability | unsupported-owned-question |
-| Issuance | binding-exists, renewal-mismatch, sequence-exhausted, capacity-exceeded |
-| Epoch advancement | epoch-exhausted |
+| Lifetime            | session-mismatch, epoch-mismatch                                                               |
+| Association         | unknown-binding, purpose-mismatch, unknown-target, target-mismatch                             |
+| Freshness           | stale-revision, stale-generation, stale-question                                               |
+| Capability          | unsupported-owned-question                                                                     |
+| Issuance            | binding-exists, renewal-mismatch, sequence-exhausted, capacity-exceeded                        |
+| Epoch advancement   | epoch-exhausted                                                                                |
 
 unknown-target means the referenced query cannot be found; target-mismatch means a current ref has the wrong criterion, ownership or parent. stale-generation applies to owned children. stale-question covers closed/replaced/out-of-order questions and kind/token/query/revision mismatch. Invalid person-session structure is invalid-context instead. Unknown/consumed/retired binding refs share unknown-binding; no tombstone history is required.
 

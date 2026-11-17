@@ -6,16 +6,16 @@ The [work-package specification](../docs/work-packages/011-llm-parser-contract.m
 
 ## Implemented slices
 
-| Commit | Scope | Validation evidence |
-| --- | --- | --- |
-| `b2e8407` | Parser proposal/context/invocation/envelope schemas, JSON Schema export, composition, response validation and tests | Subsequent user report, after the follow-ups below |
-| `0400ce4` | Keyword-reference and capacity-context tests | Included in subsequent local green report |
-| `4eac220` | Explicit nullable-source guard | User confirmed IDE warning gone and all checks green; parser statement coverage reported as 87% |
-| `db830a5` | Bounded continuation ownership schema, canonical associations and tests | User reported all checks green; no new numeric coverage supplied |
-| `4e2a719` | Refine/discard command schema, pure transition and unit tests | User reported tests, typecheck and ESLint passing; established green convention includes coverage threshold |
-| `da318aa` | Person-session application function and integration-style unit tests | Historical test-only report; latest combined code baseline subsequently reported green |
-| `ebe4c41` | Bounded binding schemas, five pure binding helpers, derived registry limit and two unit suites | User reported combined baseline green after the import correction below |
-| `c5d4b3e` | Removed only the unused domain-module Zod import | User reported tests green, typecheck and lint passing on 2026-11-17 |
+| Commit    | Scope                                                                                                               | Validation evidence                                                                                         |
+| --------- | ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `b2e8407` | Parser proposal/context/invocation/envelope schemas, JSON Schema export, composition, response validation and tests | Subsequent user report, after the follow-ups below                                                          |
+| `0400ce4` | Keyword-reference and capacity-context tests                                                                        | Included in subsequent local green report                                                                   |
+| `4eac220` | Explicit nullable-source guard                                                                                      | User confirmed IDE warning gone and all checks green; parser statement coverage reported as 87%             |
+| `db830a5` | Bounded continuation ownership schema, canonical associations and tests                                             | User reported all checks green; no new numeric coverage supplied                                            |
+| `4e2a719` | Refine/discard command schema, pure transition and unit tests                                                       | User reported tests, typecheck and ESLint passing; established green convention includes coverage threshold |
+| `da318aa` | Person-session application function and integration-style unit tests                                                | Historical test-only report; latest combined code baseline subsequently reported green                      |
+| `ebe4c41` | Bounded binding schemas, five pure binding helpers, derived registry limit and two unit suites                      | User reported combined baseline green after the import correction below                                     |
+| `c5d4b3e` | Removed only the unused domain-module Zod import                                                                    | User reported tests green, typecheck and lint passing on 2026-11-17                                         |
 
 A user report of green means tests, coverage threshold, ESLint and typecheck. The assistant did not execute those commands. Historical passing reports do not validate later changes; the latest combined-code report covers the baseline identified above. No fresh numeric coverage percentage or command logs were provided.
 
