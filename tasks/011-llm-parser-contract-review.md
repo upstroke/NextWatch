@@ -2,158 +2,192 @@
 
 ## Status and scope
 
-- Recorded: 2026-11-16; R01 design progress and accepted R02/R06 policies recorded 2026-11-17.
-- Reviewed branch: `feat/011-llm-parser-contract`.
-- Reviewed baseline: `5fa186d4a52ed267b70691f5c117e4b5ca1cc8f4`.
-- Verdict: not ready for schema/adapter implementation. R01 design awaits follow-up; R02/R06 behavior policies are accepted but technical integration/review is pending. No finding is closed by this update.
-- Product authority: [WP 011 specification](../docs/work-packages/011-llm-parser-contract.md). Subsequent accepted decisions A/R02 and B/R06 are recorded in the [decision supplement, sections 4–5](../docs/work-packages/011-parser-contract-decisions.md#4-r02--protect-existing-reservations), pending technical consolidation.
-- Review target: [implementation plan and concrete contract draft](011-llm-parser-contract-plan.md).
-- This file tracks findings and closure evidence, not an alternative product specification. Settled product decisions remain unchanged. R01's accepted direction is recorded in plan section 4.1; other proposed remedies are not approved schema designs or implemented behavior unless explicitly identified as accepted policy below.
-- Recording findings or an accepted design direction does not approve application implementation, a PR or a merge.
+- Original review recorded: 2026-11-16. Consolidation tracking updated: 2026-11-17.
+- Branch: `feat/011-llm-parser-contract`.
+- Original defect-review baseline: `5fa186d4a52ed267b70691f5c117e4b5ca1cc8f4`.
+- Current documentation/prompt baseline: `348091d7f3b950aa67ae788df4884b856d8ca083`.
+- Status: R01–R06 have documented resolution directions in the consolidated plan. This reconciliation replaces outdated missing-documentation statements; it does not certify complete executable contracts, passing tests, implementation readiness or final finding closure.
+- Product authority: [WP 011 specification](../docs/work-packages/011-llm-parser-contract.md), including approved A/R02 and B/R06 in `113a5ab`.
+- Technical resolution locations: [consolidated plan](011-llm-parser-contract-plan.md), commit `3a8942a`.
+- Decision evidence: [decision supplement](../docs/work-packages/011-parser-contract-decisions.md), A/R02 and B/R06 recorded in `a2c548e`. Do not reopen accepted product decisions.
+- Model-facing instruction artifact: [instructions.ts](../src/lib/parser/instructions.ts), English revision `0.1.2-draft` in `348091d`; not connected to a provider/caller and not a runtime guarantee.
+- This file records findings, resolution locations and verification work. It is not another specification and does not approve application implementation, a code commit, PR or merge.
 
-The original review was static and read-only. Directly read at the baseline: the specification, plan, `src/lib/schemas/search-state.ts`, `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/pending-operations.ts`, `src/lib/domain/search/apply-intent.ts` and `src/lib/domain/search/extraction.ts`. This was a targeted contract review, not a complete caller/test audit. No tests, coverage, ESLint, typecheck, schema export or live provider checks ran. Remote inspection does not establish local working-tree cleanliness.
+## Evidence and limits
 
-## Work queue
+The original static review directly read the specification, plan, `src/lib/schemas/search-state.ts`, `src/lib/schemas/semantic-guardrails.ts`, `src/lib/domain/search/pending-operations.ts`, `src/lib/domain/search/apply-intent.ts` and `src/lib/domain/search/extraction.ts`. It was not a complete caller/test audit.
 
-No finding is closed. Blocking means the affected design cannot safely be implemented as currently specified; the additional clarifications are also required before final contract approval. Policy acceptance is not technical closure or implementation evidence.
+This reconciliation compares the existing checklist with the consolidated plan and instruction artifact; it does not repeat a repository-wide audit. The current plan fetch was truncated within section 4.4. Its remaining R06 text, file map, test sequence and verification table are available in the approved full content committed in `3a8942a`; this record does not claim a new untruncated file-tool read of the whole plan. The instruction artifact and previous checklist were read completely at the current baseline.
 
-| ID        | Classification           | Finding                                                                    | Status                                                          |
-| --------- | ------------------------ | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| WP011-R01 | Blocking until re-review | Continuation lifecycle and compound-request ownership                      | Design specified; follow-up consolidation and re-review pending |
-| WP011-R02 | Blocking                 | Reservation accounting for unresolved multi-person replacements incomplete | Policy A accepted; technical integration/review pending         |
-| WP011-R03 | Blocking                 | Cross-group dependency and conflict policy incomplete                      | Open                                                            |
-| WP011-R04 | Blocking                 | Active clarification projection assumes an entity pending reference        | Open                                                            |
-| WP011-R05 | Required clarification   | Reusable fields, enums, reference scopes and bounds not fully defined      | Open                                                            |
-| WP011-R06 | Required clarification   | Staged resolution validity and revision association incomplete             | Policy B accepted; technical integration/review pending         |
+AGENTS, docs/testing.md, docs/typing.md and the WP 011 specification remain binding. Earlier contextual reading also covered WP 009/010/012/013/014 and the deferred wizard task. Its current verified filename is [clarificaton-wizzard-flow.md](clarificaton-wizzard-flow.md), renamed in `ed48ad3`.
 
-The user requested an overview of all R findings before further implementation. All six topics have been discussed; R02/A and R06/B were explicitly accepted. Next consolidate the existing contract and targeted technical clarifications once, not new product-decision rounds for already settled rules. No automatic closure or application implementation follows from this record.
+No tests, coverage, ESLint, typecheck, schema-export check, model evaluation or live provider lookup ran for this reconciliation. Runtime parser schemas/composer/validator/adapter and proposed compound acceptance are not claimed implemented. Remote evidence does not establish local cleanliness or absence of unpushed work.
+
+## Status definitions and work queue
+
+Checked design items below mean that the stated rule is now documented at the linked location. They do not mean an executable schema, independently verified algorithm or automated test exists.
+
+- Design consolidated: the original issue has a traceable proposed resolution in the plan.
+- Verification pending: concrete schema/signature/fixture/caller checks remain before approval of the affected code slice.
+- Implementation acceptance pending: behavior must be implemented and tested under a separately approved file-level scope.
+
+No finding is marked finally closed in this update. Original severity is retained for traceability, not as a claim that no resolution has been written. Finish one focused contract/file-level verification, not six new product-decision rounds. Report a new product question only for a concrete uncovered case that cannot safely follow existing rules.
+
+| ID | Original classification | Consolidated location | Current status |
+| --- | --- | --- | --- |
+| WP011-R01 | Blocking | Plan 4.1 | Design consolidated, including both follow-up rules and eighth scenario; verification/implementation pending |
+| WP011-R02 | Blocking | Specification Capacity and overflow; plan 4.2 | Policy A accepted; proposed calculation consolidated; arithmetic/mapping verification pending |
+| WP011-R03 | Blocking | Plan 4.3 | Dependency/conflict direction consolidated; fixture/adapter verification pending |
+| WP011-R04 | Blocking | Plan 3, kind-specific active clarification | Context/response mapping consolidated; exact contracts/caller verification pending |
+| WP011-R05 | Required clarification | Plan 2–3 | Common field rules/matrix consolidated; exact context shapes, fixtures and schema-export verification pending |
+| WP011-R06 | Required clarification | Specification Staged resolution results; plan 4.4 | Policy B accepted; validity direction consolidated; exact bindings/acceptance verification pending |
 
 ## WP011-R01 — Continuation lifecycle and compound-request ownership
 
-Original location: plan sections 2 and 4. Resolution design: [plan section 4.1](011-llm-parser-contract-plan.md#41-r01--continuation-ownership-and-lifecycle).
+Original issue: compound intentions, child references and staged results lacked a complete ownership/lifecycle definition. Singular pending-person requests cannot represent an atomic multi-person replacement through independent acceptance calls.
 
-Finding: The draft named compound intentions, child references and staged resolutions without a complete record/lifecycle contract. Existing `PendingPersonQuerySchema` carries one query and, for a replacement, one accepted source. Multiple independently accepted requests do not preserve atomic one-to-many replacement.
+Resolution: [plan 4.1](011-llm-parser-contract-plan.md#41-r01--continuation-ownership-and-lifecycle), consolidated in `3a8942a` from the accepted R01 design in `b984463`.
 
-Risk: refinement, discard or completion could lose a destination, detach a child from its parent or remove the accepted source too early.
+Design coverage:
 
-Progress on 2026-11-17: the user accepted the proposed single-owner parent/child design. Plan section 4.1 specifies simple canonical pending requests versus continuation-owned compound intentions, operation-specific source binding, three child states, generations, question association, refinement/discard/pause/commit/transfer behavior and bounds. No runtime implementation or tests were performed. R02, R03, R04, R05 and R06 remain technically open; their rules must not be inferred from R01.
+- [x] Canonical simple pending requests versus continuation-owned compound/unallocated work; accepted criteria remain canonical in SearchState.
+- [x] One child owner and at most one parent; atomic transfer, no independent query copies or double reservation.
+- [x] Owned-child unresolved/needs_clarification/resolved states; technical failure remains distinct from no match.
+- [x] Refinement, scoped child/parent discard, pause, complete atomic acceptance and bounded cleanup.
+- [x] Continuation bounds and unchanged-state failure; discard/cleanup remains available at full capacity.
+- [x] Follow-up: linked-query text/operation comes from canonical state, processing/question facts from responsible contexts, not nonexistent canonical lifecycle fields.
+- [x] Follow-up: linked acceptance/discard reconciles parent/question bindings atomically; unexplained disappearance is an inconsistency.
+- [x] Eighth scenario: accept one independent linked addition, then discard the remainder without undoing the accepted person.
 
-Follow-up review identified two wording gaps not yet incorporated into the plan: completion/discard of a linked canonical request must update its grouping/question bindings atomically; linked children cannot assume lifecycle/generation fields absent from canonical pending records. Add the eighth scenario: accepting one independent linked addition and then discarding the remaining group preserves the already accepted person. This entry records the follow-up; it does not claim those corrections are implemented or re-reviewed.
+Remaining evidence:
 
-Design authoring checklist (checked means specified, not independently re-reviewed or implemented):
+- [ ] Verify concrete continuation/linked-binding variants against all affected producers/consumers and proposed acceptance signatures.
+- [ ] Implement and execute the eight planned scenarios under the approved code scope, including rollback/mutation isolation and no dangling references.
 
-- [x] Specify required conceptual fields and allowed states for parent intentions and child queries.
-- [x] Define parent/child reference uniqueness, target types and discard/refinement scope.
-- [x] Define completion, cancellation, invalidation and transfer to existing transitions, with compound acceptance explicitly requiring an extension.
-- [x] Specify bounds and unchanged-state behavior at full capacity without truncation or dropped wishes.
-- [x] Add contract examples/test cases for refining and discarding a child while preserving the parent operation and unrelated work.
-- [ ] Incorporate the two follow-up clarifications and the eighth scenario into the plan.
-- [ ] Re-review section 4.1 and its scenarios against the specification and adjacent findings before design closure.
-
-Seven scenarios are currently specified in the plan: partial resolution retains source; refining one child preserves siblings; discarding one child preserves the replacement; discarding the final child retains the accepted source; pause/resume rejects the old question; ownership transfer creates no duplicate query/reservation; full capacity rejects without eviction and still permits cleanup. These are expected contract outcomes, not automated test results.
+The prior statements that the two follow-up rules/eighth scenario were not incorporated are superseded by `3a8942a`. Their presence is not proof of implemented behavior or final design closure.
 
 ## WP011-R02 — Multi-replacement reservation accounting
 
-Location: specification Capacity and overflow; plan section 4; `SearchStateSchema` capacity checks.
+Original issue: final deduplicated capacity was described, but reservation of unresolved compound replacements and competing additions was not fixed.
 
-Finding: Final deduplicated capacity is described, but reservation treatment before all destinations are resolved is not fixed. Current state accounting reserves pending additions and assumes singular replacement targets.
+Reproducer: four accepted people; replace one with two unresolved people; request another addition. Iteration order must not decide which wish receives the last available slot.
 
-Reproducer: four accepted people; replace one with two unresolved people; request another addition. The contract must determine whether the replacement has reserved the remaining slot or remains an unallocated overflow intention, rather than allowing incidental processing order to decide.
+Resolution: [specification](../docs/work-packages/011-llm-parser-contract.md#capacity-and-overflow), accepted [decision A](../docs/work-packages/011-parser-contract-decisions.md#4-r02--protect-existing-reservations), and [plan 4.2](011-llm-parser-contract-plan.md#42-r02--capacity-and-protected-reservations).
 
-Accepted decision A, 2026-11-17: [protect existing reservations](../docs/work-packages/011-parser-contract-decisions.md#4-r02--protect-existing-reservations). Existing valid reservations are not silently displaced by later wishes; related new competing wishes are not arbitrarily partially scheduled; unresolved identities count conservatively, with trusted duplicate handling. The exact arithmetic and current-state/continuation mapping still require technical integration and review. Do not reopen the accepted precedence rule or claim that the conversational formula has been verified.
+Design coverage:
 
-Closure checklist:
+- [x] Protect valid existing reservations from later wishes; retain new related competitors for explicit choice rather than arbitrary partial scheduling.
+- [x] Distinguish occupancy, allocated reservations and unallocated overflow.
+- [x] Conservative unresolved counts, trusted ID deduplication and no double-counting canonical/linked queries.
+- [x] Proposed per-operation formulas before/after partial resolution; source-slot sharing and future-removal/cross-operation savings are constrained.
+- [x] Reevaluate on relevant changes and before acceptance, preserving criterion-specific keyword and active/inactive genre limits.
 
-- [ ] Define reservation calculation before and after partial/full identity resolution.
-- [ ] Define interaction with existing additions, simultaneous replacements and sources included among destinations.
-- [ ] Define when a whole intention enters/leaves overflow and how capacity changes are reconciled.
-- [ ] Cover duplicate destinations, already accepted destinations and competing additions without arbitrary partial acceptance.
-- [ ] Preserve the existing person limit and criterion-specific genre/keyword accounting.
+Remaining evidence:
+
+- [ ] Verify the proposed arithmetic with concrete/property cases: partial resolution, source among destinations, duplicate/already accepted destinations, competing replacements and capacity released after discard.
+- [ ] Finalize controlled keyword/compound reservation mappings and their interaction with R03 dependent units before coding the affected slice.
+- [ ] Demonstrate that accepted occupancy plus valid reservations never exceeds the limit and that transfer/failure cannot create hidden slots or lose wishes.
+
+The formula is documented, not certified by this checklist. Do not reopen the accepted precedence policy to resolve an implementation detail.
 
 ## WP011-R03 — Cross-group dependencies and conflicts
 
-Location: plan sections 3 and 4; existing `applyIntent()` and `applyChangeTo()` boundaries.
+Original issue: model groups were non-authoritative, but the application dependency/conflict policy was unspecified.
 
-Finding: Model groups are correctly non-authoritative, but the application algorithm for merging dependencies or detecting conflicts across them is unspecified.
+Resolution: [plan 4.3](011-llm-parser-contract-plan.md#43-r03--dependencies-and-conflicts). The instruction artifact now preserves explicit relationships/self-correction while leaving application decisions outside the model.
 
-Cases: replace and remove the same person; replace all genres and then add one; update year bounds in separate groups; remove a value to make capacity for another change. These cases are not all equivalent: preserve explicit ordered meaning where it is clear, and clarify actual contradictions rather than treating every overlap as an error.
+Design coverage:
 
-Proposed direction: define each operation's prerequisites, affected targets and capacity effects. Derive application-owned coordination units; do not use arbitrary last-write-wins or split a coupled intention for partial success. Reuse transition atomicity and distinguish semantic blocking from unexpected internal failure.
+- [x] Derive prerequisites, modified targets, whole-selection scope, year effects and capacity effects application-side.
+- [x] Treat model coupling as a minimum constraint, merge dependent units and forbid splitting coupled operations for partial success.
+- [x] Distinguish explicit self-correction/ordered composition from ambiguous same-target conflicts; no generic last-write-wins.
+- [x] Couple year bounds, whole-selection edits and explicit remove-to-make-room dependencies appropriately.
+- [x] Retain semantic blockers while independent valid units may succeed; reject the complete working-copy result on unexpected internal inconsistency.
 
-Closure checklist:
+Remaining evidence:
 
-- [ ] Define dependency/conflict rules for shared targets, whole-selection changes, year ranges and shared capacity.
-- [ ] Define ordered composition versus clarification for conflicting instructions.
-- [ ] Define preflight, group retention, independent success and whole-working-copy rejection behavior.
-- [ ] Add examples/test cases for all four cases above and input immutability on unexpected failure.
+- [ ] Align complete context/proposal/outcome fixtures for replace/remove same person, whole-genres-plus-add, split year bounds and explicit capacity dependency.
+- [ ] Check exact adapter coordination and real-transition composition, including existing open-work reconciliation, revision ordering and mutation isolation.
+
+These are focused technical verification tasks, not authorization for a generic workflow engine or another state model.
 
 ## WP011-R04 — Active clarification projection
 
-Location: plan section 2, `activeClarification`; `SemanticClarificationSchema` in `semantic-guardrails.ts`.
+Original issue: a generic activeClarification with an entity pendingRef could not represent a year-conflict question, and source/meaning contexts were underspecified.
 
-Finding: `{pendingRef, subject}` is not enough for all existing questions. A year-conflict question has contradictory bounds and its own question binding, not a person/keyword pending request. Replacement-source and keyword-meaning questions also need their relevant context.
+Resolution: [plan 3](011-llm-parser-contract-plan.md#3-request-and-response-boundary), kind-specific active clarification table; instruction revision `0.1.2-draft`, Active clarification section.
 
-Reproducer: while resolving contradictory year bounds, the user answers, “Dann ab 2000.” The parser needs the actual conflict and the application needs the active question association, without inventing an entity request.
+Design coverage:
 
-Proposed direction: use clarification-kind-specific projections of existing contracts. Include a pending request reference only where one exists. Keep authoritative question/revision binding application-owned and preserve closed-question protection.
+- [x] Person, replacement-source, year-conflict and keyword-meaning context directions are distinct, with capacity clarification identified as planned extension rather than existing functionality.
+- [x] Preserve authoritative question/revision/session association application-side; no fabricated entity request for a year question.
+- [x] Offered source/meaning references are interpretations, not identity acceptance; prepared buttons do not call the model.
+- [x] Year example: proposed 2020–2010 plus “Dann ab 2000” changes only the mentioned bound, then validates 2000–2010 together.
+- [x] No-active-question and explicit-other-request rules preserve closed-question protection and additional independent wishes.
 
-Closure checklist:
+Remaining evidence:
 
-- [ ] Define strict model-visible projections for person refinement, replacement-source selection, year conflict and keyword meaning.
-- [ ] Define the response-to-active-question mapping and any necessary application adapter.
-- [ ] Cover no active question, explicit targeting of another request and obsolete same-revision questions.
-- [ ] Add the year-correction example without creating an artificial entity request.
+- [ ] Define/verify exact strict context shapes and response-to-action mappings against actual WP 010 contracts and affected callers.
+- [ ] Execute focused year/source/meaning/person/capacity association tests, including old same-revision questions and scoped discard.
+
+This record does not assert that capacity clarification or all text-answer adapters already exist.
 
 ## WP011-R05 — Complete the field matrix
 
-Location: plan sections 2 and 3.
+Original issue: correction optionality, subject/status sets, criteria/context shapes, reference scope and excerpt bounds were not fully defined.
 
-Finding: `correction` is described as null or optional; `subject`, pending `status`, the exact `criteria` structure and parent/child reference scopes are not closed field contracts. `inputExcerpt` also needs an explicit bound.
+Resolution: [plan 2](011-llm-parser-contract-plan.md#2-contract-ownership-and-common-field-rules--r05) and [plan 3](011-llm-parser-contract-plan.md#3-request-and-response-boundary); instruction revision `0.1.2-draft`, Response structure and field meaning section.
 
-Proposed direction: make `correction` required with null for no suggestion; use closed discriminated variants and enum values, operation-specific fields and explicit bounds. This is a proposal pending technical review.
+Design coverage:
 
-Closure checklist:
+- [x] Query text and correction required; correction null means no suggestion, not removal. Variant-inappropriate fields are forbidden.
+- [x] Typed reference scopes, source selector direction, subject/query-status/blocker sets and operation-dependent response matrix are documented.
+- [x] Excerpt literal containment, overlapping excerpts, UTF-16 length counting, per-field and aggregate limits are specified.
+- [x] Single Zod source/inferred types/derived JSON Schema and central stable limits follow typing rules; no schema per internal helper or export of the complete domain state.
 
-- [ ] Specify every required, nullable, optional and forbidden field with types/enums/bounds.
-- [ ] Specify all reference target kinds and parent/child selection rules.
-- [ ] Specify excerpt containment and length policy, plus nested aggregate limits.
-- [ ] Align complete valid/invalid examples with the resulting matrix.
-- [ ] Verify the concrete Zod-to-JSON-Schema export during the approved implementation slice; do not claim provider compatibility from documentation.
+Remaining evidence:
+
+- [ ] Finish/verify exact model-visible context and continuation-boundary shapes where the plan still gives descriptions rather than complete executable field definitions.
+- [ ] Produce complete valid/invalid synthetic fixtures with actual supplied context/ref registries, including the new answer and discard variants; named example scenarios alone do not satisfy fixture acceptance.
+- [ ] Verify concrete Zod-to-JSON-Schema conversion during the approved implementation slice; document actual unsupported constructs/provider limitations without silently weakening local validation.
+
+Do not claim that every wire field or provider capability is proven merely because the operation matrix and prompt were updated. Generic primitive/missing-field Zod tests alone are not useful project acceptance coverage.
 
 ## WP011-R06 — Staged resolution validity
 
-Location: plan section 4; existing `acceptResolvedPerson()` revision checks.
+Original issue: preserving several trusted results without revision rebasing lacked a concrete validity/acceptance direction for refinement, cancellation and state changes.
 
-Finding: The draft requires staging several trusted results while forbidding revision rebasing, but does not define validity after refinement, cancellation or another relevant state/session change. Current singular acceptance rejects a result whose source revision differs from current state.
+Resolution: [specification](../docs/work-packages/011-llm-parser-contract.md#staged-resolution-results-and-current-state-acceptance), accepted [decision B](../docs/work-packages/011-parser-contract-decisions.md#5-r06--retain-validated-results-for-unchanged-child-queries), and [plan 4.4](011-llm-parser-contract-plan.md#44-r06--result-validity-and-current-acceptance).
 
-Accepted decision B, 2026-11-17: [retain validated results for unchanged child queries](../docs/work-packages/011-parser-contract-decisions.md#5-r06--retain-validated-results-for-unchanged-child-queries). Previously validated unchanged-child facts may remain, but changed-child results/candidates are invalidated and atomic acceptance rechecks current source, capacity, provenance and bindings. Stale incoming responses are not relabelled. Interruption closes outstanding authorizations/questions while preserving previously validated unchanged-child facts; discard removes corresponding open work. Exact generations, result bindings and acceptance mapping remain technical work, not existing runtime capabilities.
+Design coverage:
 
-Closure checklist:
+- [x] Distinguish already validated unchanged-child facts from incoming responses with stale associations; never relabel sourceRevision.
+- [x] Describe session lifetime/processing epoch, query generation, parent/source and attempt bindings, bounded consumption and fresh-attempt supersession.
+- [x] Staging is session bookkeeping, not accepted identity mutation or a query edit-generation increment; preserve the existing canonical singular acceptance guard.
+- [x] Refinement invalidates the affected child's results/candidates; unrelated unchanged facts may remain but cannot authorize mutation by themselves.
+- [x] Interruption closes questions/outstanding authorizations without deleting valid unchanged-child facts or automatically starting another call; discard/reset removes corresponding work.
+- [x] Current-state compound acceptance rechecks source, child membership/provenance, full destinations, deduplication, capacity and dependencies atomically.
 
-- [ ] Define lookup/result association with child generation, parent/source context and request/session lifetime.
-- [ ] Define acceptance versus invalidation for related and unrelated state changes.
-- [ ] Cover refinement after one result, cancellation/restart, late duplicate responses, source removal and capacity changes.
-- [ ] Define complete atomic acceptance without sequential singular replacement or fabricated provenance.
+Remaining evidence:
 
-## Confirmed reusable behavior
+- [ ] Verify exact binding records, comparison/invalidation rules and acceptance signatures with the controlled domain boundary and WP 014 handoff, without bypassing global stale guards.
+- [ ] Test refine self/sibling, unrelated scalar changes, source/capacity changes, interruption/resumption, reset/recreate same name, late/duplicate responses and stale-incoming versus previously-validated facts.
+- [ ] Demonstrate one atomic compound acceptance, retaining original provenance and rejecting partial/unexpected failure without mutation.
 
-- `applyIntent()` validates a candidate state and accounts for the full active/inactive genre wish.
-- `extraction.ts` implements whole-list set/replace separately from add/remove; targeted replacement needs deliberate mapping.
-- `acceptResolvedPerson()` preserves the trusted acceptance boundary and deduplicates by ID. Multi-person atomic acceptance still needs an extension.
+Do not reopen decision B; determine the concrete safe implementation within its constraints. No live provider lookup or automatic recovery is authorized here.
 
-These observations do not establish passing tests or remove the need to inspect concrete affected callers before code changes.
+## Verification handoff and closure
 
-## Completion and approval gate
+The earlier broad missing-design descriptions are now traceable to consolidated resolution directions. The remaining unchecked items above are the concrete verification/implementation acceptance queue. Do not keep re-asking accepted product questions, but do not mark unknown signatures, incomplete context shapes or unexecuted fixtures as verified.
 
-For each finding, record the revised contract location, reviewed examples/tests, review outcome and closing commit when available. Separate design closure from later implementation/test evidence. R05's schema-export check is implementation acceptance work; record that handoff explicitly rather than claiming it ran during design review.
+Before starting the affected application slice: complete the targeted caller/signature/field review, agree a file-level scope and obtain implementation approval. During that approved slice: add focused failing tests, implement with real internal transitions and verify schema export where applicable. Do not require a model/provider integration to run deterministic contract tests, or label composed domain tests as HTTP integration.
 
-No application implementation is authorized by this record. Close or explicitly and safely defer every finding before requesting the affected implementation approval. Update the main plan/specification with accepted resolutions; do not let this checklist become a competing contract. This update records decisions and review progress only; it does not complete the consolidated contract or change parser instructions.
+Apply the actual testing conventions: synthetic reusable fixtures; mock external boundaries, not the unit; coverage-intent comments immediately above unit-test declarations; no new HTTP/browser scope. Run actual project scripts for tests, statement coverage at least 80% including unimported application modules, ESLint and typecheck. Record commands/results and checks not run honestly. No such execution occurred for this checklist update.
 
-| Finding   | Resolution location                                  | Design review / closure commit                                     | Implementation evidence                                                     |
-| --------- | ---------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| WP011-R01 | Plan section 4.1; two follow-up clarifications above | Design specified; follow-up consolidation/re-review pending        | Not implemented; seven plan scenarios not run; eighth pending incorporation |
-| WP011-R02 | Decision supplement section 4                        | Policy A accepted 2026-11-17; technical integration/review pending | Not implemented                                                             |
-| WP011-R03 | Pending                                              | Open                                                               | Not implemented                                                             |
-| WP011-R04 | Pending                                              | Open                                                               | Not implemented                                                             |
-| WP011-R05 | Pending                                              | Open                                                               | Not implemented                                                             |
-| WP011-R06 | Decision supplement section 5                        | Policy B accepted 2026-11-17; technical integration/review pending | Not implemented                                                             |
+Finding closure must record the reviewed resolution and verification evidence at the responsible stage. Design closure and implementation acceptance are separate; future checks can be explicitly handed off, not falsely checked off. Saving this reconciliation does not close R01–R06 or grant application-code/PR/merge approval.
+
+Next documentation step: update the decision-history consolidation backlinks. The plan's earlier forward references to prompt/review alignment are historical progress statements to reconcile when that plan is next edited, not proof those artifacts are still wholly untouched. Downstream WP 012/WP 014 and the renamed wizard-task alignment remain separate follow-up work. No new product decisions or a new work-package number are introduced here.
+
+## Execution status
+
+Only this review protocol is updated. Specification `113a5ab`, consolidated plan `3a8942a` and prompt `348091d` are referenced, not modified. No runtime schema, adapter, domain transition, provider client, tests, other documentation files, PR or merge changed. All implementation evidence remains pending; no validation commands or model evaluations ran.
