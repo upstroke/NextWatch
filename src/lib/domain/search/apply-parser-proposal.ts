@@ -22,7 +22,7 @@ export type ApplyParserProposalResult =
   | { status: 'unchanged'; reason: 'no-effective-change' }
   | {
       status: 'blocked';
-      reason: 'clarification' | 'unsupported' | 'unsupported-genre-scope';
+      reason: 'clarification' | 'unsupported' | 'unsupported-genre-scope' | 'unsupported-pending-operations';
       proposal: ParserProposal;
     }
   | { status: 'rejected'; reason: RejectionReason; proposal: unknown; detail?: string };
@@ -36,6 +36,8 @@ export type ApplyParserProposalResult =
  * does not rebase provider replies, resolve identities, authorize or run searches.
  * Entity replacement/refinement and incompatible new genre wishes remain blocked
  * or rejected with the proposal retained, never silently converted to additions.
+ * Nonempty pendingOperations are blocked in full until target-bound application
+ * is implemented; accompanying filters/additions must not be applied on their own.
  * @param state Current draft.
  * @param input Untrusted parser proposal.
  * @param context Application-owned bindings and optional complete genre catalogs.
@@ -68,6 +70,9 @@ export function applyParserProposal(
       reason: proposal.status === 'needs_clarification' ? 'clarification' : 'unsupported',
       proposal,
     };
+  }
+  if (proposal.pendingOperations?.length) {
+    return { status: 'blocked', reason: 'unsupported-pending-operations', proposal };
   }
 
   const refs = [...context.personRefs, ...context.keywordRefs];
