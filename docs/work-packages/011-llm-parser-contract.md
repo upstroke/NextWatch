@@ -6,7 +6,7 @@
 
 Define validated LLM parser input/output and a pure application adapter. Reuse [WP 009](009-search-state-and-filter-catalog.md), completed [WP 010](010-clarification-and-guardrails.md) and [WP 012 participation semantics](012-search-execution-and-discover.md#scope), not a competing state model.
 
-This is the authoritative consolidated product specification. The [implementation plan](../../tasks/011-llm-parser-contract-plan.md) contains proposed fields, bounds and examples pending technical review. The [2026-11-16 decision supplement](011-parser-contract-decisions.md), committed in `1374785`, remains a historical decision record; its request for future consolidation is fulfilled by this revision. Product decisions are requirements, not evidence of implementation or approval of the full code plan.
+This is the authoritative consolidated product specification. The [implementation plan](../../tasks/011-llm-parser-contract-plan.md) contains proposed fields, bounds and examples pending technical review. The [decision supplement](011-parser-contract-decisions.md) remains the decision history: sections 1–3 were consolidated in `5fa186d`; the subsequently approved R02/R06 policies in sections 4–5, recorded in `a2c548e`, are incorporated below. Product decisions are requirements, not evidence of implementation, technical review closure or approval of the full code plan.
 
 ### Scope and ownership
 
@@ -58,10 +58,27 @@ This is the authoritative consolidated product specification. The [implementatio
 
 - Accepted people occupy slots; pending additions reserve slots; candidate alternatives for one request do not reserve extra slots. Refinement adds no slot.
 - One-to-one replacement reuses its source slot. One-to-many replacement must account for the entire resulting deduplicated accepted set and applicable pending-addition reservations; it is not automatically a one-slot operation. Recompute against current state at acceptance.
+- Existing scheduled wishes retain their valid reservations. Later wishes must not silently displace them; wishes that cannot fit remain available for capacity clarification.
+- When new related wishes compete for capacity within the same submitted request, do not schedule an arbitrary subset merely because of processing order. Preserve the competing intentions for an explicit capacity decision.
+- Count unresolved identities conservatively. Recognize identity duplicates only through trusted resolution, not name similarity or model guesses. A multi-person replacement reserves the additional capacity needed by the common operation while retaining its accepted source.
+- Example: with four accepted people, an existing replacement of one person by two may validly reserve the remaining slot. A later unrelated addition cannot take that reservation. If both competing wishes arrive together as a new related group, do not silently choose one.
 - Related overflowing wishes remain in bounded ephemeral continuation context outside the bounded accepted/pending-addition collection, not as an invalid sixth entry or hidden accepted slot.
 - Explain overflow and pending reservations. Ask whom to add/replace or which wish to discard. Never choose an arbitrary subset. Selecting one addition does not discard unselected wishes; retain them until resolved or explicitly discarded.
 - Use criterion-specific limits/accounting: active keywords plus pending additions, and active plus inactive genres, already share their respective bounds. Do not blindly copy person accounting.
+- Exact reservation arithmetic, interactions between simultaneous operations and atomic transfer mappings belong in the technical plan and its tests. Acceptance of the policy does not certify the conversational formula or existing runtime support.
 - Full continuation-context behavior and bounds require technical review; there is no unbounded alternative state. Preserve existing work on failure.
+
+### Staged resolution results and current-state acceptance
+
+- Distinguish an identity result already validated under a valid request association from an incoming response whose association has become stale.
+- An already validated result for an unchanged child query may remain staged. It is not yet an accepted criterion, a capacity reservation or permission to mutate the current state.
+- Refining a child invalidates that child's previous result and candidates. Preserve unrelated unchanged child information only under its own valid bindings.
+- Before atomic acceptance, recheck the current source, complete replacement/selection, capacity, provenance and all relevant request/session associations. Do not bypass existing domain acceptance guards or accept compound replacements through independently committed singular replacements.
+- Reject stale incoming responses; never make them current by changing their source revision. Retaining a previously validated fact does not authorize relabelling an old asynchronous response.
+- Confirmed interruption closes the active question and outstanding response authorizations, while retaining already validated information for unchanged child queries. Resume deliberately with fresh bindings where needed; interruption does not itself start another lookup, model call or search.
+- Discard removes the corresponding open work and its associated staged results/bindings, without undoing unrelated already accepted criteria.
+- Example: when Tom Hanks is to be replaced by Chris Evans and Brad Pitt, a validated Chris Evans result may remain while the other child is refined. The changed child's old candidates/results are invalid; Tom Hanks stays accepted until the complete current operation passes controlled atomic acceptance.
+- Concrete session lifetime, generations, invocation consumption, invalidation rules and current-state acceptance mappings remain technical-plan work. WP 014 establishes trusted resolution/provenance; the pure domain boundary controls acceptance. These requirements do not claim an implemented staging mechanism or authorize automatic retries.
 
 ### Spelling mistakes
 
@@ -100,14 +117,17 @@ This is the authoritative consolidated product specification. The [implementatio
 
 Test synthetic composition/validation and pure adapter scenarios with real internal transitions and mocked external boundaries. Cover mixed requests, incomplete names, AND intent, unchanged media type, targeting/refinement, no-match retention, source ambiguity, duplicates, multi-replacement capacity, whole-selection atomicity, active/inactive genres, typo hints, overflow retention, reference/revision/replay checks and absence of implicit execution/retry. Test constant migration through a real reference inventory. Do not duplicate generic Zod behavior or already covered domain rules.
 
+Add focused acceptance coverage for protected existing reservations versus later wishes, new related capacity competition without arbitrary subsets, retained validated unchanged-child facts, invalidation after refinement, stale incoming responses, interruption/resumption and current-state revalidation before atomic acceptance. These are required implementation checks, not tests executed by this specification update.
+
 During implementation run relevant suites, `pnpm test`, `pnpm test:coverage`, `pnpm lint` and `pnpm typecheck`; preserve at least 80% statement coverage including unimported application modules. Report commands actually run, not inferred success. HTTP/browser/live-provider work is not authorized here.
 
 ## Execution status
 
 - WP 010 remains complete; WP 011 is in technical design, not runtime completion.
 - Consolidated the 2026-11-16 decisions, including the `1374785` supplement and subsequently approved spelling policy. This revision supersedes older blanket reference prohibitions and one-slot assumptions for multi-replacement.
+- On 2026-11-17, incorporated the explicitly accepted A/R02 reservation and B/R06 staged-result policies from decision record `a2c548e` into this authoritative specification. This does not close any review finding or complete the technical contract/adapter design.
 - English instruction draft `0.1.1-draft` exists at `166e144`; it is not connected to runtime or automatically aligned with the concrete draft.
 - Field-level design, examples, file map and remaining gates are in the linked plan. Documentation approval is not application-code approval.
 - Prior review history: integration review `26aefe9`, initial read-only baseline `5c85d69`, follow-up `a6fe74b`, prompt/JSON specification `a8dbca0`. These do not establish current passing tests or exhaustive caller coverage.
-- This revision changes documentation only. No validation commands, application changes, live lookups, PR or merge. Remote inspection does not prove local cleanliness or absence of unpushed work.
+- This revision changes only this specification. The technical plan, decision supplement, review protocol and parser instructions are not updated by this commit. No validation commands, application changes, live lookups, PR or merge. Remote inspection does not prove local cleanliness or absence of unpushed work.
 - Downstream WP 012/WP 014 and wizard-task alignment remains a separately reviewed documentation follow-up; do not claim those files were updated.
