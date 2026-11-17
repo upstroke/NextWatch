@@ -2,9 +2,10 @@
 
 ## Status and authority
 
-- Recorded: 2026-11-16.
+- Recorded: 2026-11-16; approved R02/R06 policy decisions added 2026-11-17.
 - Supplements [WP 011 — LLM parser contract](011-llm-parser-contract.md) and informs the [draft implementation plan](../../tasks/011-llm-parser-contract-plan.md).
-- Records the explicitly approved internal-reference, one-to-many person replacement and whole-selection replacement decisions. These are requirements, not implemented capabilities.
+- Records the explicitly approved internal-reference, one-to-many person replacement and whole-selection replacement decisions, plus the R02 reservation and R06 staged-result policies. These are requirements, not implemented capabilities.
+- Sections 1–3 were consolidated into the parent specification in `5fa186d`. Sections 4–5 record subsequently accepted decisions pending their technical integration into the main plan/specification. Do not treat this record as a competing state model or a completed contract review.
 - Where older WP 011 text appears to prohibit returning any internal reference, the supplied-reference distinction below controls. Where older singular replacement wording assumes one source slot is always sufficient, the one-to-many capacity rule below controls.
 - Documentation only. Does not approve application implementation, the full technical plan, provider integration, UI, PR or merge.
 
@@ -52,6 +53,33 @@ The operation covers the whole selection for that criterion, not merely a silent
 
 Keyword support is an approved product requirement, not evidence that controlled keyword acceptance or replacement transitions are implemented. Inspect and explicitly plan the necessary extensions before coding.
 
+### 4. R02 — Protect existing reservations
+
+Explicitly accepted by the user on 2026-11-17 as decision A.
+
+- Existing scheduled wishes retain their valid capacity reservations. A later wish must not silently displace them; if it cannot fit, retain it for capacity clarification.
+- When new related wishes compete for capacity within the same submitted request, do not schedule an arbitrary subset merely because of processing order. Preserve the competing intentions for an explicit capacity decision.
+- Count unresolved identities conservatively. Account for identity duplicates only after trusted resolution, not from similar names or model guesses.
+- A one-to-many replacement reserves the additional capacity needed by the common operation while retaining its accepted source. Existing criterion limits and the complete-result deduplication rule remain binding.
+- This decision approves reservation precedence and conservative accounting. The exact reservation calculation, interactions between simultaneous operations and atomic transfer/acceptance mappings must still be integrated and checked under R02/R03; the conversational formula is not a verified implementation.
+
+Example: if four people are accepted and an existing replacement of one person by two has a valid reservation for the remaining slot, a later unrelated addition does not take that slot. If both competing wishes arrive together as a new related group, do not silently choose one.
+
+### 5. R06 — Retain validated results for unchanged child queries
+
+Explicitly accepted by the user on 2026-11-17 as decision B.
+
+- Distinguish a result already validated under a valid request association from an incoming response whose association has become stale.
+- An already validated staged identity result may be retained for an unchanged child query. It is not yet an accepted criterion and does not authorize later mutation by itself.
+- Refining a child invalidates that child's previous result and candidates. Preserve unrelated unchanged child information subject to its own valid bindings.
+- Before atomic acceptance, recheck the current source, full replacement/selection, capacity, provenance and all relevant request/session associations. Do not bypass existing domain acceptance guards.
+- Reject stale incoming responses rather than making them current by changing their source revision. Retaining a previously validated fact is not permission to relabel an old asynchronous response.
+- Confirmed interruption closes the active question and outstanding response authorizations, but retains already validated information for unchanged child queries. Resume deliberately with fresh bindings where needed.
+- Discard removes the corresponding open work and its associated staged results/bindings, without undoing unrelated already accepted criteria.
+- Session lifetime, child generations, invocation consumption, invalidation and current-state acceptance mapping still require concrete technical integration under R06. This decision does not assert those mechanisms already exist or approve an automatic new lookup/model call.
+
+Example: in a replacement of Tom Hanks with Chris Evans and Brad Pitt, a validated Chris Evans result may remain while the other child is refined. The changed child's old candidates/results are invalid. The source stays accepted until the full current operation passes controlled atomic acceptance.
+
 ## Technical draft consolidation — not an approved schema
 
 The following records the direction discussed around the approved decisions. Exact field names, bounds, discriminants and adapter mappings still require the pre-code design review. Illustrative structures in conversation are not implemented APIs.
@@ -89,8 +117,8 @@ Criteria edits do not execute a title search. Provider resolution, UI rendering 
 - Inspect affected callers/tests and define the minimal one-to-many acceptance and genre/keyword whole-selection extensions.
 - Specify coupled-intention representation and capacity accounting, including unresolved identities and pending reservations.
 - Add synthetic valid/invalid examples and deterministic contract/adapter tests in the approved implementation scope.
-- Reconcile the parent specification and draft plan with this supplement during their next full edit; do not treat their older blanket reference prohibition or singular replacement assumptions as the current decision.
+- Sections 1–3 were consolidated into the parent specification in `5fa186d`; integrate the subsequent decisions in sections 4–5 into the concrete plan/specification without reopening them. R01 follow-up wording and R03–R05 technical completion remain separate unfinished consolidation work.
 
 ## Execution status
 
-Documentation decision record only. No prompt, runtime schema, domain transition, provider connection, UI or tests changed. No tests, coverage, ESLint or typecheck run for this record. No merge included.
+Documentation decision record only. The 2026-11-17 update records accepted A/R02 and B/R06 and updates their review references; it does not complete the R01–R06 consolidation or close any finding. No prompt, runtime schema, domain transition, provider connection, UI or tests changed. No tests, coverage, ESLint or typecheck run for this record. No PR or merge included.
