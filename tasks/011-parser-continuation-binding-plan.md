@@ -1,8 +1,8 @@
 # WP 011 — continuation request and question binding plan
 
-Date: 2026-11-17. Target branch: `feat/011-llm-parser-contract`. Inspection baseline: `8348747`.
+Date: 2026-11-17. Target branch: `feat/011-llm-parser-contract`. Initial inspection baseline: `8348747`; targeted consistency review and clarifications: `8be4d87`.
 
-Status: proposed technical slice for review, not implemented runtime behavior. Approval to commit this document records the plan; application-code changes require a separate resolved write approval.
+Status: clarified technical proposal, not implemented runtime behavior or completed review of all WP 011 gates. Approval to commit this document records the plan; application-code changes require a separate resolved write approval.
 
 Product authority: [WP 011](../docs/work-packages/011-llm-parser-contract.md). Related design: [implementation plan](011-llm-parser-contract-plan.md), especially continuation ownership and invocation association. Implementation evidence and user-reported checks remain in the [progress ledger](011-llm-parser-contract-progress.md). This supplement does not close R01–R06 or supersede product policy. The large implementation-plan tool response was truncated; this document does not claim a fresh full review of its remaining sections.
 
@@ -25,86 +25,131 @@ Excluded: provider lookup, uniqueness/provenance verification, candidate fetchin
 
 All authority comes from application storage and routing. A client/model may echo an issued reference but cannot supply authoritative session data, generations, revisions or offer contents. Shape validation alone is not authorization.
 
-Proposed application registry:
+### Shared application session context
+
+The caller loads the registry, search state, continuation and person clarification session from the same application-owned session context. The expected `sessionRef` comes from trusted routing, not from the response payload; every registry operation checks it. The current epoch is taken from the current stored registry, not a response-supplied registry snapshot. Incoming associations must match that epoch.
+
+The existing `PersonClarificationSessionSchema` contains only sequence and active question. It cannot independently prove membership in a registry lifetime. That association is an explicit application-boundary prerequisite, not something inferred from matching question/query strings. No extra question copy, mandatory person-schema change or new storage framework is introduced in this foundational slice. The caller must not mix snapshots from different lifetimes.
+
+### Registry and binding fields
 
 - `sessionRef`: opaque lifetime identifier supplied by the application; never reused for a new session.
-- `epoch`: nonnegative safe integer. Confirmed interruption/reset advances it and clears outstanding authorizations; resume uses the current epoch and deliberately issues fresh bindings.
-- `sequence`: nonnegative safe integer, retained across epochs. Issuance advances it; `bindingRef` is derived as `continuation-binding-<sequence>` and is meaningful only with sessionRef/epoch.
-- `outstanding`: bounded list of issued bindings only; consumed/retired bindings are removed, not retained as an unbounded history.
+- `epoch`: nonnegative safe integer identifying the current authorization epoch. Advancing it withdraws all outstanding registry bindings, not the workflow or questions by itself.
+- `sequence`: nonnegative safe integer retained across epochs. Successful issuance advances it; `bindingRef` is `continuation-binding-<sequence>`, meaningful only with sessionRef/epoch.
+- `outstanding`: bounded list of immutable issued bindings; consumed/retired bindings are removed rather than kept as unbounded history.
 
-Each immutable binding contains `bindingRef`, `sessionRef`, `epoch`, `purpose`, `sourceRevision`, `target` and, only for question answers, `question`.
+Each binding contains `bindingRef`, `sessionRef`, `epoch`, `purpose`, `sourceRevision`, `target` and, only for question answers, `question`.
 
-`purpose` is `query_resolution` or `question_answer`. A binding issued for one purpose cannot be consumed for the other. No parser-invocation acceptance is implied. Parser invocation lifetime remains its own integration work.
-
-Target variants:
+`purpose` is `query_resolution` or `question_answer`; purposes are not interchangeable. Parser invocation acceptance/lifetime remains separate integration work.
 
 | Ownership | Required target fields | Authoritative lookup |
 | --- | --- | --- |
 | canonical | `ownership`, `criterion` person/keyword, `queryRef` | Current `SearchState.pendingQueries`; no copied query text or artificial parent |
 | continuation | `ownership`, `criterion` person/keyword/genre, `intentionRef`, `queryRef`, `queryGeneration` | Current continuation parent and owned child |
 
-Canonical query identity and revision come from the existing domain transition. Linked canonical children use the canonical variant even if a continuation intention refers to them. No canonical child generation is invented.
+Linked canonical children use the canonical variant, with no invented canonical generation. An owned child's parent generation is not an unconditional freshness requirement: refining a sibling advances the parent but does not itself alter this child. Source, criterion, ownership or operation changes must explicitly invalidate dependent bindings in their future atomic transitions; this slice cannot claim safety for unsupported mutations.
 
-The owned child's parent generation is deliberately not an unconditional freshness requirement: refining one sibling advances its parent but must not by itself invalidate an unchanged child's association. Changes to a source, criterion, ownership or operation invalidate all dependent child bindings explicitly; those mutations require future atomic transition integration. The initial slice cannot claim safety for unsupported mutations.
+For `question_answer`, `question` has `kind` and `questionRef`, referring to the authoritative active question. No question text or candidates are copied. For `query_resolution`, `question` is forbidden. Initial question kinds match existing person-selection/person-no-match contracts; a person question cannot target keyword/genre work. Owned question issuance rejects until a real owned-question session exists.
 
-For `question_answer`, `question` contains `kind` and `questionRef`, referencing the authoritative active clarification session. No question text, candidate list or mutable question copy is stored here. For `query_resolution`, `question` is forbidden. Question kind initially names the supported person selection/no-match shapes; additional kinds require explicit mappings and tests. A person question cannot be bound to a keyword/genre target.
+### Logical keys and registry invariants
 
-## 4. Issuance and boundedness
+Within a registry, the logical key is `(ownership, criterion, queryRef, purpose)` for canonical targets and additionally `intentionRef` for owned targets. Compare structured field tuples, not ambiguous delimiter-concatenated strings.
 
-- Reuse existing reference, revision and generation schemas where their semantics match. Add named bounds to `src/lib/config/domain.ts`; do not duplicate unexplained literals.
-- Proposed maximum outstanding bindings: twice the existing maximum continuation-query count, allowing at most one binding per target and purpose. Canonical and owned queries share this budget; the numeric value is derived from the existing query bound.
-- Issuance validates the application-owned registry, current state/continuation association, target membership, ownership and purpose. Question issuance additionally validates the actual current question and its target association.
-- The initial question integration supports only existing canonical first-person questions. Owned query-resolution associations may be issued, but owned question issuance must reject until an authoritative owned-question session exists. Do not fabricate a question store to make the variant usable.
-- Replacing an outstanding binding for the same target/purpose is explicit and retires the old one atomically; it does not silently evict unrelated work. Distinct target/purpose pairs do not exceed the bound.
-- Sequence exhaustion rejects issuance without mutation. Retirement and consumption remain available at full capacity. Epoch exhaustion rejects interruption/reset atomically; a caller may terminate the lifetime and start a genuinely new sessionRef, never wrap counters.
+`queryGeneration`, `sourceRevision`, `questionRef` and `bindingRef` are binding/freshness attributes, not extra logical-key slots. A changed generation or question cannot create a second outstanding binding for the same target/purpose.
 
-## 5. Incoming response validation and consumption
+Schema-level invariants:
 
-Validate against the stored outstanding entry, not a caller-supplied copy of a purported binding:
+- At most one entry per logical key, and unique binding references.
+- Every entry has the registry's sessionRef and epoch.
+- Each bindingRef encodes a positive safe-integer issuance sequence using the canonical decimal form, with no leading zeros, and at most the registry sequence. Encoded sequence values are unique; retired/consumed gaps are allowed. Sequence zero implies no outstanding entries.
+- Counters never decrease or wrap through controlled transitions. Initialization is explicit; parsing stored registries must not silently default missing lifetime/counter data to a fresh registry. Historical monotonicity cannot be proven by a single snapshot schema.
+- Registry bound and strict target/purpose variants apply. Existence and current freshness are checked against application context, not falsely guaranteed by structural parsing. Stale but structurally valid entries remain parseable for reconciliation.
 
-1. Match the routed session lifetime, current epoch, issued binding reference and expected purpose. Unknown/consumed references reject.
-2. Require `sourceRevision` to equal the current search revision. This is intentionally conservative: a canonical edit may retire incoming sibling responses even when their query text is unchanged. Never rewrite an incoming response's revision.
-3. Resolve the exact current target and check criterion and ownership. For owned work, require the same parent association and child generation. Reject missing, transferred or refined targets.
-4. For question answers, require the same active question token, kind and current target association from the authoritative clarification session; closed/replaced questions reject even at the same search revision.
-5. Validate the response payload at its responsible boundary. Binding validity is not provider provenance, uniqueness, a valid selection or acceptance permission.
-6. Remove the outstanding binding only as part of the successful owning response-processing result. Validation alone does not consume or authorize a write. Payload failure must not commit a partial consume; technical-failure consumption/retry policy needs an explicit response mapping.
+## 4. Issuance, renewal and boundedness
 
-Pure helpers return proposals. The caller commits consumption and resulting state/session/staged changes together with compare-and-swap or equivalent concurrency control. Two calls against the same old in-memory snapshot can both propose consumption; only one may commit. Do not advertise exactly-once processing from a pure helper alone.
+Reuse existing reference/revision/generation schemas where semantics match. Add a named maximum in `src/lib/config/domain.ts`, derived as twice `MAX_PARSER_CONTINUATION_QUERIES` (currently 128); canonical and owned work share it. Preserve criterion limits and the separate person-limit migration.
 
-## 6. Invalidations, interruption and staged facts
+Issuance validates the stored registry, routed lifetime, current state/continuation association and exact target. Question issuance additionally checks the authoritative current question and first-canonical-person restriction. No generic owned-question store is fabricated.
 
-- Refinement/discard query invalidations retire outstanding bindings for those exact query targets.
-- A removed intention retires its owned targets. An affected intention reference alone is not proof that all surviving children changed: `applyParserContinuationCommand()` reports the parent even for a single-child refinement. Compare surviving target membership/generation and use explicit query invalidations.
-- Any search revision change makes old incoming bindings stale; reconcile them without rebasing. An unchanged owned sibling can retain an outstanding association across a parent-generation-only edit when its own generation, revision and lifetime still match.
-- Question replacement/closure retires question-answer authorizations. It does not automatically cancel an independent query-resolution binding unless its own target/context/lifetime became invalid.
-- Confirmed interruption advances epoch and retires all outstanding bindings and active questions atomically. Resume is deliberate; no automatic issuance, lookup or search. Registry epoch transition alone does not close an existing question until the later coordinator integrates both stores.
-- Already validated staged facts are not outstanding authorizations. Later staging must retain valid unchanged-child facts according to R06 without treating old incoming responses as current. This slice stores no such facts.
-- Ref allocation must never reuse a target reference within a session lifetime. A registry cannot infer past target reuse from a bounded current snapshot; the owning allocator must enforce this prerequisite.
+Creation and renewal are distinct explicit operations:
 
-## 7. Proposed file-level implementation
+- Creation fails if a current binding already occupies the logical key.
+- Renewal requires the expected existing `bindingRef` for that key. Check it against the original validated registry before working-copy cleanup; if absent/different, reject without retiring a newer binding. A matching but now stale existing entry may be replaced after current target/question validation.
+- Successful renewal allocates a fresh sequence/reference and reports the replaced reference. It never modifies an old binding in place or evicts another logical key.
 
-- `src/lib/config/domain.ts`: add the derived binding-registry bound, preserving criterion limits and the still-separate person-limit migration.
-- `src/lib/schemas/parser-continuation-binding.ts`: strict target/purpose/registry schemas and inferred types; enforce registry membership, duplicate target/purpose pairs and sequence/reference consistency.
-- `src/lib/domain/search/parser-continuation-binding.ts`: pure issue, check, consume and reconcile helpers, plus a proposed epoch-retirement transition. Keep current state/continuation/session inputs explicit and preserve inputs on rejection.
-- `tests/unit/schemas/parser-continuation-binding.spec.ts`: meaningful structural combinations and registry invariants rather than generic Zod primitive tests.
-- `tests/unit/domain/search/parser-continuation-binding.spec.ts`: real current ownership/revision fixtures and application-boundary scenarios below.
+Before capacity evaluation, issuance computes a context-reconciled private registry copy and removes stale entries. On successful issuance, return that copy, the new binding and retired-reference facts together. If any check, sequence limit or capacity check fails, return rejection without committing cleanup. A standalone reconciliation operation remains available. No automatic generation/revision rebasing occurs.
 
-Before code approval, inspect repository instructions and actual field schemas, finalize helper signatures and outcome reasons, and review this draft for compatibility with the rest of the technical plan. Do not export a full generic session rewrite or modify the existing person lifecycle in the foundational slice.
+Sequence exhaustion rejects issuance even if cleanup could free space; standalone cleanup/consumption remain usable. Epoch exhaustion rejects epoch advancement atomically; ordinary reconciliation/consumption still work. A terminated lifetime may be replaced only by a genuinely new application sessionRef, never counter wrapping or same-lifetime reinitialization.
 
-## 8. Required deterministic scenarios
+## 5. Incoming validation, consumption and application processing
 
-- Canonical and owned resolution issuance reference the real current target without copying text.
-- A linked canonical query retains canonical ownership; unrelated parent edits do not invent a canonical generation.
-- A refined owned child rejects its old association at unchanged search revision.
-- An unchanged sibling remains valid after a parent-generation-only edit; the changed child does not.
-- Changed search revision rejects old incoming bindings, including otherwise unchanged sibling responses.
-- Unknown, wrong-criterion, wrong-owner and wrong-parent targets reject; missing work is not completion.
-- Wrong lifetime, epoch, purpose, question kind or question token rejects. A closed/replaced question cannot be revived by its old answer.
-- Issuance of an owned question rejects until a real authoritative owned-question session is implemented.
-- Successful consumption removes one outstanding entry; replay against the returned registry rejects. Uncommitted validation is not consumption.
-- Explicit replacement retires the old binding; capacity/exhaustion rejection never evicts existing bindings or mutates inputs.
-- Retirement/cleanup works at capacity. Interruption retires all authorizations without starting work; old responses remain invalid after deliberate resume.
-- Query invalidation does not indiscriminately invalidate unchanged siblings merely because the parent ref is listed.
-- Returned registry and unchanged stores do not alias mutable caller inputs. Atomic persistence and concurrent commit exclusion remain caller obligations.
+Look up the stored outstanding entry by its issued reference and match the expected routed lifetime, current registry epoch and expected purpose. Incoming sessionRef/epoch/reference are association values to compare, not authority to replace stored context. Unknown, consumed or retired entries reject.
 
-Run focused suites, `pnpm test`, `pnpm test:coverage`, `pnpm lint` and `pnpm typecheck` after implementation; preserve the documented coverage threshold. No validation commands were run for this documentation-only proposal and no runtime behavior was added.
+Require the stored sourceRevision to equal current search revision. Resolve the current target and check criterion, ownership, parent association and owned child generation. For question answers, match the active question token, kind, query and revision from the authoritative person session. Closed/replaced/out-of-order questions reject even at unchanged revision. Never rewrite an incoming association to current revision/generation.
+
+Separate three responsibilities:
+
+1. A check helper validates the association without consuming or changing anything. Its returned binding is data, not a durable acceptance token.
+2. A consume helper repeats the full association check against its current registry/context and returns a proposal removing exactly that entry. It does not know whether an external result payload is semantically valid.
+3. The owning application function validates the payload, performs the domain/staging proposal, obtains the consume proposal and commits them together only if all steps succeed. A failed payload/domain step must not commit isolated consumption. Do not add a client-supplied `validated` flag or freely constructible proof object as a substitute for this boundary.
+
+The consume check uses the same current pre-transition snapshot as payload association validation. If payload processing proposes a new state revision or closes the question, do not accidentally validate the original response against that proposed post-state; reconcile remaining bindings against the post-state separately.
+
+Binding validity is not provider provenance, uniqueness, valid selection or identity acceptance. Technical-failure consumption and retry mapping are excluded until explicitly designed.
+
+Caller-controlled atomic persistence uses compare-and-swap or equivalent concurrency control for registry and all changed stores. Two evaluations against the same old snapshot may both propose consumption; at most one may commit. Pure helpers alone do not guarantee exactly-once execution.
+
+## 6. Reconciliation, epoch retirement and staged facts
+
+- Query invalidations from refine/discard retire the exact targets. Missing parents/children retire their bindings. An affected intentionRef alone must not invalidate surviving unchanged children: the existing transition reports that ref even for single-child refinement. Check current membership/generation and explicit query invalidations.
+- Search revision changes retire old incoming bindings, including unchanged siblings, without rebasing. A parent-generation-only edit can preserve an owned sibling binding when its generation, revision and lifetime remain current.
+- Question closure/replacement retires question-answer bindings. An independent query-resolution binding survives unless its own association is invalid.
+- `retireParserContinuationBindings()` proposes epoch + 1, an empty outstanding list and unchanged sequence. It returns retired references, starts nothing and changes no search/continuation/person session. It is not `pauseSession()` or `resetSession()`.
+- The later workflow coordinator owns pause state and blocks new issuance until deliberate resume. Confirmed interruption must combine workflow pause, registry epoch retirement and closing active questions in one atomic result. That coordinator integration is not implemented by this foundational helper. Registry validity alone cannot establish that issuance is allowed while paused.
+- Already validated staged facts are separate from outstanding authorizations. R06 retention of valid unchanged-child facts does not make old incoming responses current; no staged facts are stored in this slice.
+- Target refs are never reused within a lifetime. The allocator must enforce this prerequisite; a bounded current registry cannot infer past reference reuse.
+
+## 7. Proposed helpers and implementation files
+
+Public helper contracts, with final TypeScript shapes derived from dedicated schemas rather than duplicated manual data interfaces:
+
+| Helper | Explicit inputs | Proposed result |
+| --- | --- | --- |
+| `issueParserContinuationBinding` | Current application context, stored registry, issuance command with target/purpose/question and create-or-renew mode; renewal includes expected bindingRef | Issued binding, next registry and retired refs, or rejection |
+| `checkParserContinuationBinding` | Current application context, stored registry, incoming association and expected purpose | Current matched binding, or rejection; no changes |
+| `consumeParserContinuationBinding` | Same current inputs as check | Consumed binding, next registry and consumed ref, or rejection; no payload authorization |
+| `reconcileParserContinuationBindings` | Current application context, stored registry, application-owned query invalidations | Unchanged or reconciled registry plus retired refs, or invalid-input/context rejection |
+| `retireParserContinuationBindings` | Routed expected sessionRef and stored registry | Epoch-advanced registry plus retired refs, or rejection |
+
+Application context explicitly carries the trusted expected sessionRef, current previously validated search state, continuation and authoritative person session needed for question checks. It references existing contracts and is not a second editable state model. Workflow issuance permission is enforced by the caller; no speculative generic workflow object is added here.
+
+Common outcome reasons should distinguish invalid stored registry/context/command, session mismatch, unknown binding, epoch mismatch, purpose mismatch, unknown/mismatched target, stale revision/generation/question, unsupported owned question, occupied key, renewal mismatch and exhausted sequence/epoch/capacity. Final discriminated unions and validation precedence require code-level review before implementation approval; these names are semantic requirements, not claims of existing exports. No runtime schema is required for every internal helper result.
+
+Affected files:
+
+- `src/lib/config/domain.ts`: derived registry bound only.
+- `src/lib/schemas/parser-continuation-binding.ts`: strict schemas, inferred types and structural registry invariants.
+- `src/lib/domain/search/parser-continuation-binding.ts`: the pure helpers above. Validate external/stored boundaries; avoid repeated parsing in every internal collaborator. Exported functions receive TSDoc.
+- `tests/unit/schemas/parser-continuation-binding.spec.ts`: project-specific structural combinations/invariants, not generic Zod tests.
+- `tests/unit/domain/search/parser-continuation-binding.spec.ts`: real ownership/revision/lifecycle fixtures and scenarios below.
+
+Reuse repository instructions, Typing and Testing guidance. The targeted review examined the current continuation schemas/transitions, person session/lifecycle, wrapper and its tests. It did not complete the full historical technical-plan or repository-wide caller review. Existing lifecycle behavior is preserved; no automatic barrel exports or generic session rewrite.
+
+## 8. Required deterministic scenarios and review status
+
+- Canonical/owned resolution issuance uses the current target without copying text; linked canonical children do not gain an artificial generation/parent.
+- Child refinement rejects that child's old binding at unchanged search revision while preserving a valid unchanged sibling despite parent generation advancing.
+- Search revision change retires incoming sibling bindings without discarding already validated facts in a future staging layer.
+- Unknown/wrong-criterion/wrong-owner/wrong-parent/missing targets reject; missing work is not completion.
+- Wrong routed lifetime, epoch or purpose rejects. The application boundary must not mix person sessions from other lifetimes merely because their question strings match.
+- Closed/replaced/out-of-order/wrong-kind questions reject; owned-question issuance rejects until authoritative owned-question support exists.
+- Check does not consume; consume rechecks current context; replay against the consumed registry rejects. A binding returned by an earlier check does not bypass revalidation.
+- Application integration tests in the later owning slice must prove payload/domain failure does not persist isolated consumption, and successful state change is associated with the pre-transition snapshot before post-state reconciliation. Foundation tests do not pretend that integration already exists.
+- Renewal checks expected bindingRef before cleanup; a stale renewal command never retires a newer binding. Successful renewal reports the old ref and receives a fresh sequence.
+- Generation/question changes do not create extra logical-key slots. Binding-reference format, unique sequences, lifetime membership, sequence-zero emptiness and allowed gaps are covered.
+- Issuance cleans a private copy before capacity evaluation; success returns cleanup and issuance together, failure preserves the complete input. Standalone cleanup works at capacity and sequence exhaustion.
+- Epoch retirement clears outstanding entries, preserves sequence and leaves the person session untouched. Epoch exhaustion is atomic. It does not claim to pause a workflow; later integration tests must prove issuance stays blocked until deliberate resume.
+- Query invalidations do not indiscriminately retire siblings because their intentionRef was listed. Output proposals do not alias mutable caller inputs.
+- Concurrent commit exclusion is a caller/storage obligation, not a unit-test claim about a pure helper.
+
+This revision records the four reviewed precision points plus cleanup ordering and scope boundaries. It does not mark all review gates closed. Before code approval finalize discriminated input/output shapes and precedence. After implementation run focused suites, `pnpm test`, `pnpm test:coverage`, `pnpm lint` and `pnpm typecheck`, preserving the documented coverage threshold. No validation commands were run for this documentation-only revision and no runtime behavior was added.
