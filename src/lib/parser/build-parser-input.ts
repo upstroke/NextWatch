@@ -4,7 +4,9 @@ import { SEARCH_FILTER_CATALOG } from '@lib/domain/search/filter-catalog';
 import { ChatStatusSchema, FilterOperationSchema } from '@lib/schemas/chat';
 import { GenreCatalogsSchema } from '@lib/schemas/genre-catalogs';
 import type { GenreCatalogs } from '@lib/schemas/genre-catalogs';
-import { ParserFilterChangeSchema, ParserProposalSchema } from '@lib/schemas/parser-proposal';
+import {
+  ParserFilterChangeSchema, ParserPendingOperationSchema, ParserProposalSchema,
+} from '@lib/schemas/parser-proposal';
 import { MediaTypeSchema, SearchFiltersSchema, SearchSortSchema } from '@lib/schemas/search';
 import { SearchStateSchema } from '@lib/schemas/search-state';
 import type { SearchState } from '@lib/schemas/search-state';
@@ -74,6 +76,11 @@ function composeInput(
           operations: FilterOperationSchema.options.filter((operation) =>
             option.shape.operation.safeParse(operation).success),
         })),
+        pendingOperations: ParserPendingOperationSchema.options.map((option) => ({
+          operation: option.shape.operation.value,
+          fields: Object.keys(option.shape).filter((field) => field !== 'operation'),
+        })),
+        pendingOperationLimit: MAX_PERSON_IDS + MAX_KEYWORD_IDS,
         mediaTypes: [...MediaTypeSchema.options],
         sortValues: [...SearchSortSchema.options],
         ranges: {
@@ -107,8 +114,9 @@ function composeInput(
  * Fixed instructions, projected context and original user text remain separate.
  * Unknown outer properties are not forwarded. State/catalog structures reuse
  * existing contracts; their caller must establish provenance and completeness.
- * The target catalog only prepares future operations; proposal capabilities are
- * unchanged. No output schema, model invocation or response processing occurs.
+ * Pending capabilities project the proposal schema; actual target membership,
+ * revision and atomic application remain domain checks using original bindings.
+ * No output schema, model invocation or response processing occurs.
  * @param input User text, current state and optional trusted genre catalogs.
  * @returns Independent model input and application bindings, or a sanitized rejection.
  */
