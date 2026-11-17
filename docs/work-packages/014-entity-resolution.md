@@ -60,7 +60,25 @@ Outputs: explicit resolution outcomes, candidate aids, trusted acceptance inputs
 
 ## Execution status
 
+### Current status
+
 - 2026-11-17: Specification aligned with the shared search draft; identity resolution explicitly distinguished from TV-person execution.
-- Planned, not implemented by this update. WP 009 and WP 010 are completed; the next implementation dependency is the required WP 011 contract.
-- Uniqueness, bounds, keyword acceptance, multi-result coordination and concrete provider-contract gaps remain design/verification work.
-- Documentation only. No runtime code, schemas or tests changed; no tests, coverage, ESLint or typecheck run.
+- Initial inventory and design started on 2026-11-17; no WP 014 runtime implementation has been introduced. WP 009 and WP 010 remain completed. The existing WP 011 proposal/application contracts support this inventory; WP 011 as a whole remains incomplete and has not been finally accepted. See its handoff and remaining-scope sections.
+- Uniqueness, retrieval/enrichment bounds, keyword acceptance and multi-result coordination remain design/verification work. No concrete implementation or provider-interface change is approved by this status update.
+
+### Initial inventory
+
+- Inspected at commit `0f922ef`: this specification, `server/services/tmdb/search.ts` and `src/lib/domain/search/process-person-selection.ts`. This is a targeted initial inspection, not a complete inventory of schemas, mappers, callers, transports or tests.
+- The existing search service already validates and maps person and keyword search responses. Reuse it where suitable rather than introducing a second provider search implementation.
+- `processPersonSelection()` already connects offered-candidate validation to `acceptResolvedPerson()` and requires a trusted, synchronous identity validator. Its contract places live lookup in WP 014; structural validation of an acceptance object alone does not establish provider provenance.
+
+### Verified integration gaps
+
+- Search completeness is not exposed at the resolution boundary: in `server/services/tmdb/search.ts` at `0f922ef`, `searchPeople()` and `searchKeywords()` validate the provider response but return only mapped `response.results` arrays. Response-level pagination/completeness information is not passed to their callers.
+- Consequently, those return values alone do not let a resolver determine whether further result pages exist. A single returned candidate must not be treated as proof of identity uniqueness; the conservative uniqueness policy remains to be defined and tested.
+- WP 014 owns the decision on the smallest suitable interface extension or reuse, including affected callers and tests. The solution is not yet selected or implemented. This is an integration gap for identity resolution, not a claim that earlier green search-service checks failed. Candidate-retrieval completeness here is distinct from final movie/series result pagination in WP 012.
+
+### Next design step and validation
+
+- Complete the focused person-resolution inventory and propose a concrete file/test plan covering completeness information, conservative uniqueness, bounded retrieval and distinct ambiguous/no-match/incomplete/technical-error outcomes before implementation. Inspect keyword acceptance separately rather than copying person-selection rules.
+- Documentation only: only Execution status is changed in this update; Specification remains unchanged. No runtime code, schemas or tests changed, and no tests, coverage, ESLint or typecheck were run by the assistant.

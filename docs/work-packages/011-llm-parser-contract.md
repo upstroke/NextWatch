@@ -77,10 +77,16 @@ The composition is a deterministic test, not a production caller, real natural-l
 - The latest complete user-reported green implementation state is `dd1f4da`. No exact coverage percentage, command logs, independently verified local HEAD or CI certification was supplied. The assistant did not execute these checks.
 - Earlier validation reports apply to their historical implementation scope; they are not independent checks of later changes. This documentation update introduces no new executable validation result.
 
+### Handoff to WP 014
+
+- On 2026-11-17, work proceeded to the initial inventory and design phase of [WP 014](014-entity-resolution.md), using the implemented parser proposal/application contracts and referenced pending requests.
+- This handoff does not constitute completion or final acceptance of WP 011, approval of a WP 014 implementation, or readiness for productive end-to-end integration. The remaining WP 011 operation/clarification requirements and integration responsibilities remain open as listed below.
+- Provider search completeness and pagination gaps identified during the WP 014 inventory are tracked in that package, not as parser-contract defects.
+
 ### Remaining scope and limitations
 
 - Entity additions only in the current proposal/application path. Entity replacement, refinement/removal routing and coupled multi-entity changes are not integrated. Clarification/unsupported proposals remain wholly unapplied with their parsed proposal retained. New incompatible genre assignments are blocked and retained rather than substituted. These limits do not remove broader specification requirements.
-- Select and approve the next concrete operation/clarification slice and any demonstrated domain-contract extensions. Do not introduce a general coordinator, duplicate state, store or registry merely to expand the flow.
+- Before resuming implementation in WP 011, select and approve the next concrete operation/clarification slice and any demonstrated domain-contract extensions. Do not introduce a general coordinator, duplicate state, store or registry merely to expand the flow.
 - Model/provider selection and productive invocation remain unimplemented and require separate approval, including provider schema capability, complete-response/refusal/transport handling and safe separation of instruction/data roles.
 - Trusted original-request association, reference allocation, response consumption and caller-side lifecycle/atomic adoption remain integration responsibilities. Expected-revision checks and a scripted stale-response test alone are not end-to-end replay protection.
 - No production parser caller, model/HTTP endpoint, identity-resolution implementation, Movie/TV execution, persistence, UI or automatic search has been introduced. Live identity resolution remains WP 014; confirmed result execution remains WP 012.
