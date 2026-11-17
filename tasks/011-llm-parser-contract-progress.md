@@ -6,17 +6,17 @@ The [work-package specification](../docs/work-packages/011-llm-parser-contract.m
 
 ## Implemented slices
 
-| Commit | Scope | Validation evidence |
-| --- | --- | --- |
-| `b2e8407` | Parser schemas, JSON Schema export, composition, response validation and tests | Subsequent user report after follow-ups |
-| `0400ce4` | Keyword-reference and capacity-context tests | Included in subsequent local green report |
-| `4eac220` | Explicit nullable-source guard | User confirmed warning gone and all checks green; parser statement coverage reported as 87% |
-| `db830a5` | Bounded continuation ownership and canonical associations with tests | User reported checks green; no new numeric coverage |
-| `4e2a719` | Refine/discard schema, pure transition and tests | User-reported tests/typecheck/ESLint passing; historical green convention included coverage threshold |
-| `da318aa` | Person-session application function and tests | Historical tests passing; later foundation baseline reported green |
-| `ebe4c41` | Bounded binding schemas, five pure helpers, registry limit and two unit suites | Foundation reported green after import correction |
-| `c5d4b3e` | Removed unused domain Zod import only | Historical foundation tests/typecheck/lint green, including coverage threshold under agreed convention |
-| `f6d9db2` | Registry reconciliation in continuation edit application and extended tests | User confirmed tests, typecheck and ESLint passing; integration coverage remains unconfirmed |
+| Commit    | Scope                                                                          | Validation evidence                                                                                    |
+| --------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `b2e8407` | Parser schemas, JSON Schema export, composition, response validation and tests | Subsequent user report after follow-ups                                                                |
+| `0400ce4` | Keyword-reference and capacity-context tests                                   | Included in subsequent local green report                                                              |
+| `4eac220` | Explicit nullable-source guard                                                 | User confirmed warning gone and all checks green; parser statement coverage reported as 87%            |
+| `db830a5` | Bounded continuation ownership and canonical associations with tests           | User reported checks green; no new numeric coverage                                                    |
+| `4e2a719` | Refine/discard schema, pure transition and tests                               | User-reported tests/typecheck/ESLint passing; historical green convention included coverage threshold  |
+| `da318aa` | Person-session application function and tests                                  | Historical tests passing; later foundation baseline reported green                                     |
+| `ebe4c41` | Bounded binding schemas, five pure helpers, registry limit and two unit suites | Foundation reported green after import correction                                                      |
+| `c5d4b3e` | Removed unused domain Zod import only                                          | Historical foundation tests/typecheck/lint green, including coverage threshold under agreed convention |
+| `f6d9db2` | Registry reconciliation in continuation edit application and extended tests    | User confirmed tests, typecheck and ESLint passing; integration coverage remains unconfirmed           |
 
 Earlier green reports included coverage under the established convention. For `f6d9db2`, record only the specifically confirmed checks: the latest exchange explicitly left coverage open. No fresh numeric percentage or command logs were supplied. The assistant did not execute validation commands.
 
