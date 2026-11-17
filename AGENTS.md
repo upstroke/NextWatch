@@ -14,15 +14,29 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   execution as unfinished WP 010 implementation.
 - WP 011 decisions are recorded in its work-package specification. Read that
   file before continuing; do not reconstruct settled decisions from chat memory.
-- The implementation plan is
-  [tasks/011-llm-parser-contract-plan.md](tasks/011-llm-parser-contract-plan.md),
-  saved in commit `99b5a2dfb9b1470c8b67686e5db55abc6e229264`.
-  Its status is Draft — awaiting approval. Saving the plan does not authorize
-  application implementation, a later code commit, a pull request or a merge.
-- Before implementation, complete the plan's targeted caller/test inventory
-  and concrete schema/adapter design gates. Reuse WP 009 state, pending
-  operations and controlled person acceptance, and WP 010 clarification and
-  guardrails. Do not rebuild them or introduce a competing state model.
+- WP 011 is in incrementally approved implementation and remains incomplete.
+  The [implementation plan](tasks/011-llm-parser-contract-plan.md) is a technical
+  design reference, not blanket approval of all proposed work or closure of
+  outstanding review gates. Saving or updating a plan does not authorize a
+  later code change, commit, pull request or merge.
+- Read the [implementation progress ledger](tasks/011-llm-parser-contract-progress.md)
+  for implemented slices, user-reported validation and remaining work. Keep
+  detailed commit/check history there rather than duplicating it in this file.
+- The [continuation binding plan](tasks/011-parser-continuation-binding-plan.md)
+  specifies binding lifetime, ownership, discriminated inputs/outcomes and
+  validation precedence. Binding foundation primitives are implemented and
+  locally reported green by the user; this is not complete runtime integration
+  or assistant-executed validation. See the ledger for the validated baseline.
+- The next proposed slice is registry reconciliation in
+  `processParserContinuationCommand()`, returning state, continuation, person
+  session and registry together. It is not implemented yet and requires its
+  own concrete caller/test review, file-level scope and approval. No automatic
+  question, lookup, retry or search follows from binding reconciliation.
+- Before each further implementation slice, complete the relevant targeted
+  caller/test inventory and concrete schema/adapter design gates. Do not claim
+  all historical plan gates or repository-wide inventories are complete. Reuse
+  WP 009 state, pending operations and controlled person acceptance, and WP 010
+  clarification and guardrails. Do not introduce a competing state model.
 - Document existing behavior with file references and distinguish between
   available, partially available, missing and contradictory capabilities.
 - WP 011 owns parser extraction contracts and the pure application adapter,
@@ -34,12 +48,14 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   Independently accepted criteria changes do not execute a title search.
   Execution requires explicit “Search now” confirmation; preserve the distinction
   between edited criteria and the last executed search/results.
-- The wizard UI is deferred to [tasks/clarificaton-flow.md](tasks/clarificaton-wizzard-flow.md).
+- The wizard UI is deferred to
+  [tasks/clarificaton-wizzard-flow.md](tasks/clarificaton-wizzard-flow.md).
   WP 011 does not authorize UI rendering, live provider lookups, retry
   orchestration, search execution or a full LLM/provider implementation.
-- Cross-package documentation alignment, the WP 011 backlink to its plan and
-  wizard-task alignment remain follow-ups identified in the plan; this status
-  update does not claim those files were updated or their work implemented.
+- Cross-package documentation and wizard-task alignment remain follow-ups.
+  The WP 011 specification already links to its implementation plan; do not
+  treat that backlink as missing. This status update does not claim downstream
+  documents were updated or their implementation work completed.
 - Work package 009 is completed by explicit user acceptance on 2026-11-15
   and merged into `main` through PR #11 in commit
   `61928e6fa9a4daeb7dbcdd44de34a04152d0715b`.
