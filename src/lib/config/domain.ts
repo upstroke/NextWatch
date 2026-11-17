@@ -9,6 +9,7 @@ export const MAX_GENRE_IDS = 3;
  * Accepted people and pending additions share this capacity; a pending one-to-one
  * replacement retains its accepted source slot. Also bounds accepted-source choices.
  * Compound replacement reservations require separate current-state accounting.
+ * Independent of the number of alternatives offered in a person-selection question.
  */
 export const MAX_PERSON_IDS = 5;
 
@@ -21,7 +22,8 @@ export const MAX_KEYWORD_IDS = 3;
 /**
  * Maximum alternative candidates offered in one person-selection question.
  * Alternatives belong to one pending request and do not each reserve a person slot.
- * Still a separate constant pending the agreed migration to MAX_PERSON_IDS.
+ * Intentionally independent of MAX_PERSON_IDS: offer size and search-state capacity
+ * are different limits, even while their configured values happen to be equal.
  */
 export const MAX_PERSON_CLARIFICATION_CANDIDATES = 5;
 
