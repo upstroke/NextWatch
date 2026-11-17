@@ -2,12 +2,26 @@
 
 ## Status and authority
 
-- Recorded: 2026-11-16; approved R02/R06 policy decisions added 2026-11-17.
-- Supplements [WP 011 — LLM parser contract](011-llm-parser-contract.md) and informs the [draft implementation plan](../../tasks/011-llm-parser-contract-plan.md).
-- Records the explicitly approved internal-reference, one-to-many person replacement and whole-selection replacement decisions, plus the R02 reservation and R06 staged-result policies. These are requirements, not implemented capabilities.
-- Sections 1–3 were consolidated into the parent specification in `5fa186d`. Sections 4–5 record subsequently accepted decisions pending their technical integration into the main plan/specification. Do not treat this record as a competing state model or a completed contract review.
-- Where older WP 011 text appears to prohibit returning any internal reference, the supplied-reference distinction below controls. Where older singular replacement wording assumes one source slot is always sufficient, the one-to-many capacity rule below controls.
+- Recorded: 2026-11-16; approved R02/R06 policies and consolidation references updated 2026-11-17.
+- This is the decision history, not a competing product specification, technical plan or review checklist. Product authority remains [WP 011 — LLM parser contract](011-llm-parser-contract.md).
+- Records the explicitly approved internal-reference, one-to-many person replacement and whole-selection replacement decisions, plus the R02 reservation and R06 staged-result policies. Their substance is unchanged by this reference update. These are requirements, not implemented capabilities.
+- Sections 1–3 were consolidated into the parent specification in `5fa186d`. Sections 4–5 were recorded in `a2c548e` and incorporated into the authoritative specification in `113a5ab`. The R01–R06 technical directions were consolidated into the [implementation plan](../../tasks/011-llm-parser-contract-plan.md) in `3a8942a`.
+- The existing English [parser instruction draft](../../src/lib/parser/instructions.ts) was aligned in `348091d`, revision `0.1.2-draft`. It is not connected to a provider/caller and is not a complete executable contract.
+- The [review protocol](../../tasks/011-llm-parser-contract-review.md), reconciled in `cd2c728`, separates documented design from remaining contract verification and implementation evidence. No R finding is closed by this decision-history update.
+- Historical blanket reference prohibitions and singular one-slot replacement assumptions must not override the consolidated specification. Use its current rules, not historical wording, for implementation.
 - Documentation only. Does not approve application implementation, the full technical plan, provider integration, UI, PR or merge.
+
+## Consolidation map
+
+| Decision / artifact | Current location | Evidence |
+| --- | --- | --- |
+| Supplied references and trust boundary | [Specification: Internal references and trust](011-llm-parser-contract.md#internal-references-and-trust); plan sections 2–3 | `5fa186d`, `3a8942a` |
+| One-to-many replacement and complete selection replacement | [Specification: Replacement and duplicates](011-llm-parser-contract.md#replacement-and-duplicates); plan sections 3 and 4.1 | `5fa186d`, `3a8942a` |
+| A/R02 protected reservations | [Specification: Capacity and overflow](011-llm-parser-contract.md#capacity-and-overflow); [plan 4.2](../../tasks/011-llm-parser-contract-plan.md#42-r02--capacity-and-protected-reservations) | `a2c548e`, `113a5ab`, `3a8942a` |
+| B/R06 retained validated facts | [Specification: Staged resolution results and current-state acceptance](011-llm-parser-contract.md#staged-resolution-results-and-current-state-acceptance); [plan 4.4](../../tasks/011-llm-parser-contract-plan.md#44-r06--result-validity-and-current-acceptance) | `a2c548e`, `113a5ab`, `3a8942a` |
+| Model instructions and verification queue | [Instruction draft](../../src/lib/parser/instructions.ts); [review protocol](../../tasks/011-llm-parser-contract-review.md) | `348091d`, `cd2c728` |
+
+This map records integration of the decisions, not successful schema export, runtime behavior, provider compatibility or completion of review acceptance criteria.
 
 ## Specification
 
@@ -61,7 +75,7 @@ Explicitly accepted by the user on 2026-11-17 as decision A.
 - When new related wishes compete for capacity within the same submitted request, do not schedule an arbitrary subset merely because of processing order. Preserve the competing intentions for an explicit capacity decision.
 - Count unresolved identities conservatively. Account for identity duplicates only after trusted resolution, not from similar names or model guesses.
 - A one-to-many replacement reserves the additional capacity needed by the common operation while retaining its accepted source. Existing criterion limits and the complete-result deduplication rule remain binding.
-- This decision approves reservation precedence and conservative accounting. The exact reservation calculation, interactions between simultaneous operations and atomic transfer/acceptance mappings must still be integrated and checked under R02/R03; the conversational formula is not a verified implementation.
+- This decision approves reservation precedence and conservative accounting. Proposed reservation arithmetic and simultaneous-operation/transfer coordination are now documented in plan sections 4.2–4.3; their correctness and concrete domain mappings still require verification. The formula is not a verified implementation.
 
 Example: if four people are accepted and an existing replacement of one person by two has a valid reservation for the remaining slot, a later unrelated addition does not take that slot. If both competing wishes arrive together as a new related group, do not silently choose one.
 
@@ -76,13 +90,13 @@ Explicitly accepted by the user on 2026-11-17 as decision B.
 - Reject stale incoming responses rather than making them current by changing their source revision. Retaining a previously validated fact is not permission to relabel an old asynchronous response.
 - Confirmed interruption closes the active question and outstanding response authorizations, but retains already validated information for unchanged child queries. Resume deliberately with fresh bindings where needed.
 - Discard removes the corresponding open work and its associated staged results/bindings, without undoing unrelated already accepted criteria.
-- Session lifetime, child generations, invocation consumption, invalidation and current-state acceptance mapping still require concrete technical integration under R06. This decision does not assert those mechanisms already exist or approve an automatic new lookup/model call.
+- Session lifetime, child generations, invocation consumption, invalidation and current-state acceptance directions are now documented in plan section 4.4. Exact binding records, acceptance signatures and runtime behavior still require verification and implementation. This decision does not assert those mechanisms already exist or approve an automatic new lookup/model call.
 
 Example: in a replacement of Tom Hanks with Chris Evans and Brad Pitt, a validated Chris Evans result may remain while the other child is refined. The changed child's old candidates/results are invalid. The source stays accepted until the full current operation passes controlled atomic acceptance.
 
 ## Technical draft consolidation — not an approved schema
 
-The following records the direction discussed around the approved decisions. Exact field names, bounds, discriminants and adapter mappings still require the pre-code design review. Illustrative structures in conversation are not implemented APIs.
+The summary below preserves the original design direction. The current field/variant proposal, bounds, clarification mappings and adapter directions are maintained in the linked plan rather than separately evolved here. Illustrated structures and documented directions are not implemented APIs.
 
 ### Request composition
 
@@ -94,13 +108,13 @@ Keep authoritative request/revision binding in the application. Do not send cred
 
 Use a versioned proposal containing ordered interpreted parts rather than a single global success flag that cannot represent mixed supported and unresolved wishes.
 
-Discussed part categories are direct filters, unresolved persons/keywords, genres, clarification-needed interpretations and unsupported requirements. A workflow interpretation category was proposed but its exact shape and allowed scope remain unapproved. It must not authorize reset, cancellation execution or search by itself.
+The consolidated plan describes filter, entity, genre, clarification-answer, clarification and unsupported parts. The earlier proposed generic workflow category was not introduced as an executable command: workflow requests remain constrained interpretations/clarification, not model authorization for reset, cancellation execution, resumption or search.
 
 Distinguish setting scalar values, adding values, refining pending requests, replacing accepted values, removing accepted values, discarding pending requests and replacing an entire supported selection. Missing input is not a removal or an instruction to restore defaults.
 
 Preserve coupled intentions explicitly. Mention order alone must not encode hidden execution dependencies. Keep contradictory extracted year bounds representable so the existing application-owned year-conflict guardrail can handle them; do not weaken accepted-state validation.
 
-A genre display label is not by itself a trusted identity. Final genre catalog projection and mapping remain technical design work under the parent specification.
+A genre display label is not by itself a trusted identity. Catalog projection and mapping directions are in the consolidated plan; their concrete contracts remain subject to targeted verification under the parent specification.
 
 ### Failure and application boundaries
 
@@ -110,15 +124,20 @@ Validate the complete external response and its application-owned association be
 
 Criteria edits do not execute a title search. Provider resolution, UI rendering and explicit search execution remain assigned to their existing owners.
 
-## Remaining implementation-plan work
+## Remaining verification and implementation work
 
-- Finalize exact input/output fields, operation-specific required and forbidden fields, bounds and JSON-Schema-compatible shapes.
-- Specify supplied-reference projection, membership validation and stale/replay protection without creating a competing state model.
-- Inspect affected callers/tests and define the minimal one-to-many acceptance and genre/keyword whole-selection extensions.
-- Specify coupled-intention representation and capacity accounting, including unresolved identities and pending reservations.
-- Add synthetic valid/invalid examples and deterministic contract/adapter tests in the approved implementation scope.
-- Sections 1–3 were consolidated into the parent specification in `5fa186d`; integrate the subsequent decisions in sections 4–5 into the concrete plan/specification without reopening them. R01 follow-up wording and R03–R05 technical completion remain separate unfinished consolidation work.
+Design directions are consolidated; do not describe the R01 follow-up or R02–R06 sections as wholly unwritten. The specific remaining work is tracked in the review protocol:
+
+- Finish/verify exact context and continuation-boundary shapes, operation-specific fields and complete synthetic fixtures against the consolidated plan.
+- Verify proposed reservation arithmetic, cross-operation interactions and current-state acceptance mappings with concrete cases and later executable tests.
+- Inspect the concrete affected callers and acceptance signatures for necessary compound-person, keyword and clarification extensions; preserve existing transitions and provenance boundaries.
+- Verify dedicated Zod-to-JSON-Schema export during the approved implementation slice without inventing provider compatibility or maintaining a divergent handwritten schema.
+- Implement and validate only a separately approved file-level scope; report actual tests, coverage, lint and typecheck rather than treating documented scenarios as executed checks.
+
+Historical decision acceptance is not final design closure. The specification, plan, prompt and review protocol retain their distinct roles; this record does not override them with a second implementation contract.
 
 ## Execution status
 
-Documentation decision record only. The 2026-11-17 update records accepted A/R02 and B/R06 and updates their review references; it does not complete the R01–R06 consolidation or close any finding. No prompt, runtime schema, domain transition, provider connection, UI or tests changed. No tests, coverage, ESLint or typecheck run for this record. No PR or merge included.
+Documentation integration trail: original sections 1–3 in `1374785`, specification consolidation `5fa186d`, accepted A/R02 and B/R06 in `a2c548e`, authoritative policy integration `113a5ab`, R01–R06 technical consolidation `3a8942a`, English prompt alignment `348091d` (0.1.2-draft), and review reconciliation `cd2c728`.
+
+This update changes only this decision-history file: consolidation links and progress wording, not accepted decision substance. Specification, plan, instructions, review protocol, application behavior and tests are unchanged by this commit. No finding is closed and no implementation readiness is claimed. No tests, coverage, ESLint, typecheck, schema-export check or model evaluation ran. No PR or merge included.
