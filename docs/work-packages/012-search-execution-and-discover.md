@@ -2,71 +2,91 @@
 
 ## Specification
 
-### Purpose
+### Purpose and dependencies
 
-Turn validated criteria into provider searches and return results with explicit execution and completeness status. Use the [WP 009 state contract](009-search-state-and-filter-catalog.md), [WP 010 clarification guardrails](010-clarification-and-guardrails.md) and [WP 014 resolved identities](014-entity-resolution.md). Criteria-based search is not restricted to a single Discover endpoint.
+Implement the execution stage of the [product and search flow](000-product-and-search-flow.md): derive valid Movie/TV requests from one confirmed general search draft and return a common result representation. One application search may require multiple provider calls.
 
-### Dependencies
-
-- WP 009 supplies state, accepted-person records, derived technical IDs and controlled transitions.
-- WP 010 supplies clarification guardrails; WP 011 supplies extraction contracts.
-- [WP 014](014-entity-resolution.md) supplies person and keyword resolution. Despite its higher number, WP 014 is a prerequisite for live unresolved-entity integration in WP 012. Existing package numbers are retained; dependency order takes precedence over numeric order.
-- Discover-only execution can be developed independently with validated synthetic resolved inputs; do not claim complete live person search before resolution integration.
+Reuse [WP 009](009-search-state-and-filter-catalog.md) state/transitions, [WP 010](010-clarification-and-guardrails.md) guardrails and [WP 011](011-llm-parser-contract.md) parser application contracts. [WP 014](014-entity-resolution.md) supplies trusted person/keyword identities before live unresolved-entity integration. Order remains WP 011 → WP 014 → WP 012. Synthetic resolved inputs may support isolated adapter tests, not a claim of complete live search.
 
 ### Scope
 
-- Convert validated filters and accepted identities into supported execution plans.
-- Block the new complete search while required people remain unresolved; do not silently run a subset or relax AND to OR.
-- Support movies and series, and both when media type is unspecified. Preserve media type in results and the contract consumed by result presentation.
-- For movies, evaluate cast-filter Discover execution with AND semantics and additional qualifying-role validation as required. Do not assume a cast filter alone excludes appearances as oneself.
-- For TV, verify and implement a credits-based path using per-person TV credits, qualifying acting roles, deduplicated series IDs and intersection across required people. Same-series participation does not require the same episode.
-- Apply only supported additional criteria, without silently dropping genre, rating, year or provider requirements. Define the supported combinations and explicit unsupported outcomes.
-- Define detail/provider enrichment, region-aware streaming versus rental/purchase semantics and bounded server-side orchestration.
-- Define sorting, result pagination, request budgets, concurrency, rate-limit handling, technical failures and completeness. Verify endpoint contracts and pagination behavior before implementation.
-- Document concrete endpoint, pagination and provider-limit assumptions with authoritative source references and the verification date during implementation. Keep changeable API limits in provider/transport policy, not as fixed product rules.
-- Only acting roles qualify. Exclude crew and appearances as oneself, including such appearances in talk shows or documentaries; define a tested policy for insufficient role information. Do not exclude an entire title solely because of its genre or assume an unverified character-name heuristic is complete.
-- All results means accessible matching titles recorded by the provider, not guaranteed real-world completeness or one unbounded response.
-- Incomplete role classification, filtering, retrieval or enrichment must yield explicit incomplete/error information, never a verified empty result or a claim of all results.
-- A local processing budget is not a provider result limit. Absence of a documented credits maximum is not a completeness guarantee.
-- Return results tied to the source revision. Do not apply outdated responses; prior visible results are not results of a pending new request.
+- Validate execution readiness against the complete current draft, not merely the technical active-filter projection. Open required identities or unsupported work must not silently disappear.
+- Require final review and explicit search confirmation. A domain mode of `discover`, media change, completed lookup or last clarification answer is not search authorization.
+- Derive technical Movie and TV reference objects from the same confirmed draft. They describe validated target shapes, not additional editable or independently persisted search states.
+- Support Movie, TV and both. For both, invoke the relevant paths independently and in parallel where dependencies allow; the browser calls our API, not TMDb.
+- Return results associated with the executed source revision/snapshot. Reject obsolete responses; keep previous visible results distinct from edited criteria.
 
-### Existing boundaries and required execution adapter
+### Technical request mapping
 
-- Reuse `deriveActiveSearchFilters()` in `src/lib/domain/search/derive-active-search-filters.ts` for technical ID projection. It derives person IDs from `state.people` and excludes pending queries and inactive genres. It is not an execution-readiness check, provider request or complete Discover adapter.
-- Keep `SearchState.filters`, `ActiveSearchFilters` and `DiscoverFilters` distinct. Existing server services accept `DiscoverFilters` from `src/lib/schemas/discover.ts`, not stored search state. Technical `personIds` in that service contract are not legacy duplicate storage to remove.
-- Implement and test an explicit mapping from domain `minYear`/`maxYear` to service `yearFrom`/`yearTo`, preserving absent/open bounds and all supported criteria. Route `mediaType` through execution planning; do not pass the projection blindly into a schema that can discard unmatched fields.
-- Existing `server/services/tmdb/discover-params.ts` emits `with_cast` whenever its input has person IDs, without a media-type guard. Do not treat this as TV person support. Guard or specialize execution paths before live person integration and test that unsupported TV cast filtering is never silently sent as an equivalent search.
-- Verify concrete provider behavior before implementing the TV credits path and acting-only eligibility. Movie cast filtering alone does not establish acting-only participation either.
-- Reuse WP 009 genre compatibility and inactive-return handling. Inactive genres are retained wishes, not active provider filters; do not restore them by bypassing domain transitions. Complete catalog acquisition and network orchestration must remain outside the pure WP 009 functions.
-- Define readiness for all required unresolved entity criteria, including keyword queries, before execution; pending requests must not disappear merely because the technical projection omits them.
-- Preserve a source revision through all requests and enrichment. A domain mode of `discover` is not by itself permission to execute.
+- Inspect existing contracts before defining common fields and media-specific extensions. Share fields only when meaning and validation agree. Zod contracts define data shapes; derive TypeScript types rather than duplicating them.
+- Publish and test a field mapping from each supported domain criterion to the existing service contract and provider parameters. Include media routing, people, genres, keywords, minimum rating, year bounds and supported sorting. Provider capability does not automatically expand product scope.
+- Reuse `deriveActiveSearchFilters()` in `src/lib/domain/search/derive-active-search-filters.ts` for technical projection. Person IDs come from accepted `state.people`; pending requests and inactive genres are not active provider filters. Projection alone proves neither readiness nor complete mapping.
+- Inspect `SearchState.filters`, `ActiveSearchFilters` and service `DiscoverFilters` in `src/lib/schemas/discover.ts` as distinct boundaries. Keep useful validation differences; consolidate redundancy only with all affected callers/tests accounted for.
+- Explicitly map domain `minYear`/`maxYear` to service `yearFrom`/`yearTo`, then the appropriate media-specific date semantics. Preserve absent and open bounds. Do not pass objects through schemas that silently discard unmatched criteria.
+- Use existing genre compatibility/inactive-return rules. Do not equate different Movie/TV genres without an approved mapping.
+- Media changes update the shared draft through domain rules; derive the new technical request rather than synchronize two stored objects. Accepted identities remain available.
+
+### Scope of Movie and TV execution
+
+| Confirmed selection | Server-side path |
+| --- | --- |
+| Movie | Movie Discover with supported filters and required person-role validation |
+| TV without people | TV Discover with supported filters |
+| TV with people | Focused TV-person credits helper plus all supported additional criteria |
+| Both | The relevant Movie and TV paths from the same confirmed draft |
+
+- Verify the concrete provider contracts before implementing each path. Document authoritative sources and verification date; do not encode changeable provider limits as product constants.
+- The previously identified unconditional `with_cast` mapping in `server/services/tmdb/discover-params.ts` must be rechecked and guarded or specialized before live TV-person use. No unsupported TV cast parameter may masquerade as a valid person search.
+- Movie cast filtering does not by itself establish qualifying acting participation or exclude appearances as oneself.
+- For TV, retrieve per-person TV credits, identify qualifying acting participation, deduplicate series IDs and intersect across every required person. Shared series participation does not require the same episode.
+- Exclude crew-only work and appearances as oneself, including talk-show/documentary appearances. Do not exclude a whole title merely by genre. Define a tested insufficient-role-information policy; character-name heuristics or episode counts alone must not be presented as reliable role classification.
+- TV credits and intermediate ID sets are execution data, not permanently appended draft criteria. Keep identity resolution in WP 014.
+- Apply every supported additional criterion. Where credits lack required information, use targeted detail/provider enrichment or verified Discover comparison. Do not guess, drop filters or weaken AND to OR. Define explicit unsupported/incomplete outcomes for combinations not fully implemented.
+- Provider availability work must distinguish region and streaming versus rental/purchase where supported; this does not introduce a new user filter without an agreed product contract.
+
+### Common results, pagination and completeness
+
+- Normalize Movie/TV results for presentation while retaining media type and provider ID. Use their combination as result identity; unify title/date fields without overwriting their media meaning.
+- Define sorting and pagination before implementing combined results. Preserve unshown loaded items; do not lose or duplicate results through naive truncation and page increments.
+- A common sort of loaded items is not automatically a globally ordered result stream across all unseen provider pages. Define and report the supported guarantee.
+- Provider totals before a person intersection or other additional filtering are not automatically totals of the final matching result set.
+- Define bounded request budgets, concurrency, timeouts, rate-limit handling and technical-error behavior. A local processing budget is not a provider result limit.
+- Expose partial failure and incomplete retrieval/classification/filtering/enrichment explicitly. Neither is a verified empty result or permission to claim all matches.
+- All results means accessible matching titles recorded by the provider, not guaranteed real-world completeness or one unbounded response. Absence of a documented credits maximum is not a completeness guarantee.
+
+### Implementation approach and cleanup
+
+Prefer explicit request mappers and focused server-side execution functions. Keep pure domain decisions separate from injected transport. No general matcher, mutable duplicate search state, framework, store or registry is required by this specification.
+
+Before implementation, inventory affected contracts, services, callers, tests and documentation. Classify them as keep, adapt, merge or remove. Remove obsolete structures and their implementation-specific tests together while preserving required behavior coverage. Obtain approval for concrete runtime/schema/test changes.
 
 ### Out of scope
 
-- Entity resolution and candidate enrichment for identity selection (WP 014).
-- Clarification interaction (WP 010), result rendering, automatic error recovery and full LLM implementation.
+- Entity identity resolution/candidate selection: WP 014.
+- Parser/model execution: WP 011.
+- UI rendering, permanent storage, automatic recovery and title-disambiguation implementation.
+- Direct TMDb calls or credentials in browser code.
 
 ### Inputs and outputs
 
-Inputs: validated WP 009 search state, resolved identities, filter catalog and verified provider contracts. Outputs: execution plan, provider parameters, matching movie/series results, source revision, execution status and completeness information.
+Inputs: validated current draft, trusted resolved identities, relevant catalogs, explicit execution confirmation and injected provider dependencies.
+
+Outputs: validated technical requests and normalized results with source association, execution/error status, pagination information and honest completeness guarantees. The final response contract remains implementation-design work.
 
 ### Implementation tasks and acceptance criteria
 
-- Map validated state to movie and TV execution paths without losing criteria.
-- Use validated resolved IDs and retain ID/name associations for meaningful state.
-- Test the domain-to-service adapter for year-name translation, open bounds, supported filters, media routing and exclusion of pending/inactive values.
-- Test Movie/TV person routing explicitly; no unsupported cast parameter may masquerade as a valid TV person condition.
-- Enforce shared acting participation for all requested people.
-- Test unresolved blocking, role exclusions, intersection/deduplication, additional filters, stale responses, bounded work and incomplete-versus-empty outcomes.
-- Record source-backed provider assumptions and their verification date; distinguish provider behavior from local execution budgets.
-- Keep domain decisions pure where possible and inject server-side transports; never expose credentials or call TMDb directly from browser code.
-- Return results for later presentation with honest completeness and error status.
+- Define the field mapping and minimal Movie/TV request contracts without dropping supported criteria.
+- Test year-name/date mapping, open bounds, media routing, genre compatibility, accepted-person projection and exclusion of pending/inactive values.
+- Test readiness and explicit confirmation; unresolved criteria must block the complete search.
+- Test Movie/TV/both execution, person AND semantics, role eligibility, deduplication, TV intersections and additional criteria with injected transports.
+- Test Movie → TV → Movie wish preservation and that switching alone performs no search or redundant identity lookup.
+- Test stale results, combined result identity, pagination retention, technical/partial failures and incomplete-versus-empty outcomes.
+- Verify provider assumptions against authoritative documentation during implementation. Update affected code, callers, schemas, tests and documentation together.
+- Run tests, coverage, ESLint and typecheck for implementation changes; report actual results rather than inferred success.
 
 ## Execution status
 
-- Scope expanded on 2026-11-15 from Discover-only execution to include the approved person-search requirements and credits-based TV planning.
-- Live resolution dependency explicitly assigned to WP 014; no provider execution is implemented by this documentation change.
-- Replaced the separate requirements-document reference with direct WP links and clarified role eligibility, media-type preservation and source-backed API-limit policy.
-- Read-only review at `26aefe9` identified the existing technical projection, distinct year-field contracts and unguarded cast-parameter mapping. This package explicitly owns their execution integration; the documentation does not fix or certify that code.
-- These are execution-boundary tasks, not a transfer of unfinished WP 009 domain acceptance criteria. WP 009 still requires its own complete review and validation.
-- No tests, coverage, lint or typecheck were run for this update.
+- 2026-11-17: Specification aligned with one confirmed general draft, derived Movie/TV reference objects and focused server-side TV-person execution.
+- WP 009 and WP 010 are completed. WP 011 and WP 014 integration precede complete live execution; this document does not reopen their accepted foundation or certify unimplemented behavior.
+- Concrete provider-contract verification, field mapping, result/pagination contracts, role eligibility and file-level cleanup inventory remain pending.
+- Documentation only. No runtime code, schemas or tests changed; no tests, coverage, ESLint or typecheck run.

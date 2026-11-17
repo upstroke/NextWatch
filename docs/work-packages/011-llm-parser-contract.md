@@ -2,51 +2,55 @@
 
 ## Specification
 
-### Purpose
+### Purpose and dependencies
 
-Define validated parser input/output for LLM-assisted extraction of filters and entity queries. Follow the [WP 009 state-application contract](009-search-state-and-filter-catalog.md) and [WP 012 participation semantics](012-search-execution-and-discover.md#scope) rather than introducing a second state model.
+Implement the parser boundary of the [product and search flow](000-product-and-search-flow.md): user input becomes validated proposals for the existing general search draft, not executable TMDb requests.
+
+Reuse [WP 009](009-search-state-and-filter-catalog.md) state/transitions and [WP 010](010-clarification-and-guardrails.md) clarification/guardrails. Implementation order is WP 011 → [WP 014](014-entity-resolution.md) → [WP 012](012-search-execution-and-discover.md). Package numbers remain unchanged.
 
 ### Scope
 
-- Define parser inputs, outputs, filter fields, entity-query fields and validation boundaries.
-- Extract one or multiple person names, keyword queries and requested media type. Preserve common participation when people are joined by AND.
-- With no explicit media type, preserve the contract default permitting movies and series.
-- Distinguish additions, replacements and removals for subsequent validated domain application; internal references are controlled by the application, not guessed by the model.
-- Preserve acting-participation intent. Do not reinterpret it as crew work or appearances as oneself.
-- Prepare extracted data for WP 009 pending-query operations and WP 010 clarification.
+- Define validated parser input/output for supported filter changes and unresolved person/keyword queries. The parser proposes changes; the application owns validation and mutation.
+- Extract requested media type and single/multiple person or keyword wishes. Preserve common acting participation for people joined by AND; do not reinterpret it as crew work or appearances as oneself. TV-person intent remains valid even though its execution differs from Movie.
+- For a new request, use the application default permitting movies and series when media type is absent. For follow-ups, preserve the current media type unless explicitly changed. Missing criteria are not instructions to clear existing wishes.
+- Distinguish supported additions, replacements and removals. Application-owned references identify existing targets; the model must not invent references, provider IDs, authoritative revisions or search authorization. Ambiguous targets require clarification.
+- Validate output before applying any changes. Technical parser failures and unsupported or ambiguous interpretations must not silently erase wishes or execute a partial search.
 
-### Integration with existing WP 009 code
+### Existing state and application boundary
 
-- Reuse `SearchState`, accepted ID/name records and structured pending person/keyword requests from `src/lib/schemas/search-state.ts`. Do not emit bare strings as an alternative domain-state format or invent resolved IDs.
-- Define an explicit validated application adapter from parser output to `PendingQueryCommandSchema` in `src/lib/schemas/search-transition.ts`. The application supplies references and base revisions; it resolves replacement targets against the current accepted state rather than trusting model-generated IDs. Ambiguous targets require clarification.
-- Apply pending changes through `applyPendingQueryCommand()` and supported filter intents through `applyIntent()`. Preserve existing atomicity boundaries; specify coordination for requests containing both filter and entity changes before implementation.
-- Do not expand chat filter changes to edit `people` or `personIds`; validated person acceptance remains a separate trusted boundary.
-- Complete genre catalogs are application-supplied inputs to existing genre compatibility handling, not model-generated lists or evidence of provider identity.
-- Parser integration must retain inactive genre wishes and unrelated pending requests via the existing domain functions, not by reconstructing a partial state.
-
-### Out of scope
-
-- Person/keyword identity lookup or candidate selection: assigned to [WP 014](014-entity-resolution.md).
-- Search execution (WP 012), result presentation, automatic error recovery and full LLM implementation.
-- Inventing provider IDs, selecting popular candidates or applying unvalidated model output.
+- Reuse `SearchState`, accepted ID/name records and referenced pending requests in `src/lib/schemas/search-state.ts`. Do not create a second editable draft or synchronize separate Movie/TV states.
+- Map parser proposals explicitly to supported `PendingQueryCommandSchema` operations in `src/lib/schemas/search-transition.ts` and supported filter intents. The application supplies references and expected revisions.
+- Apply pending changes through `applyPendingQueryCommand()` and filter changes through `applyIntent()`. Do not mutate accepted people through chat filter fields or bypass trusted identity acceptance.
+- Preserve unrelated criteria, pending requests, accepted replacement sources and inactive genre wishes. Use existing compatibility transitions for media changes rather than reconstructing partial state.
+- Define mixed filter/entity application and coupled replacement behavior before implementation. Independent valid changes may proceed only when unresolved related work remains represented; coupled changes must not become partial replacements.
+- Reuse application-supplied catalogs and existing limits. Do not infer new product filters from the full TMDb parameter catalog.
+- Specify the smallest necessary temporary clarification context for concrete unsupported cases. Do not introduce a general continuation framework, store or registry without demonstrated need and separate approval.
 
 ### Inputs and outputs
 
-Inputs: user request, existing search state, filter catalog and validation schemas. Outputs: parser input/output contracts, extracted filters and unresolved entity queries ready for validated application.
+Inputs: current user text, relevant existing search state, application-supplied catalogs and trusted request association.
+
+Outputs: validated proposals, explicit clarification/unsupported information and a controlled application result for the same general draft. Output is neither a complete replacement state nor a provider query.
+
+### Out of scope
+
+- Live person/keyword identity lookup and candidate enrichment: WP 014.
+- Movie/TV request mapping, TV-credit execution helpers, readiness/confirmation and result retrieval: WP 012.
+- UI rendering, persistence, provider credentials, automatic model retries and autonomous tool loops.
+- A production model/HTTP integration without its own approved implementation scope.
 
 ### Implementation tasks and acceptance criteria
 
-- Define and validate parser input/output and extraction fields.
-- Extract single/multiple person requests and keyword queries without turning names into IDs.
-- Preserve requested media type and AND semantics.
-- Integrate with WP 009 operations; preserve unrelated accepted criteria.
-- Test the application adapter, reference/revision ownership, replacement-target clarification and mixed filter/entity coordination without live entity lookup.
-- Test extraction-contract validation and state-application compatibility without live entity lookup.
+- Inspect current schemas, instructions, transitions, callers and tests before proposing file changes. Record concrete keep/adapt/merge/remove decisions.
+- Define a minimal parser contract and pure application adapter with explicit validation/failure behavior. Reuse schemas where responsibilities match; do not duplicate state contracts.
+- Test supported extraction, absent-field preservation, media changes, multiple-person AND intent, target ambiguity, stale associations and mixed changes using synthetic fixtures.
+- Test that accepted people, unrelated pending work and inactive genres survive relevant changes, and that parser output cannot invent accepted identities or start a search.
+- Adapt or remove obsolete tests only with the affected interface and preserve required behavior coverage. Update callers and documentation together.
+- Run tests, coverage, ESLint and typecheck for implementation changes; report actual commands and results.
 
 ## Execution status
 
-- Specification aligned on 2026-11-15; actual entity resolution is explicitly assigned to WP 014.
-- Replaced the separate requirements-document reference with direct state-contract and participation-semantics links.
-- Integration scope aligned with inspected code at `26aefe9`; WP 009 already supplies structured pending commands and person-state transitions. Parser extraction and its application adapter remain separate work, not implemented by this update.
-- Documentation-only update, not a claim of parser implementation or completion of WP 009.
-- No tests, coverage, lint or typecheck were run for this update.
+- 2026-11-17: Specification aligned with the general search draft and derived Movie/TV requests.
+- WP 009 and WP 010 are the completed foundation. This update does not implement parser contracts, application integration or a model connection.
+- Next implementation prerequisite: targeted code/test inventory and an approved file-level plan. Mixed-change details and any genuinely necessary domain extension remain to be designed.
+- Documentation only. No runtime code, schemas or tests changed; no tests, coverage, ESLint or typecheck run.

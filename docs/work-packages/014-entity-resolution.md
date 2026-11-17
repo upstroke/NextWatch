@@ -2,77 +2,65 @@
 
 ## Specification
 
-### Purpose
+### Purpose and dependencies
 
-Resolve unresolved person names and keyword terms to validated TMDb identities without confusing identity lookup with movie/series search. Use the [WP 009 state contract](009-search-state-and-filter-catalog.md) and [WP 010 clarification contract](010-clarification-and-guardrails.md); [WP 012](012-search-execution-and-discover.md) owns final title execution and participation eligibility.
+Provide focused server-side helpers that resolve pending names and terms for the general search draft defined by the [product and search flow](000-product-and-search-flow.md). Identity lookup answers who or which keyword is meant; it does not retrieve final movie/series results.
 
-### Ownership and dependencies
-
-- This package explicitly owns server-side person and keyword resolution previously left unassigned.
-- WP 009 owns the domain state and pure acceptance transitions. WP 010 owns clarification and selection workflow. WP 011 owns text extraction. WP 012 owns movie/series execution and acting-role eligibility.
-- Implement after the required WP 009 state contracts and WP 010/011 interface contracts are available, and before live unresolved-entity integration in WP 012. The numeric identifier does not imply execution after WP 012; retain existing package numbers.
-- Contracts may be developed with synthetic fixtures, without prematurely implementing later UI or execution work.
+Reuse [WP 009](009-search-state-and-filter-catalog.md) state/acceptance and [WP 010](010-clarification-and-guardrails.md) clarification contracts. [WP 011](011-llm-parser-contract.md) supplies extraction/application contracts. Implement this package after WP 011 and before live unresolved-entity integration in [WP 012](012-search-execution-and-discover.md).
 
 ### Scope
 
-- Search people and keywords through injected server-side TMDb transports. Reuse existing search contracts where suitable; verify concrete gaps before adding adapters.
-- Validate provider responses and map person candidates to provider ID and display name. Carry stable pending-request reference and source revision throughout resolution.
-- Define explicit unique, ambiguous and no-match outcomes. A successful response with no match differs from technical failure, malformed response and incomplete candidate retrieval.
-- Define a conservative, tested uniqueness policy before implementation. Do not treat rank/popularity or a truncated first page as proof of identity.
-- Provide available known movie/series titles with media type as person-selection aids; no profile image is required. These titles are not a complete filmography or final results.
-- Pass ambiguous/no-match outcomes to WP 010. Preserve unrelated accepted people and criteria; never drop unresolved conditions to enable execution.
-- Validate user selection against the offered candidate set and its request/revision association. Do not accept arbitrary model-generated or stale IDs.
-- Produce validated acceptance input for the pure WP 009 transition. That transition owns atomic pending removal, accepted-person addition/replacement, deduplication, limits and revision increment.
-- Define keyword candidate mapping, ambiguity/no-match policy and validated ID acceptance explicitly. Reuse WP 009 pending/active keyword state and limits; do not guess IDs or automatically copy person-specific selection rules. Specify any necessary keyword acceptance-transition extension in WP 009 before integration.
-- Define bounded candidate retrieval/enrichment, timeouts, rate-limit handling and incomplete outcomes. Do not hide truncation as no match or unique match.
+- Resolve referenced pending person and keyword requests through injected server-side TMDb search dependencies. Reuse suitable provider contracts, services and fixtures before introducing adapters.
+- Validate provider responses and retain pending-request reference, source revision and addition/replacement context. Schema validity alone does not prove identity provenance.
+- Define unique, ambiguous, no-match, incomplete and technical-error outcomes. Do not treat popularity, result rank, one returned candidate or truncated retrieval as proof of uniqueness. Establish a conservative tested uniqueness policy.
+- Supply person IDs, names and available distinguishing movie/series titles with media type for clarification. No profile image is required. These aids are not complete filmographies or search results.
+- Pass ambiguity/no-match to existing clarification handling. Validate user selection against the offered candidates and current request association. Neither arbitrary model IDs nor stale selections may be accepted.
+- Produce trusted acceptance input for controlled domain transitions. Preserve unrelated criteria and pending wishes; do not drop unresolved requirements to enable a search.
+- Define keyword-specific candidate mapping and acceptance. Do not assume every person-selection rule applies to keywords.
+- Bound retrieval/enrichment and define timeout, rate-limit and incomplete-result handling before implementation. Truncation is neither no match nor evidence of uniqueness.
 
-### Integration with existing WP 009 code
+### Integration with the general draft
 
-- Reuse structured `PendingPersonQuerySchema`, `PendingKeywordQuerySchema` and accepted-person records from `src/lib/schemas/search-state.ts`; do not recreate pending state as unreferenced strings.
-- `PersonAcceptanceSchema` in `src/lib/schemas/search-transition.ts` already defines `ref`, `sourceRevision` and an ID/name `person`. Produce that input only after provider identity and candidate membership are established. Structural parsing alone is not provenance validation.
-- Reuse `acceptResolvedPerson()` from `src/lib/domain/search/pending-operations.ts`. Do not duplicate its stale-revision guard, matching-request lookup, atomic pending removal, addition/replacement, existing-name retention or ID deduplication.
-- Existing acceptance treats an addition resolving to an accepted ID as effective pending removal. Replacing A with already accepted B removes A and retains B once. Respect these domain decisions rather than introducing a second conflicting policy.
-- Reuse `applyPendingQueryCommand()` for pending-request corrections/removals. Candidate retrieval and selection workflow must not increment criteria revision merely by showing a question.
-- Bind each lookup to its request and revision. If another accepted transition makes the result stale, do not bypass the revision guard or merely relabel the result with a newer revision; define safe re-resolution/revalidation coordination.
-- Keyword lookup remains assigned here, but a controlled keyword-resolution acceptance operation has not been verified in the inspected WP 009 code. Before implementation, specify the missing integration contract and obtain approval for any required domain extension; do not apply keyword IDs through an unguarded side channel.
+- Reuse `PendingPersonQuerySchema`, `PendingKeywordQuerySchema` and accepted-person records in `src/lib/schemas/search-state.ts`; do not create another pending queue or independently stored person-ID list.
+- `PersonAcceptanceSchema` in `src/lib/schemas/search-transition.ts` carries `ref`, `sourceRevision` and an ID/name `person`. Establish provider identity and candidate membership before producing this input.
+- Reuse `acceptResolvedPerson()` in `src/lib/domain/search/pending-operations.ts` for controlled acceptance. It owns request matching, revision checks, atomic pending removal, addition/replacement, deduplication and capacity behavior.
+- Preserve existing duplicate rules: an addition resolving to an accepted ID closes the pending request without another accepted entry; replacing A with accepted B removes A and retains B once.
+- Reuse `applyPendingQueryCommand()` for supported corrections/removals. Showing candidates alone does not change criteria revision.
+- Multiple lookups must respect the existing revision guard. Never make an obsolete result current by overwriting its source revision. Define safe current-state validation or renewed lookup where necessary.
+- A controlled keyword-acceptance integration has not yet been established by this documentation step. Inspect the current implementation and obtain approval for any necessary domain extension; no unguarded keyword-ID side channel.
+- Resolve an identity independently of Movie/TV execution. A media change alone must not require resolving an already accepted person again.
+
+### Identity versus execution data
+
+Accepted identity belongs in the existing draft. TV credits, qualified series-ID sets, intersections and provider enrichment belong to WP 012 execution, not to identity acceptance or permanent criteria storage.
+
+Use small explicit helpers and the existing state boundaries. Any additional temporary selection context must have a demonstrated purpose; this package does not authorize a general store/registry or competing state machine.
+
+### Inputs and outputs
+
+Inputs: validated pending request, source association/revision, addition/replacement context, validated selection context where needed and injected provider dependencies.
+
+Outputs: explicit resolution outcomes, candidate aids, trusted acceptance inputs or technical/incomplete status. The domain transition, not the transport helper, updates accepted criteria. Resolution does not authorize search execution.
 
 ### Out of scope
 
-- Natural-language extraction (WP 011).
-- UI rendering and the complete clarification interaction (WP 010).
-- Filmography execution, TV-credit intersection, provider filtering and acting-role classification for final results (WP 012).
-- Direct mutation of active filters, automatic search relaxation and full LLM implementation.
-
-### Inputs
-
-- Validated pending person/keyword request with stable reference and source revision.
-- Explicit person addition/replacement context from WP 009.
-- Validated selection context when clarification was necessary.
-- Injected server-side provider dependencies.
-
-### Outputs
-
-- Validated unique, ambiguous or no-match person/keyword outcomes.
-- Person candidate IDs, names and available distinguishing movie/series titles.
-- Validated identity-acceptance inputs bound to the original request and revision.
-- Explicit technical-error or incomplete-resolution status.
+- Natural-language extraction: WP 011.
+- UI rendering and a replacement clarification framework.
+- TV-credit retrieval/intersection for final results, acting-role eligibility, Movie/TV filtering, pagination and search execution: WP 012.
+- Automatic relaxation of wishes, direct browser calls and permanent conversation storage.
 
 ### Implementation tasks and acceptance criteria
 
-- Review existing provider search schemas, services and fixtures before adding code.
-- Define and test response mapping, uniqueness policy and complete-versus-incomplete candidate handling.
-- Support independent resolution of multiple names without changing the requested AND condition.
-- Test ambiguous/no-match behavior, candidate membership, stale selection and request association.
-- Test person replacement integration and keyword acceptance against WP 009 without duplicating its domain decisions.
-- Test coordination of multiple resolution results against the existing global revision guard; never apply stale identities by rewriting their source revision.
-- Keep lookup and candidate enrichment server-side, credential-safe and transport-injected.
-- Test with synthetic fixtures and mocked external boundaries; report actual validation separately from plans.
+- Inventory relevant search schemas, services, transports, acceptance functions, callers and fixtures; classify concrete reuse/change/removal needs.
+- Define uniqueness, candidate retrieval bounds, missing-title behavior and keyword acceptance before implementation.
+- Test response mapping, ambiguity/no-match versus failure/incompleteness, candidate membership, stale selection, source association and multiple-result coordination.
+- Test duplicate/replacement integration using real existing domain transitions rather than duplicating their implementation. Preserve requested AND semantics for multiple people.
+- Keep transport/enrichment server-side and credential-safe. Use synthetic fixtures and mocked external boundaries.
+- Update affected code, callers, tests and documents together; run tests, coverage, ESLint and typecheck for implementation changes.
 
 ## Execution status
 
-- Assigned on 2026-11-15 as the dedicated owner for person and keyword resolution.
-- Replaced the separate requirements-document reference with direct state, clarification and execution links.
-- Read-only review at `26aefe9` found existing pure person acceptance and pending operations; this package must integrate them rather than implement a competing state machine. This finding does not establish provider resolution or full WP 009 completion.
-- Planned, not implemented. This package does not authorize starting resolution code while WP 009 remains the active implementation package.
-- Uniqueness rules, candidate bounds, missing-title fallback, keyword acceptance integration, multi-result coordination and concrete provider-contract gaps remain implementation-design tasks.
-- No tests, coverage, lint or typecheck were run for this documentation step.
+- 2026-11-17: Specification aligned with the shared search draft; identity resolution explicitly distinguished from TV-person execution.
+- Planned, not implemented by this update. WP 009 and WP 010 are completed; the next implementation dependency is the required WP 011 contract.
+- Uniqueness, bounds, keyword acceptance, multi-result coordination and concrete provider-contract gaps remain design/verification work.
+- Documentation only. No runtime code, schemas or tests changed; no tests, coverage, ESLint or typecheck run.
