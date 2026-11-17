@@ -1,11 +1,23 @@
+import { z } from 'zod';
+import { MAX_KEYWORD_IDS, MAX_PERSON_IDS } from '@lib/config/domain';
 import { GenreCatalogsSchema } from '@lib/schemas/genre-catalogs';
 import { ParserProposalSchema } from '@lib/schemas/parser-proposal';
 import type { ParserProposal } from '@lib/schemas/parser-proposal';
 import { PendingKeywordQuerySchema, SearchStateSchema } from '@lib/schemas/search-state';
 import type { SearchState } from '@lib/schemas/search-state';
+import type { PendingQueryCommand } from '@lib/schemas/search-transition';
 import { applyIntent } from './apply-intent';
 import type { GenreMediaChange } from './genre-compatibility';
 import { applyPendingQueryCommand } from './pending-operations';
+
+const pendingBindingsSchema = z.object({
+  expectedRevision: SearchStateSchema.shape.revision,
+  pendingTargets: z.array(z.object({
+    targetKey: z.string(),
+    entity: z.enum(['person', 'keyword']),
+    ref: PendingKeywordQuerySchema.shape.ref,
+  }).strict()).max(MAX_PERSON_IDS + MAX_KEYWORD_IDS),
+}).strict();
 
 type RejectionReason =
   | 'invalid-state'
@@ -18,7 +30,12 @@ type RejectionReason =
   | 'invalid-pending-command';
 
 export type ApplyParserProposalResult =
-  | { status: 'applied'; state: SearchState; mediaChange?: GenreMediaChange }
+  | {
+      status: 'applied';
+      state: SearchState;
+      mediaChange?: GenreMediaChange;
+      pendingInvalidation?: { sourceRevision: number; refs: string[] };
+    }
   | { status: 'unchanged'; reason: 'no-effective-change' }
   | {
       status: 'blocked';
@@ -28,20 +45,24 @@ export type ApplyParserProposalResult =
   | { status: 'rejected'; reason: RejectionReason; proposal: unknown; detail?: string };
 
 /**
- * Applies a supported parser proposal through existing pure domain transitions.
- * The caller supplies trusted original-request association, expected revision,
- * fresh references and complete provider-fetched catalogs; none come from the model.
- * Work is private until success. Rejections expose no intermediate state. Each
- * effective internal transition retains its own revision increment. This function
- * does not rebase provider replies, resolve identities, authorize or run searches.
- * Entity replacement/refinement and incompatible new genre wishes remain blocked
- * or rejected with the proposal retained, never silently converted to additions.
- * Nonempty pendingOperations are blocked in full until target-bound application
- * is implemented; accompanying filters/additions must not be applied on their own.
+ * Applies proposals privately through existing pure transitions, exposing no partial state.
+ * pendingBindings must be the original application-owned buildParserInput().bindings,
+ * never model/client data or bindings rebuilt after receiving a response. Both original
+ * revisions and the complete ordered target mapping are checked against the current draft.
+ * Structure/mapping checks do not establish request provenance or prevent same-revision
+ * response swaps; trusted request association and response consumption remain caller duties.
+ * Pending edits preserve replacement context. Discard removes only the pending request.
+ * Internal commands use working revisions only after original association checks; external
+ * replies are never rebased. Each effective transition retains its own revision increment.
+ * When pending operations are present and the full proposal changes state, pendingInvalidation
+ * lists all original pending refs whose source-revision bindings are obsolete, including
+ * unchanged siblings. It does not remove siblings or manage clarification sessions.
+ * Missing pending bindings block nonempty operations; malformed supplied bindings reject.
+ * Accepted-identity edits, provider lookup, persistence and search execution are not added.
  * @param state Current draft.
  * @param input Untrusted parser proposal.
- * @param context Application-owned bindings and optional complete genre catalogs.
- * @returns A complete next draft, no-op, retained blocked proposal or rejection.
+ * @param context Original application bindings, fresh addition refs and optional genre catalogs.
+ * @returns Complete next draft, no-op, retained blocked proposal or rejection.
  */
 export function applyParserProposal(
   state: SearchState,
@@ -50,6 +71,7 @@ export function applyParserProposal(
     expectedRevision: number;
     personRefs: readonly string[];
     keywordRefs: readonly string[];
+    pendingBindings?: unknown;
     genreCatalogs?: unknown;
   },
 ): ApplyParserProposalResult {
@@ -71,8 +93,55 @@ export function applyParserProposal(
       proposal,
     };
   }
-  if (proposal.pendingOperations?.length) {
-    return { status: 'blocked', reason: 'unsupported-pending-operations', proposal };
+
+  const operations = proposal.pendingOperations ?? [];
+  const commands: PendingQueryCommand[] = [];
+  if (operations.length > 0) {
+    if (context.pendingBindings === undefined) {
+      return { status: 'blocked', reason: 'unsupported-pending-operations', proposal };
+    }
+    const bound = pendingBindingsSchema.safeParse(context.pendingBindings);
+    if (!bound.success) return reject('invalid-bindings');
+    if (bound.data.expectedRevision !== context.expectedRevision) return reject('stale-revision');
+    const expectedTargets = [
+      ...source.data.pendingQueries.personQueries.map((request, index) => ({
+        targetKey: `person-${index + 1}`, entity: 'person', ref: request.ref,
+      })),
+      ...source.data.pendingQueries.keywordQueries.map((request, index) => ({
+        targetKey: `keyword-${index + 1}`, entity: 'keyword', ref: request.ref,
+      })),
+    ];
+    if (bound.data.pendingTargets.length !== expectedTargets.length ||
+        expectedTargets.some((expected, index) => {
+          const actual = bound.data.pendingTargets[index];
+          return !actual || actual.targetKey !== expected.targetKey ||
+            actual.entity !== expected.entity || actual.ref !== expected.ref;
+        })) return reject('invalid-bindings');
+
+    for (const operation of operations) {
+      const target = bound.data.pendingTargets.find((entry) => entry.targetKey === operation.targetKey);
+      if (!target) return reject('invalid-bindings');
+      if (operation.operation === 'discard') {
+        commands.push({
+          entity: target.entity, operation: 'remove',
+          baseRevision: source.data.revision, ref: target.ref,
+        });
+      } else if (target.entity === 'person') {
+        const request = source.data.pendingQueries.personQueries.find((entry) => entry.ref === target.ref);
+        if (!request) return reject('invalid-bindings');
+        commands.push({
+          entity: 'person', operation: 'change', baseRevision: source.data.revision,
+          request: { ...request, query: operation.query },
+        });
+      } else {
+        const request = source.data.pendingQueries.keywordQueries.find((entry) => entry.ref === target.ref);
+        if (!request) return reject('invalid-bindings');
+        commands.push({
+          entity: 'keyword', operation: 'change', baseRevision: source.data.revision,
+          request: { ...request, query: operation.query },
+        });
+      }
+    }
   }
 
   const refs = [...context.personRefs, ...context.keywordRefs];
@@ -126,6 +195,15 @@ export function applyParserProposal(
     applied = true;
   }
 
+  for (const command of commands) {
+    const result = applyPendingQueryCommand(working, { ...command, baseRevision: working.revision });
+    if (result.status === 'rejected') return reject('invalid-pending-command', result.reason);
+    if (result.status === 'applied') {
+      working = result.state;
+      applied = true;
+    }
+  }
+
   const additions = [
     ...proposal.people.map((query, index) => ({
       entity: 'person', ref: context.personRefs[index], query,
@@ -150,7 +228,12 @@ export function applyParserProposal(
     applied = true;
   }
   if (!applied) return { status: 'unchanged', reason: 'no-effective-change' };
-  return mediaChange
-    ? { status: 'applied', state: working, mediaChange }
-    : { status: 'applied', state: working };
+  return {
+    status: 'applied',
+    state: working,
+    ...(mediaChange ? { mediaChange } : {}),
+    ...(operations.length > 0 ? {
+      pendingInvalidation: { sourceRevision: source.data.revision, refs: [...existingRefs] },
+    } : {}),
+  };
 }
