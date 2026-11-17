@@ -1,51 +1,41 @@
 # Title disambiguation and providers
 
-## Purpose
+## Specification
 
-This work package defines how ambiguous title requests are clarified and how watch providers are determined.
+### Purpose
 
-It describes how a title candidate is selected and how provider information is retrieved for the selected title.
+Clarify ambiguous title candidates and retrieve provider information for the selected Movie/TV title. Follow the [product and search flow](000-product-and-search-flow.md); title lookup is separate from the criteria-based main search.
 
-## Scope
+### Scope
 
-- Define title candidate selection.
-- Define disambiguation states.
-- Define provider lookup for a selected title.
-- Define how provider information is returned.
-- Prepare the selected title for provider display.
+- Define title-candidate selection and disambiguation states. Preserve media type and provider ID throughout selection.
+- Validate selection against the offered candidates and relevant request context; do not guess a title merely to avoid clarification.
+- Define provider lookup/output for a selected title and prepare it for later display.
+- Keep provider region distinct from content language and distinguish streaming, rental and purchase where available.
+- Reuse existing provider/service contracts before introducing new ones.
 
-## Out of scope
+### Boundaries
 
-- Search execution.
-- Discover execution.
-- Result presentation.
-- Automatic error recovery.
-- Full LLM implementation.
+Provider information for a selected title belongs here. Provider availability used to filter a criteria-based result set belongs to [WP 012](012-search-execution-and-discover.md), only within an agreed product filter contract. This package does not add provider-selection filters to the main draft.
 
-## Inputs
+Natural-language extraction belongs to [WP 011](011-llm-parser-contract.md); person/keyword identity resolution belongs to [WP 014](014-entity-resolution.md). Do not replace Discover filtering with Multi-Search plus incomplete post-filtering.
 
-- Title candidates.
-- Selected title.
-- Provider contracts.
+### Inputs and outputs
 
-## Outputs
+Inputs: title candidates, validated selected-title context and provider contracts. Outputs: disambiguation state, selected title and provider information.
 
-- Disambiguation states.
-- Selected title.
-- Provider information.
+### Out of scope
 
-## Implementation tasks
+Criteria-based/Discover execution, result/UI rendering, automatic recovery and full LLM implementation.
 
-- Define title candidate selection.
-- Define disambiguation states.
-- Define provider lookup.
-- Define provider information output.
-- Prepare the selected title for provider display.
+### Acceptance criteria
 
-## Acceptance criteria
+- Ambiguous titles require controlled selection; Movie/TV identity is retained.
+- Provider information can be retrieved and returned for the selected title through our server API.
+- Errors, absent provider information and valid empty availability are distinguishable.
+- Inspect concrete callers, schemas and tests and obtain a file-level plan approval before implementation.
 
-- Title candidates can be selected.
-- Ambiguous titles lead to clarification.
-- Provider information can be retrieved.
-- Provider information can be returned.
-- The selected title can be used for provider display.
+## Execution status
+
+- Planned integration. Existing technical title/provider services are not proof of an implemented interactive selection flow.
+- 2026-11-17: Documentation structure and WP-012 boundary clarified. No runtime code, schemas or tests changed; no validation commands run.

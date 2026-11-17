@@ -2,108 +2,69 @@
 
 ## Specification
 
-### Zielsetzung
+### Zielsetzung und Ablauf
 
-NextWatch ist eine einfache, kontrollierte Film- und Seriensuche mit einem LLM als semantischem Parser. Der Nutzer beschreibt seinen Suchwunsch in natürlicher Sprache. Die Anwendung bildet diesen Wunsch auf einen allgemeinen Suchzustand ab, klärt notwendige Angaben und erzeugt erst für die bestätigte Suche die passenden technischen Anfragen.
+NextWatch ist eine einfache, kontrollierte Film- und Seriensuche mit einem LLM als semantischem Parser. Das Modell schlägt strukturierte Änderungen vor; die Anwendung validiert, klärt und führt aus. Es erfindet keine Provider-IDs, wählt keine Endpunkte und steuert keine autonomen Suchketten.
 
-Das LLM ist kein autonomer Agent. Es schlägt strukturierte Änderungen vor, erfindet keine Provider-IDs, wählt keine Endpunkte aus und führt keine Suchketten aus. Validierung, Zustandsänderungen, Auflösung und Suchausführung liegen bei der Anwendung.
+1. Nutzer beschreibt oder verändert einen Suchwunsch.
+2. Parser schlägt Kriterien und aufzulösende Begriffe vor.
+3. Anwendung validiert und aktualisiert den vorhandenen allgemeinen Suchzustand über Domain-Funktionen.
+4. Serverseitige Hilfsfunktionen lösen Personen/Keywords auf; notwendige Entscheidungen werden über die Klärungslogik vorbereitet. UI-Integration bleibt gesonderte Arbeit.
+5. Nutzer prüft den geklärten Wunsch und bestätigt die ausführbare Suche ausdrücklich. Offene oder nicht unterstützte Anforderungen dürfen nicht stillschweigend entfallen.
+6. Server leitet Movie-/TV-Anfragen ab, führt benötigte Aufrufe aus und liefert einheitliche Ergebnisse.
 
-### Verbindlicher Ablauf
-
-1. Der Nutzer beschreibt oder verändert einen Suchwunsch.
-2. Der Parser liefert einen strukturierten Vorschlag für Kriterien und noch aufzulösende Begriffe.
-3. Die Anwendung validiert den Vorschlag und übernimmt gültige Änderungen über die vorhandenen Domain-Funktionen.
-4. Serverseitige Hilfsfunktionen lösen Personen und Keywords auf. Bei notwendiger Nutzerentscheidung verwendet die Anwendung die vorhandene Klärungslogik; deren UI-Integration bleibt gesonderte Arbeit.
-5. Die Anwendung zeigt den geklärten Suchwunsch zur abschließenden Prüfung. Offene oder nicht unterstützte Anforderungen dürfen nicht stillschweigend entfallen.
-6. Der Nutzer bestätigt die ausführbare Suche ausdrücklich. Die letzte Klärungsantwort startet nicht automatisch die Suche.
-7. Der Server leitet die Movie- und/oder TV-Anfragen ab, führt die benötigten Aufrufe aus und liefert einheitliche Ergebnisse.
-
-Ein natürlichsprachliches Eingabefeld ist nicht gleichbedeutend mit einer unveränderten Weitergabe des Textes an TMDb Search. Filterwünsche werden zuerst strukturiert.
+Die letzte Klärungsantwort startet keine automatische Suche. Natürlichsprachliche Filterwünsche werden nicht unverändert an TMDb Search weitergereicht.
 
 ### Ein allgemeiner Suchzustand
 
-Der vorhandene `SearchState` aus [WP 009](009-search-state-and-filter-catalog.md) ist die maßgebliche Quelle für den Suchentwurf. Es entsteht kein zweiter parallel gepflegter Entwurf.
+`SearchState` aus [WP 009](009-search-state-and-filter-catalog.md) bleibt die maßgebliche Quelle: `filters` enthält unterstützte Kriterien einschließlich Medientyp, `people` bestätigte ID/Name-Paare, `pendingQueries` offene referenzierte Anfragen, `inactiveGenres` erinnerte Genre-Wünsche und `revision` den Änderungsstand. Technische Personen-IDs werden abgeleitet, nicht doppelt gespeichert.
 
-- `filters` hält die unterstützten Filterkriterien einschließlich Medientyp.
-- `people` hält bestätigte Personen mit ID und Anzeigename. Technische Personen-ID-Listen werden daraus abgeleitet, nicht zusätzlich im Zustand gespeichert.
-- `pendingQueries` hält strukturierte, noch offene Personen- und Keyword-Anfragen.
-- `inactiveGenres` erhält im aktuellen Medientyp nicht aktive Genre-Wünsche nach den bestehenden Kompatibilitätsregeln.
-- `revision` ordnet Änderungen und asynchrone Antworten dem passenden Zustand zu.
+Parser-Vorschlag, Zustand und Provider-Parameter haben verschiedene Aufgaben, sind aber keine unabhängig gepflegten Suchentwürfe. Bestätigte Kriterien und offene Wünsche bleiben unterscheidbar. Zuletzt ausgeführte Anfrage/Ergebnisse bleiben vom bearbeiteten Entwurf getrennt. Alte Ergebnisse dürfen nicht als neue Treffer erscheinen.
 
-Die Darstellung eines allgemeinen Objekts in Beispielen ersetzt nicht das vorhandene Schema. Parser-Ausgabe, fachlicher Zustand und technische Provider-Parameter haben unterschiedliche Aufgaben, bilden aber keine unabhängig gepflegten Kopien derselben Suche.
+### Technische Referenzobjekte und Medienwechsel
 
-Bestätigte Kriterien und offene Wünsche bleiben unterscheidbar. Der bearbeitete Suchentwurf und die zuletzt ausgeführte Anfrage mit ihren Ergebnissen bleiben ebenfalls unterscheidbar; alte Ergebnisse dürfen nach einer Änderung nicht als neue Treffer erscheinen.
+Movie-/TV-Referenzobjekte beschreiben abgeleitete, validierte technische Zielformen. Gemeinsame Felder werden nur bei gleicher Bedeutung/Validierung geteilt; medienspezifische Felder bleiben explizit. [WP 012](012-search-execution-and-discover.md) definiert die Zuordnung von Jahren, Genres, Keywords, Personen, Bewertung und unterstützter Sortierung ohne Kriterienverlust. Fehlende Werte werden nicht erfunden.
 
-### Movie- und TV-Referenzobjekte
+Movie, TV und beide verwenden denselben Entwurf. Medienwechsel erfolgen über bestehende Domain-/Genre-Regeln, erhalten Identitäten und gültige Wünsche und erzeugen bei bestätigter Ausführung die passende technische Anfrage. Kein allgemeiner Matcher synchronisiert zwei gespeicherte Objekte. Inkompatible Genres bleiben nach den vorhandenen Regeln inaktiv erhalten; keine ungeprüfte Gleichsetzung unterschiedlicher Genres. Ein Wechsel allein startet weder Suche noch erneute Namensklärung. Antworten müssen weiterhin zum gültigen Kontext gehören.
 
-Die technischen Referenzobjekte beschreiben die zulässigen Zielformen für Movie- beziehungsweise TV-Anfragen. Gemeinsame Felder werden gemeinsam definiert, soweit Bedeutung und Validierung tatsächlich übereinstimmen. Medienspezifische Felder bleiben explizit. Sie werden aus dem allgemeinen Suchzustand abgeleitet und nicht unabhängig von ihm bearbeitet oder gespeichert.
+Provider-Verträge richten sich nach der TMDb-Dokumentation. Deren Parameterkatalog erweitert nicht automatisch die Nutzerfilter um Laufzeit, Provider-Auswahl, Sprache oder Ausschlüsse.
 
-Die genaue Feldzuordnung und die Validierung der ausführbaren Anfragen gehören zu [WP 012](012-search-execution-and-discover.md). Dort werden insbesondere Jahresgrenzen, Genres, Keywords, Personen, Mindestbewertung und unterstützte Sortierung ohne stillen Kriterienverlust abgebildet. Fehlende optionale Werte werden nicht vorsorglich mit erfundenen Werten ergänzt.
+### Gezielte Hilfsfunktionen und Ausführung
 
-Die TMDb-Dokumentation bestimmt die Provider-Verträge, erweitert aber nicht automatisch den Produktumfang. Laufzeit, Provider-Auswahl, Sprache oder Ausschlüsse werden nicht allein deshalb zu neuen Nutzerfiltern, weil ein Endpunkt entsprechende Parameter kennt.
+[WP 014](014-entity-resolution.md) klärt Identitäten. Eindeutigkeit, Mehrdeutigkeit, kein Treffer, Unvollständigkeit und technische Fehler werden unterschieden; das Modell wählt keine populäre Identität eigenmächtig.
 
-### Medienwechsel und Auswahl beider Medientypen
+[WP 012](012-search-execution-and-discover.md) verarbeitet bestätigte Kriterien:
 
-Movie, TV und die Auswahl beider Medientypen verwenden denselben fachlichen Suchentwurf. Ein Medienwechsel ändert den Medientyp über die vorhandenen Domain-Regeln. Die technische Anfrage wird daraus neu abgeleitet; es ist kein allgemeiner Matcher zur Synchronisierung zweier gespeicherter Suchobjekte erforderlich.
+- Movie: geeigneter Discover-Pfad mit nötiger Rollenprüfung.
+- TV ohne Personen: TV Discover.
+- TV mit Personen: gezielte Person-TV-Credits-Hilfsfunktion und Anwendung weiterer Kriterien.
+- Beide: passende Movie-/TV-Pfade derselben bestätigten Anfrage; unabhängige Aufrufe nach Möglichkeit parallel.
 
-- Bestätigte Personen und weiterhin gültige Wünsche bleiben erhalten.
-- Genre-Kompatibilität und inaktive Rückkehrwerte verwenden die bestehenden Regeln. Keine ungeprüfte Gleichsetzung unterschiedlicher Genres.
-- Ein Wechsel allein löst weder eine erneute Namensklärung noch eine Suche aus. Asynchrone Antworten müssen weiterhin zum gültigen Kontext gehören.
-- Bei der Auswahl beider Medientypen erzeugt der Server die beiden passenden Ausführungspfade aus derselben bestätigten Anfrage.
+Mehrere Personen verlangen gemeinsame qualifizierte Schauspielbeteiligung. TV-Serien-IDs werden dedupliziert und geschnitten; dieselbe Episode ist nicht erforderlich. Crew-Arbeit und Auftritte als man selbst zählen nicht. Unzureichende Rolleninformationen dürfen nicht als sicher klassifiziert gelten.
 
-### Gezielte serverseitige Hilfsfunktionen
+Credits und Zwischenmengen sind Ausführungsdaten, keine dauerhaften Entwurfsfelder oder erfundenen TV-Discover-Parameter. Zusätzliche Informationen werden gezielt serverseitig beschafft. Filter dürfen wegen eines anderen Ausführungspfads nicht entfallen.
 
-Identitätsauflösung und Ergebnissuche sind getrennte Aufgaben.
+### Ergebnisse und angrenzende Funktionen
 
-[WP 014](014-entity-resolution.md) löst Personennamen und Keyword-Begriffe in vertrauenswürdig zugeordnete Identitäten auf. Mehrdeutigkeit, kein Treffer und technische Fehler sind unterschiedliche Ergebnisse. Das Modell darf keine IDs raten oder einen populären Treffer eigenmächtig auswählen.
+Gemeinsame Ergebnisse behalten Medientyp und Provider-ID als kombinierte Identität und vereinheitlichen Titel-/Datumsfelder für die Anzeige. Die Oberfläche koordiniert keine TMDb-Aufrufe.
 
-[WP 012](012-search-execution-and-discover.md) verarbeitet die bestätigten Identitäten für die Suche:
+WP 012 definiert Pagination, Sortierung, Nachladen, Budgets und Fehlerbehandlung vor Implementierung. Keine verlorenen/duplizierten Treffer durch Abschneiden. Eine Sortierung geladener Ergebnisse garantiert nicht automatisch globale Reihenfolge über ungelesene Seiten. Provider-Zahlen vor zusätzlichen Abgleichen sind nicht ungeprüft Endergebniszahlen. Teilausfälle und begrenzte Verarbeitung sind weder vollständige noch verifiziert leere Ergebnisse.
 
-- Movie verwendet den dafür geeigneten Discover-Pfad mit erforderlicher Rollenprüfung.
-- TV ohne Personen verwendet den TV-Discover-Pfad.
-- TV mit Personen verwendet eine gezielte Hilfsfunktion auf Basis der Person-TV-Credits und wendet die weiteren angefragten Kriterien an.
-- Bei mehreren Personen gilt gemeinsame qualifizierte Schauspielbeteiligung. Serien-IDs werden dedupliziert und zwischen den Personen geschnitten; dieselbe Episode ist nicht erforderlich. Crew-Arbeit und Auftritte als man selbst erfüllen diese Bedingung nicht. Unzureichende Rolleninformationen dürfen nicht als sicher klassifiziert gelten.
+Trending bleibt der Startmodus ohne individuelle Kriterien und benötigt kein LLM. `discover` bezeichnet die kriterienbasierte Suche, nicht zwingend einen einzelnen Provider-Aufruf oder eine Ausführungsfreigabe. TMDb Search unterstützt Lookups; Multi-Search ersetzt die Filtersuche nicht. [WP 013](013-title-disambiguation-and-providers.md) behandelt Titeldisambiguierung und Provider-Informationen zum gewählten Titel. Die Detailansicht lädt separat über unsere API.
 
-TV-Credits sind Ausführungsdaten, kein dauerhaftes zusätzliches Feld im Suchentwurf und kein erfundener TV-Discover-Parameter. Benötigte weitere Daten werden gezielt serverseitig beschafft. Kein angefragter Filter darf wegen des anderen Ausführungspfads stillschweigend verloren gehen.
+### Einfachheit, Umsetzung und Bereinigung
 
-### Ergebnisse und Pagination
-
-Die API liefert eine gemeinsame Ergebnisdarstellung mit Medientyp und Provider-ID; die Kombination identifiziert den Treffer. Titel- und Datumsfelder werden für die Darstellung vereinheitlicht. Die Oberfläche muss keine TMDb-Aufrufe koordinieren.
-
-Für die Auswahl beider Medientypen werden unabhängige Aufrufe nach Möglichkeit parallel ausgeführt. Geladene Treffer dürfen gemeinsam sortiert werden; dies ist ohne weitergehende Umsetzung keine Garantie einer globalen Rangfolge über alle noch nicht geladenen Treffer.
-
-WP 012 definiert Pagination, Nachladen, Anfragebudgets und Fehlerbehandlung vor der Implementierung. Treffer dürfen nicht durch Abschneiden und Nachladen verloren gehen. Provider-Trefferzahlen dürfen nicht ungeprüft als Trefferzahlen nach zusätzlichen Abgleichen ausgegeben werden. Ein Teilausfall oder eine vorzeitig begrenzte Verarbeitung ist kein verifiziert leeres oder vollständiges Ergebnis.
-
-### Trending, Titelsuche und Detailansicht
-
-Trending bleibt der Startmodus ohne individuelle Suchkriterien und benötigt keinen LLM-Aufruf. Der Domain-Modus `discover` bezeichnet die kriterienbasierte Suche, nicht die Zusicherung, dass technisch genau ein Discover-Aufruf genügt.
-
-TMDb Search unterstützt Identitäts- und Titel-Lookups. Multi-Search ist kein Ersatz für die kriterienbasierte Hauptsuche. Titeldisambiguierung und Provider-Darstellung bleiben Gegenstand von [WP 013](013-title-disambiguation-and-providers.md).
-
-Die Detailansicht lädt die Informationen zum ausgewählten Film oder zur Serie über unsere API. Sie ist vom Suchentwurf getrennt.
-
-### Einfachheit und Verantwortlichkeiten
-
-- Ein maßgeblicher Suchentwurf; keine separat gepflegten Movie-/TV-Entwürfe.
-- Kleine, explizite Funktionen für Zustandsänderung, Auflösung, Abbildung und Ausführung statt eines spekulativen allgemeinen Koordinationsframeworks.
-- Nur tatsächlich notwendiger temporärer Klärungs- und Ausführungskontext; keine zusätzlichen Stores oder Registries ohne nachgewiesenen Bedarf und gesonderte Zustimmung.
-- Reine Domain-Logik ohne Netzwerkzugriff; TMDb-Aufrufe ausschließlich serverseitig, Zugangsdaten niemals im Browser.
-- Validierte Parser-Ausgaben und Provider-Antworten; Zod-Verträge mit daraus abgeleiteten TypeScript-Typen.
-- Keine Ausführung durch unvalidierte Modellvorschläge, keine agentischen Modell-Tool-Schleifen und keine implizite Suchfreigabe.
-
-### Umsetzung und Bereinigung
-
-Die Reihenfolge bleibt WP 011 → WP 014 → WP 012. WP 011 verarbeitet Parser-Vorschläge für den bestehenden Zustand; WP 014 liefert Identitätsauflösung; WP 012 erzeugt und verarbeitet die ausführbaren Anfragen. WP 010 liefert die bestehende Grundlage für Klärung und Guardrails.
-
-Vor Implementierungsänderungen werden betroffene Dateien als behalten, anpassen, zusammenführen oder entfernen eingeordnet. Auch bestehende Abstraktionen werden geprüft; ihr bloßes Vorhandensein verpflichtet nicht zur Übernahme. Weiterhin gültiges Verhalten und Schutzregeln bleiben erhalten.
-
-Tests sichern das gewünschte Verhalten, nicht überholte Implementierungsstrukturen. Tests entfallender Schnittstellen werden mit diesen entfernt oder angepasst; erforderliche Verhaltensprüfungen werden an die neue Grenze übernommen. Schemas ohne eigene Aufgabe, doppelte Dokumentation und veraltete Verweise werden gezielt bereinigt. Keine Löschung allein zur Herstellung grüner Tests oder besserer Coverage.
-
-Code, Aufrufer, Tests und Dokumentation werden in kleinen zusammenhängenden Schritten aktualisiert. Für Implementierungsschritte umfasst „grün“ Tests, Coverage-Prüfung, ESLint und Typecheck. Ein Dokumentationsbeschluss ist weder Implementierung noch Validierungsnachweis.
+- Kleine explizite Funktionen für Zustand, Auflösung, Abbildung und Ausführung; kein spekulatives Koordinationsframework.
+- Nur nötiger temporärer Klärungs-/Ausführungskontext; zusätzliche Stores/Registries benötigen nachgewiesenen Bedarf und gesonderte Zustimmung.
+- Reine Domain-Logik ohne Netzwerk. Provider-Aufrufe/Zugangsdaten bleiben serverseitig. Parser-/Provider-Daten werden validiert; Typen aus Zod abgeleitet.
+- Reihenfolge WP 011 → WP 014 → WP 012; WP 009/010 liefern die vorhandene Grundlage.
+- Betroffene Dateien vor Implementierung als behalten, anpassen, zusammenführen oder entfernen einordnen. Vorhandene Abstraktionen sind kein Selbstzweck; notwendiges Verhalten und Schutzregeln bleiben.
+- Überholte Schemas, Tests und Dokumente mit ihren Aufrufern/Verweisen bereinigen. Tests schützen Verhalten statt ausgedienter Struktur. Keine Löschung zur Beschönigung von Tests/Coverage.
+- Kleine zusammenhängende Änderungen an Code, Aufrufern, Tests und Dokumentation. „Grün“ umfasst Tests, Coverage, ESLint und Typecheck; Dokumentationsbeschlüsse sind keine Implementierungsnachweise.
 
 ## Execution status
 
-- 2026-11-17: Gemeinsamer Suchzustand und daraus abgeleitete Movie-/TV-Anfragen als Zielbild festgelegt.
-- WP 009 und WP 010 bilden die bestehende Implementierungsgrundlage. Diese Festlegung bestätigt keine vollständige produktive Parser-, Auflösungs-, Such- oder UI-Integration.
-- Nächster Dokumentationsschritt: WP 011, WP 014 und WP 012 sowie betroffene Einstiegsdokumente gezielt an dieses Zielbild angleichen. Detailverträge und dateigenaue Bereinigung bleiben zu prüfen.
-- Diese Änderung betrifft nur Dokumentation. Keine Schemas, Tests oder Laufzeitimplementierungen geändert; keine Tests, Coverage, ESLint oder Typecheck ausgeführt.
+- 2026-11-17: Zielbild und WP 011/014/012 dokumentarisch ausgerichtet; README, angrenzende Dokumente und geprüfte Verweise bereinigt. Dies ist keine vollständige repositoryweite Referenzinventur.
+- WP 009/010 bilden die abgeschlossene Implementierungsgrundlage. Nutzer bestätigt alle zuvor offenen Validierungen vor WP 011 als erfolgreich; kein neuer Assistant-/CI-Lauf oder exakter Coverage-Wert behauptet.
+- Produktive Parser-/Auflösungs-/Suchintegration und UI bleiben ausstehend. Nächster Umsetzungsschritt ist eine gezielte WP-011-Code-/Test-Bestandsaufnahme mit dateigenauem Plan vor Implementierung.
+- Diese Änderung betrifft nur Dokumentation. Keine Laufzeitdateien, Schemas oder Tests geändert; keine Validierungskommandos ausgeführt.

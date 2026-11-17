@@ -1,55 +1,40 @@
 # Service boundaries
 
-## Status
+## Specification
 
-Completed.
+### Purpose
 
-## Purpose
+Document established separation of transport, validation, service orchestration, pure mapping and controlled error translation. Follow [development rules](../../AGENTS.md), [Typing](../typing.md) and [Testing](../testing.md).
 
-This concept documents the established service boundaries for NextWatch.
+### Responsibilities
 
-It separates transport, validation, orchestration, pure mapping and safe error translation. It preserves the public behavior of the TMDb integration.
+- Components render interaction; composables call our API and manage UI execution state.
+- Nitro routes adapt HTTP input/output, compose dependencies and translate safe errors; no domain/request-mapping rules in routes.
+- `server/services/tmdb/http.ts` owns credential checks, allowed destinations, timeout and redirect rejection. The established transport does not automatically retry.
+- Services accept explicit dependencies, request data, validate provider responses and map them to application contracts.
+- Mappers and search-domain decisions remain framework-independent and pure where possible.
+- `server/services/tmdb/errors.ts` provides controlled errors and safe translation.
+- Zod contracts live in `src/lib/schemas`; types are derived from their schemas. Runtime configuration is read in the server composition root.
+- Browser code never imports server modules or receives TMDb credentials. Errors expose no credentials, headers, raw upstream errors or stack traces.
 
-## Architecture
+### Compatibility and historical scope
 
-- `app/` components render UI and handle interaction.
-- `app/` composables call the Nitro API and own UI execution state; they do not make direct TMDb requests.
-- `server/api/` adapts HTTP input and output, uses explicit return types and maps errors safely.
-- `server/services/tmdb/http.ts` owns credential checks, fixed upstream destination, timeout, no retries and redirect rejection.
-- `server/services/tmdb/` services request data, validate raw responses and map them to application contracts.
-- `server/services/tmdb/mappers.ts` contains pure mapping without network or framework context.
-- `server/services/tmdb/errors.ts` provides controlled errors and HTTP error translation.
-- `src/lib/schemas/` contains raw and normalized Zod contracts; TypeScript types are derived with `z.infer`.
+The original Trending extraction preserved public responses and temporarily used `server/utils/tmdb.ts` as a forwarding facade, with `createTmdbSpikeError` aliasing `createTmdbError`. `TmdbError` is a derived type, not a class. These are historical compatibility decisions, not instructions to recreate obsolete helpers. Recheck callers before changing remaining compatibility code.
 
-## Core rules
+The original refactor excluded UI, Discover, caching, LLM integration and dependency/version changes. Those exclusions describe that package, not a permanent ban on separately approved later work.
 
-- Runtime configuration is read only in the server composition root.
-- Browser code must not import server modules.
-- Services accept explicit dependencies.
-- External transports are injected into services.
-- TMDb credentials remain server-side.
-- HTTP requests reject redirects.
-- Error responses do not expose internal details.
+### Testing
 
-## Testing
+Units verify contracts, mappings and errors; service tests inject transport while retaining real validation/mapping. Playwright HTTP tests use a real dedicated Nuxt server. The original missing-credentials HTTP check does not prove every success, redirect, cancellation or upstream-error path is covered. Successful validation is distinct from exhaustive test coverage.
 
-- Vitest units cover raw contracts, pure mappings and controlled error translation.
-- Service tests inject transport and retain real validation and mapping.
-- Playwright HTTP integration tests run against a dedicated Nuxt server.
-- The missing-credentials contract is covered by an HTTP integration test.
-- HTTP 200/502 with controlled upstream responses, redirect behavior and full cancellation integration remain follow-up coverage.
+## Execution status
 
-## Out of scope
-
-- UI.
-- Discover.
-- Caching.
-- LLM integration.
-- New dependencies or version changes.
+- Completed. On 2026-11-17 the user confirmed previously outstanding pre-WP-011 checks successful, including tests, coverage, ESLint and typecheck. This is historical user-reported validation, not an assistant-run check.
+- Documentation consolidated; obsolete pending-validation wording and empty references removed. No runtime code or tests changed and no validation commands run for this update.
 
 ## Related documentation
 
-- ``
-- ``
-- `docs/testing.md`
-- `docs/typing.md`
+- [Product and search flow](000-product-and-search-flow.md)
+- [Discover foundation](004-tmdb-discover-foundation.md)
+- [Testing](../testing.md)
+- [Typing](../typing.md)
