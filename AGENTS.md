@@ -34,15 +34,24 @@ NextWatch is a controlled search application. The LLM proposes structured filter
   query invalidations and retired binding references. Rejected/no-op edits
   do not reconcile or expose partial stores. No binding/question is issued
   and no lookup, retry or search starts automatically.
-- For `f6d9db2`, the user confirmed passing tests, typecheck and ESLint on
-  2026-11-17. Coverage validation for this integration remains unconfirmed;
-  earlier foundation coverage reports must not be carried forward as proof.
-  The assistant did not execute validation commands. Check current coverage
-  before describing the integration as fully green; details are in the ledger.
-- Response-processing integration, owned-target question support, result staging
-  and complete pause/resume remain later scoped work. Returning coherent
-  proposals does not implement persistence, concurrency control or end-to-end
-  invocation replay protection. WP 011 is not complete or ready for an implicit merge.
+- `processBoundPersonClarificationAction()` and its unit suite were added in
+  `fa026dc`. The function processes bound canonical person refine/navigation/
+  discard actions, cleans discarded canonical continuation links, consumes the
+  question binding against the pre-state and reconciles remaining bindings
+  against the post-state. Complete proposals distinguish consumed and retired
+  bindings; rejected results expose no partial stores. Identity selection is
+  excluded and follow-up data does not authorize or start another lookup.
+- The user confirmed all tests passing for `fa026dc` on 2026-11-17. Fresh
+  typecheck, ESLint and coverage results for this new code remain unreported.
+  Earlier tests/typecheck/ESLint confirmation for `f6d9db2` does not validate the
+  later action slice; that earlier integration's coverage also remained open.
+  The assistant did not execute validation commands. Complete the current checks
+  before describing the latest code as fully green; details are in the ledger.
+- Controlled follow-up processing, resolution-result/identity-selection
+  integration, owned-target questions, result staging and full pause/resume
+  remain later scoped work. Returning coherent proposals does not implement
+  persistence, concurrency control or end-to-end invocation replay protection.
+  WP 011 is not complete or ready for an implicit merge.
 - Before each further implementation slice, complete the relevant targeted
   caller/test inventory and concrete schema/adapter design gates. Do not claim
   all historical plan gates or repository-wide inventories are complete. Reuse
