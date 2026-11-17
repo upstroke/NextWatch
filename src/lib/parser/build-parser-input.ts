@@ -16,7 +16,35 @@ const parserInputSchema = z.object({
   genreCatalogs: GenreCatalogsSchema.optional(),
 });
 
-function composeInput(userText: string, state: SearchState, genreCatalogs?: GenreCatalogs) {
+/** Application-only association; never include this object in the model request. */
+export type ParserInputBindings = {
+  expectedRevision: number;
+  pendingTargets: { targetKey: string; entity: 'person' | 'keyword'; ref: string }[];
+};
+
+function createPendingTargets(state: SearchState) {
+  return [
+    ...state.pendingQueries.personQueries.map((request, index) => ({
+      targetKey: `person-${index + 1}`,
+      entity: 'person' as const,
+      query: request.query,
+      ref: request.ref,
+    })),
+    ...state.pendingQueries.keywordQueries.map((request, index) => ({
+      targetKey: `keyword-${index + 1}`,
+      entity: 'keyword' as const,
+      query: request.query,
+      ref: request.ref,
+    })),
+  ];
+}
+
+function composeInput(
+  userText: string,
+  state: SearchState,
+  pendingTargets: ReturnType<typeof createPendingTargets>,
+  genreCatalogs?: GenreCatalogs,
+) {
   const fields = Object.keys(SEARCH_FILTER_CATALOG);
   return {
     instructionVersion: PARSER_INSTRUCTIONS_VERSION,
@@ -33,6 +61,9 @@ function composeInput(userText: string, state: SearchState, genreCatalogs?: Genr
           : [],
       })),
       pendingKeywords: state.pendingQueries.keywordQueries.map((request) => request.query),
+      pendingTargets: pendingTargets.map(({ targetKey, entity, query }) => ({
+        targetKey, entity, query,
+      })),
       inactiveGenreIds: (state.inactiveGenres ?? []).map((genre) => genre.id),
       genreCatalogs: genreCatalogs ?? null,
       capabilities: {
@@ -68,21 +99,34 @@ function composeInput(userText: string, state: SearchState, genreCatalogs?: Genr
 
 /**
  * Validates and prepares provider-neutral parser input without network or mutation.
+ * Send only result.input to the model; retain result.bindings with the original
+ * application-owned request. Local target keys may repeat in later preparations
+ * and are neither stable references nor authorization tokens. The caller must
+ * establish request association and check the original revision before applying
+ * a response; this helper does not enforce expiry, replay protection or selection.
  * Fixed instructions, projected context and original user text remain separate.
  * Unknown outer properties are not forwarded. State/catalog structures reuse
  * existing contracts; their caller must establish provenance and completeness.
- * Revision, request references and response authorization remain with that caller.
- * No output JSON Schema, model invocation or response processing is performed.
+ * The target catalog only prepares future operations; proposal capabilities are
+ * unchanged. No output schema, model invocation or response processing occurs.
  * @param input User text, current state and optional trusted genre catalogs.
- * @returns An independent prepared input or a sanitized validation rejection.
+ * @returns Independent model input and application bindings, or a sanitized rejection.
  */
 export function buildParserInput(input: unknown):
-  | { status: 'prepared'; input: ReturnType<typeof composeInput> }
+  | { status: 'prepared'; input: ReturnType<typeof composeInput>; bindings: ParserInputBindings }
   | { status: 'rejected'; reason: 'invalid-input' } {
   const parsed = parserInputSchema.safeParse(input);
   if (!parsed.success) return { status: 'rejected', reason: 'invalid-input' };
+  const { userText, state, genreCatalogs } = parsed.data;
+  const pendingTargets = createPendingTargets(state);
   return {
     status: 'prepared',
-    input: composeInput(parsed.data.userText, parsed.data.state, parsed.data.genreCatalogs),
+    input: composeInput(userText, state, pendingTargets, genreCatalogs),
+    bindings: {
+      expectedRevision: state.revision,
+      pendingTargets: pendingTargets.map(({ targetKey, entity, ref }) => ({
+        targetKey, entity, ref,
+      })),
+    },
   };
 }
