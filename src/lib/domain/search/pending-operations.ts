@@ -1,4 +1,5 @@
-import { SearchStateSchema } from '@lib/schemas/search-state';
+import { z } from 'zod';
+import { AcceptedPersonSchema, SearchStateSchema } from '@lib/schemas/search-state';
 import type { SearchState } from '@lib/schemas/search-state';
 import { PendingQueryCommandSchema, PersonAcceptanceSchema } from '@lib/schemas/search-transition';
 import { getSearchMode } from './get-search-mode';
@@ -162,4 +163,56 @@ export function acceptResolvedPerson(state: SearchState, input: unknown): Pendin
       ),
     },
   });
+}
+
+const AcceptedPersonRemovalCommandSchema = z
+  .object({
+    baseRevision: SearchStateSchema.shape.revision,
+    personId: AcceptedPersonSchema.shape.id,
+  })
+  .strict();
+
+export type AcceptedPersonRemovalResult =
+  | {
+      status: 'applied';
+      state: SearchState;
+      removedPersonId: number;
+      removedPendingRefs: string[];
+    }
+  | {
+      status: 'rejected';
+      reason: 'invalid-input' | 'stale-revision' | 'unknown-person' | 'invalid-value';
+    };
+
+/** Removes an accepted person and any pending replacement targeting that person. */
+export function applyAcceptedPersonRemoval(
+  state: SearchState,
+  input: unknown,
+): AcceptedPersonRemovalResult {
+  const parsed = AcceptedPersonRemovalCommandSchema.safeParse(input);
+  if (!parsed.success) return { status: 'rejected', reason: 'invalid-input' };
+
+  const { baseRevision, personId } = parsed.data;
+  if (baseRevision !== state.revision) return { status: 'rejected', reason: 'stale-revision' };
+
+  const people = state.people.filter((person) => person.id !== personId);
+  if (people.length === state.people.length) return { status: 'rejected', reason: 'unknown-person' };
+
+  const removedPendingRefs: string[] = [];
+  const personQueries = state.pendingQueries.personQueries.filter((request) => {
+    if (request.operation === 'replace' && request.targetPersonId === personId) {
+      removedPendingRefs.push(request.ref);
+      return false;
+    }
+    return true;
+  });
+
+  const result = acceptCandidate(state, {
+    ...state,
+    people,
+    pendingQueries: { ...state.pendingQueries, personQueries },
+  });
+  if (result.status !== 'applied') return { status: 'rejected', reason: 'invalid-value' };
+
+  return { status: 'applied', state: result.state, removedPersonId: personId, removedPendingRefs };
 }
